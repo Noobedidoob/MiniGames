@@ -1,0 +1,390 @@
+world: Minigames_world
+resetworld: true
+Lasertag:
+  maps:
+    town:
+      center:
+        x: 396
+        y: 22
+        z: 212
+        block: red_sandstone_slab
+      area:
+        randomspawn: true
+        x:
+          min: 353
+          max: 454
+        y:
+          min: 4
+          max: 31
+        z:
+          min: 162
+          max: 263
+      gather:
+        x:
+          max: 408
+          min: 384
+        z:
+          max: 229
+          min: 194
+      basespawn:
+        enabled: false
+      miniguns:
+        enabled: true
+        locations:
+          x:
+          - 396
+          y:
+          - 22
+          z:
+          - 212
+    laserland:
+      center:
+        x: 299
+        y: 8
+        z: -160
+        block: blue_terracotta
+      area:
+        randomspawn: true
+        x:
+          min: 250
+          max: 347
+        y:
+          min: 4
+          max: 20
+        z:
+          min: -208
+          max: -111
+      gather:
+        x:
+          max: 301
+          min: 295
+        z:
+          max: -156
+          min: -163
+      basespawn:
+        enabled: true
+        red:
+          x: 252.5
+          y: 4
+          z: -206.5
+        blue:
+          x: 345.5
+          y: 4
+          z: -113.5
+        green:
+          x: 252.5
+          y: 4
+          z: -113.5
+        yellow:
+          x: 345.5
+          y: 4
+          z: -206.5
+        protectionradius: 10
+      miniguns:
+        enabled: true
+        locations:
+          x:
+          - 299
+          y:
+          - 4
+          z:
+          - -160
+    duel:
+      center:
+        x: 287
+        y: 4
+        z: -86
+        block: blue_terracotta
+      area:
+        randomspawn: false
+        x:
+          min: 259
+          max: 317
+        y:
+          min: 4
+          max: 20
+        z:
+          min: -107
+          max: -67
+      gather:
+        x:
+          max: 292
+          min: 282
+        z:
+          max: 81
+          min: 91
+      basespawn:
+        enabled: true
+        red:
+          x: 260.5
+          y: 4
+          z: -86.5
+        blue:
+          x: 316.5
+          y: 4
+          z: -86.5
+        protectionradius: 5
+      miniguns:
+        enabled: true
+        locations:
+          x:
+          - 287
+          y:
+          - 4
+          z:
+          - -86
+    bridges:
+      center:
+        x: 344
+        y: 9
+        z: -71
+        block: red_stained_glass
+      area:
+        randomspawn: false
+        x:
+          min: 321
+          max: 366
+        y:
+          min: 1
+          max: 30
+        z:
+          min: -108
+          max: -35
+      gather:
+        x:
+          max: 357
+          min: 330
+        z:
+          max: -51
+          min: -85
+      basespawn:
+        enabled: true
+        red:
+          x: 338.5
+          y: 13
+          z: -34.5
+        blue:
+          x: 348.5
+          y: 13
+          z: -107.5
+        protectionradius: 2
+      miniguns:
+        enabled: true
+        locations:
+          x:
+          - 344
+          y:
+          - 9
+          z:
+          - -71
+    skyhigh:
+      center:
+        x: 746
+        y: 107
+        z: -410
+        block: spruce_planks
+      area:
+        randomspawn: false
+        x:
+          min: 652
+          max: 840
+        y:
+          min: 74
+          max: 116
+        z:
+          min: -450
+          max: -370
+      gather:
+        x:
+          max: 755
+          min: 737
+        z:
+          max: -400
+          min: -418
+      basespawn:
+        enabled: true
+        red:
+          x: 821.5
+          y: 96
+          z: -416.5
+        blue:
+          x: 670.5
+          y: 96
+          z: -402.5
+        protectionradius: 10
+      miniguns:
+        enabled: true
+        locations:
+          x:
+          - 746
+          y:
+          - 107
+          z:
+          - -409
+    big8:
+      center:
+        x: 298
+        y: 4
+        z: -263
+        block: sea_lantern
+      area:
+        randomspawn: false
+        x:
+          min: 250
+          max: 347
+        y:
+          min: 4
+          max: 24
+        z:
+          min: -311
+          max: -214
+      gather:
+        x:
+          max: 303
+          min: 294
+        y:
+          max: 6
+          min: 4
+        z:
+          max: -258
+          min: -267
+      basespawn:
+        enabled: true
+        red:
+          x: 295.5
+          y: 4
+          z: -309.5
+        blue:
+          x: 302.5
+          y: 4
+          z: -309.5
+        green:
+          x: 345.5
+          y: 4
+          z: -266.5
+        yellow:
+          x: 345.5
+          y: 4
+          z: -259.5
+        purple:
+          x: 302.5
+          y: 4
+          z: -216.5
+        gray:
+          x: 295.5
+          y: 4
+          z: -216.5
+        orange:
+          x: 252.5
+          y: 4
+          z: -259.5
+        white:
+          x: 252.5
+          y: 4
+          z: -267.5
+        protectionradius: 10
+      miniguns:
+        enabled: false
+        locations:
+          x:
+          - 
+          y:
+          - 
+          z:
+          - 
+    absorbed:
+      center:
+        x: 276
+        y: 4
+        z: -366
+        block: black_concrete
+      area:
+        randomspawn: true
+        x:
+          min: 226
+          max: 325
+        y:
+          min: 4
+          max: 24
+        z:
+          min: -415
+          max: -316
+      gather:
+        x:
+          max: 284
+          min: 267
+        z:
+          max: -357
+          min: -374
+      basespawn:
+        enabled: true
+        red:
+          x: 323.5
+          y: 4
+          z: -413.5
+        blue:
+          x: 228.5
+          y: 4
+          z: -318.5
+        green:
+          x: 323.5
+          y: 4
+          z: -318.5
+        yellow:
+          x: 228.5
+          y: 4
+          z: -413.5
+        protectionradius: 10
+      miniguns:
+        enabled: false
+        locations:
+          x:
+          - 
+          y:
+          - 
+          z:
+          - 
+    darkduel:
+      center:
+        x: 338
+        y: 4
+        z: -341
+        block: black_concrete
+      area:
+        randomspawn: false
+        x:
+          min: 329
+          max: 348
+        y:
+          min: 4
+          max: 19
+        z:
+          min: -365
+          max: -316
+      gather:
+        x:
+          max: 348
+          min: 329
+        z:
+          max: -339
+          min: -342
+      basespawn:
+        enabled: true
+        red:
+          x: 345
+          y: 4
+          z: -317
+        blue:
+          x: 345
+          y: 4
+          z: -364
+        protectionradius: 5
+      miniguns:
+        enabled: false
+        locations:
+          x:
+          - 
+          y:
+          - 
+          z:
+          - 

@@ -1,0 +1,23 @@
+name: MiniGames
+version: 3.1
+author: Noobedidoob
+main: me.noobedidoob.minigames.main.Minigames
+api-version: 1.16
+
+commands:
+   lasertag:
+      description: Prefix for all LaserTag commands
+      usage: use '/lasertag' for all commands
+      aliases: [lt, laser]
+   hideandseek:
+      description: Prefix for all HideAndSeek commands
+      usage: use '/hideandseek' for all commands
+      aliases: [has, hide]
+   minigames:
+      description: Prefix for all Minigames utility commands
+      usage: use '/minigames' for all commands
+      aliases: [mg, mini]
+   lobby:
+      description: teleport to lobby
+      usage: /lobby | /lb | /spawn
+      aliases: [lb, spawn, sp]
