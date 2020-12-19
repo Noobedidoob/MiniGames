@@ -139,7 +139,7 @@ public class Game {
 		waiting = false;
 		tagging = false;
 //		testing = false;
-		for(Player p : players) DeathListener.strikedPlayers.put(p, 0);
+		for(Player p : players) DeathListener.streakedPlayers.put(p, 0);
 		players = new Player[] {};
 		
 		playerColor = new HashMap<Player, LasertagColor>();
@@ -148,7 +148,7 @@ public class Game {
 		teamColor = new HashMap<Player[], LasertagColor>();
 		teamPoints = new HashMap<Player[], Integer>();
 		teams = new ArrayList<Player[]>();
-		
+		Modifiers.multiWeapons = false;
 	}
 	
 	public static boolean isInGame(Player p) {

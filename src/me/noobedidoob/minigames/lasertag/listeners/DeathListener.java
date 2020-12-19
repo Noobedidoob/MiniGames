@@ -3,6 +3,7 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -30,58 +31,58 @@ public class DeathListener implements Listener {
 	private static HashMap<Player, Boolean> hideNextDM = new HashMap<Player, Boolean>();
 	public static void hit(KillType type, Player killer, Player victim, double damage, boolean headshot, boolean snipe, boolean backstab) {
 		
-		if(damage < victim.getHealth()) {
-			victim.damage(damage);
-		} else {
-			int points = 1;
-			String addon = "";
-			
-			int headshotExtra = 0;
-			String headshotAddon = "";
-			if(headshot) {
-				headshotExtra = Modifiers.headshotExtra;
-				headshotAddon = " §7[§d§nHEADSHOT§r§7] ";
-			}
-			
-			int backstabExtra = 0;
-			String backstabAddon = "";
-			if(backstab) {
-				backstabExtra = Modifiers.backstabExtra;
-				backstabAddon = " §7[§d§nBACKSTAB§r§7] ";
-			}
-			
-			int snipeExra = 0;
-			String shotOrSnipe = "shot";
-			if(snipe) {
-				snipeExra = Modifiers.snipeShotsExtra;
-				shotOrSnipe = "sniped";
-			}
-			
-			switch (type) {
-			case SHOT:
-				points = Modifiers.points+Modifiers.closeRangeExtra+headshotExtra+snipeExra;
-				Game.addPoints(killer, points);
-				if(points > 1) addon = "s";
-				deathMessage.put(victim, Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o "+shotOrSnipe+" §r"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+headshotAddon+" §7(§a+"+points+" Point"+addon+"§7)");
-				break;
-			case PVP:
-				points = Modifiers.points+Modifiers.pvpExtra+backstabExtra;
-				Game.addPoints(killer, points);
-				if(points > 1) addon = "s";
-				deathMessage.put(victim, Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§okilled §r"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+backstabAddon+" §7(§a+"+points+" Point"+addon+"§7)");
-				hideNextDM.put(victim, true);
-				break;
-			default:
-				break;
-			}
-			
-			addStrike(killer);
-			if(strikedPlayers.get(victim) == null) strikedPlayers.put(victim, 0);
-			if(strikedPlayers.get(victim) >= Modifiers.minKillsForStrike) strikeShutdown(killer, victim);
-			killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-			Lasertag.isProtected.put(victim, true);
-			
-			victim.damage(100);
+		if (victim.getGameMode() == GameMode.ADVENTURE | victim.getGameMode() == GameMode.SURVIVAL) {
+			if (damage < victim.getHealth()) {
+				victim.damage(damage);
+			} else {
+				int points = Modifiers.points;
+				String addon = "";
+				
+				int headshotExtra = 0;
+				String headshotAddon = "";
+				if(headshot) {
+					headshotExtra = Modifiers.headshotExtra;
+					headshotAddon = " §7[§d§nHEADSHOT§r§7] ";
+				}
+				
+				int backstabExtra = 0;
+				String backstabAddon = "";
+				if(backstab) {
+					backstabExtra = Modifiers.backstabExtra;
+					backstabAddon = " §7[§d§nBACKSTAB§r§7] ";
+				}
+				
+				int snipeExra = 0;
+				String shotOrSnipe = "shot";
+				if(snipe) {
+					snipeExra = Modifiers.snipeShotsExtra;
+					shotOrSnipe = "sniped";
+				}
+				
+				switch (type) {
+				case SHOT:
+					points += Modifiers.closeRangeExtra+headshotExtra+snipeExra;
+					Game.addPoints(killer, points);
+					if(points > 1) addon = "s";
+					deathMessage.put(victim, Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+shotOrSnipe+" §r"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+headshotAddon+" §7(§a+"+points+" Point"+addon+"§7)");
+					break;
+				case PVP:
+					points += Modifiers.pvpExtra+backstabExtra;
+					Game.addPoints(killer, points);
+					if(points > 1) addon = "s";
+					deathMessage.put(victim, Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§okilled §r"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+backstabAddon+" §7(§a+"+points+" Point"+addon+"§7)");
+					hideNextDM.put(victim, true);
+					break;
+				default:
+					break;
+				}
+
+				victim.damage(100);
+				
+				addStreak(killer, victim);
+				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+				Lasertag.isProtected.put(victim, true);
+			} 
 		}
 	}
 	
@@ -89,7 +90,7 @@ public class DeathListener implements Listener {
 	public void onPlayerDies(PlayerDeathEvent e) {
 		Player p = e.getEntity();
 		if(Game.tagging()) {
-			strikedPlayers.put(p, 0);
+			streakedPlayers.put(p, 0);
 			if(deathMessage.get(p) != null) {
 				e.setDeathMessage(deathMessage.get(p));
 				e.setKeepInventory(true);
@@ -108,33 +109,35 @@ public class DeathListener implements Listener {
 	}
 	
 	
-	public static HashMap<Player, Integer> strikedPlayers = new HashMap<Player, Integer>();
-	public static void addStrike(Player p) {
-		if(strikedPlayers.get(p) == null) strikedPlayers.put(p, 0);
-		strikedPlayers.put(p, strikedPlayers.get(p)+1);
-		if(strikedPlayers.get(p) >= Modifiers.minKillsForStrike) {
-			int strike = strikedPlayers.get(p);
+	public static HashMap<Player, Integer> streakedPlayers = new HashMap<Player, Integer>();
+	public static void addStreak(Player p, Player victim) {
+		if(streakedPlayers.get(p) == null) streakedPlayers.put(p, 0);
+		streakedPlayers.put(p, streakedPlayers.get(p)+1);
+		if(streakedPlayers.get(p) >= Modifiers.minKillsForStreak) {
+			int streak = streakedPlayers.get(p);
 			String pName = Game.getPlayerColor(p).getChatColor()+p.getName();
 			String pAddon = "";
-			if(Modifiers.strikeExtra > 1) pAddon = "s";
+			if(Modifiers.streakExtra > 1) pAddon = "s";
 			for(Player ap : Game.players()) {
 				ap.sendMessage("§e——————————————————");
-				ap.sendMessage(pName+" §dHas a Strike of §a"+strike+"§d! §7(§a+"+Modifiers.strikeExtra+" extra Point"+pAddon+"§7)");
-				ap.sendMessage("§e——————————————————");
+				ap.sendMessage(pName+" §dHas a streak of §a"+streak+"§d! §7(§a+"+Modifiers.streakExtra+" extra Point"+pAddon+"§7)");
+				ap.sendMessage("§e——————————————————"); 
 			}
-			Game.addPoints(p, Modifiers.strikeExtra);
+			Game.addPoints(p, Modifiers.streakExtra);
 		}
+		if (streakedPlayers.get(victim) == null) streakedPlayers.put(victim, 0);
+		if (streakedPlayers.get(victim) >= Modifiers.minKillsForStreak) streakShutdown(p, victim);
 	}
-	public static void strikeShutdown(Player killer, Player victim) {
-		strikedPlayers.put(victim, 0);
+	public static void streakShutdown(Player killer, Player victim) {
+		streakedPlayers.put(victim, 0);
 		String pAddon = "";
-		if(Modifiers.strikeShutdown > 1) pAddon = "s";
+		if(Modifiers.streakShutdown > 1) pAddon = "s";
 		for(Player ap : Game.players()) {
 			ap.sendMessage("§e——————————————————");
-			ap.sendMessage(Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the strike of "+Game.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+Modifiers.strikeExtra+" extra Point"+pAddon+"§7)");
+			ap.sendMessage(Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the streak of "+Game.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+Modifiers.streakExtra+" extra Point"+pAddon+"§7)");
 			ap.sendMessage("§e——————————————————");
 		}
-		Game.addPoints(killer, Modifiers.strikeShutdown);
+		Game.addPoints(killer, Modifiers.streakShutdown);
 	}
 	
 }

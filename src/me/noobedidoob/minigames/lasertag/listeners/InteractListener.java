@@ -30,7 +30,14 @@ public class InteractListener implements Listener {
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player p  = e.getPlayer();
 		if(Lasertag.playerTesting.get(p)) {
-			
+			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				if(e.getItem() == null) return;
+				try {
+					LaserShooter.fireTest(p, Weapons.getFireWeapon(e.getItem()));
+				} catch (Exception e2) {
+					return;
+				}
+			}
 		} 
 		
 		if(Game.tagging()) {

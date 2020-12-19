@@ -69,7 +69,7 @@ public class MoveListener implements Listener {
 //				enabled = true;
 //			}
 //		}
-		if(Game.tagging()) {
+		if(Game.tagging() && Game.isInGame(p)) {
 			if(Game.spawnAtBases && !Game.capturing()) {
 				for(Coordinate coord : Game.map().baseCoords) {
 					if(Game.map().baseColor.get(coord) != Game.getPlayerColor(p).getChatColor()) {

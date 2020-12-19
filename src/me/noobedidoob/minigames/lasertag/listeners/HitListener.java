@@ -39,7 +39,9 @@ public class HitListener implements Listener {
 						} else {
 							if (!Modifiers.multiWeapons) {
 								double damage = e.getDamage();
-								if (p.getInventory().getItemInMainHand() != null && p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = Modifiers.lasergunPVPDamage;
+								if (p.getInventory().getItemInMainHand() != null) {
+									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = Modifiers.lasergunPVPDamage;
+								}
 								if(damage < p.getHealth()-1) {
 									e.setDamage(1);
 									damage--;

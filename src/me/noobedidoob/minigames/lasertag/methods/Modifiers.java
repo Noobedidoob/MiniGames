@@ -15,9 +15,9 @@ public class Modifiers {
 	public static int backstabExtra = 0;
 	public static int pvpExtra = 0;
 	public static int headshotExtra = 1;
-	public static int strikeExtra = 2;
-	public static int strikeShutdown = 1;
-	public static int minKillsForStrike = 5;
+	public static int streakExtra = 2;
+	public static int streakShutdown = 1;
+	public static int minKillsForStreak = 5;
 	public static int multiKillsExtra = 2;
 	public static int glowingAmplifier = 257;
 	public static int spawnProtSecs = 10;
@@ -52,8 +52,8 @@ public class Modifiers {
 		integerModifier.put("closerange", closeRangeExtra);
 		integerModifier.put("pvp", pvpExtra);
 		integerModifier.put("headshot", headshotExtra);
-		integerModifier.put("strike", strikeExtra);
-		integerModifier.put("minkillstrike", minKillsForStrike);
+		integerModifier.put("streak", streakExtra);
+		integerModifier.put("minkillstreak", minKillsForStreak);
 		integerModifier.put("mulitkill", multiKillsExtra);
 		integerModifier.put("glowamplifier", glowingAmplifier);
 		integerModifier.put("bulletsinmagazine", bulletsInMagazine);
@@ -95,8 +95,8 @@ public class Modifiers {
 		pvpExtra = integerModifier.get("pvp");
 		backstabExtra = integerModifier.get("backstab");
 		headshotExtra = integerModifier.get("headshot");
-		strikeExtra = integerModifier.get("strike");
-		minKillsForStrike = integerModifier.get("minkillstrike");
+		streakExtra = integerModifier.get("streak");
+		minKillsForStreak = integerModifier.get("minkillstreak");
 		multiKillsExtra = integerModifier.get("mulitkill");
 		glowingAmplifier = integerModifier.get("glowamplifier");
 		spawnProtSecs = integerModifier.get("spawnprotectiontime");

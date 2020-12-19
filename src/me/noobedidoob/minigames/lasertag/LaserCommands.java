@@ -20,7 +20,6 @@ import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.RoundCommands;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.Modifiers;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
@@ -111,9 +110,8 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 						return ModifierCommands.getAccessableModifiers(sender);
 					} else if(args[0].equalsIgnoreCase("withmultiweapons")) {
 						if (Game.waiting()) {
-							Modifiers.setModifier("multiweapons", true);
+							Modifiers.multiWeapons = true;
 							Modifiers.setModifier("laserguncooldown", 2);
-							LaserShooter.withMultiWeapons = true;
 							ItemStack newLasergun = Weapons.lasergunItem;
 							ItemStack newDagger = Weapons.daggerItem;
 							newLasergun.removeEnchantment(Enchantment.DAMAGE_ALL);

@@ -35,12 +35,7 @@ import me.noobedidoob.minigames.main.Minigames;
 public class LaserShooter{
 	public static List<ArmorStand> invisibleStands = new ArrayList<ArmorStand>();
 	
-	public static int distance;
-	
 	public static HashMap<Player, Integer> playersSnipershots = new HashMap<Player, Integer>();
-	public static HashMap<Player, Boolean> minigunInterval = new HashMap<Player, Boolean>();
-	
-	public static boolean withMultiWeapons = false;
 	
 	public static void fire(Player p, Weapon w) {
 		List<Player> alreadyKilledPlayers = new ArrayList<Player>();
@@ -60,7 +55,7 @@ public class LaserShooter{
 				l1.setY(l1.getY()+p.getHeight()-0.225);
 				Vector direction = l1.getDirection();
 				direction.multiply(0.1);
-				if(withMultiWeapons) {
+				if(Modifiers.multiWeapons) {
 					Vector newDirection = direction;
 					direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
 					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
@@ -93,41 +88,40 @@ public class LaserShooter{
 									}
 								}
 								if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
-									if (Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
-									if (!Lasertag.isProtected.get(p)) {
-										boolean headshot = false;
-										headshot= (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25);
-										distance = (int) Math.round(d);
-										d = 100;
-										if(alreadyKilledPlayers.size() > 1) {
-											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-												@Override
-												public void run() {
-													String killedPlayersNames = "";
-													int i = 0;
-													for(Player kp : alreadyKilledPlayers) {
-														if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
-														else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
-														i++;
-													}
-													int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
-													String pAddon = "";
-													if(points > 1) pAddon = "s";
-													for(Player ap : Game.players()) {
-														ap.sendMessage("§e——————————————————");
-														ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-														ap.sendMessage("§e——————————————————");
-													}
-													
-													Game.addPoints(p, points);
+									if(loc.distance(Game.map().getTeamSpawnLoc(Game.getPlayerColor(hitP).getChatColor())) < Game.map().getProtectionRaduis()) {
+										p.sendMessage("§cYou cant shoot inside the base!");
+										return;
+									}
+									boolean headshot = false;
+									headshot= (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25);
+									if(alreadyKilledPlayers.size() > 1) {
+										Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+											@Override
+											public void run() {
+												String killedPlayersNames = "";
+												int i = 0;
+												for(Player kp : alreadyKilledPlayers) {
+													if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
+													else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
+													i++;
 												}
-											}, 10);
-										}
-										int damage = Modifiers.lasergunMWDamage;
-										if(!withMultiWeapons) damage = Modifiers.lasergunNormalDamage; 
-										DeathListener.hit(KillType.SHOT, p, hitP, damage, headshot, (distance > Modifiers.minSnipeDistance), false);
-										alreadyKilledPlayers.add(hitP);
-									} else p.sendMessage("§cHe still has spawnprotection! You can't shoot him!");
+												int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+												String pAddon = "";
+												if(points > 1) pAddon = "s";
+												for(Player ap : Game.players()) {
+													ap.sendMessage("§e——————————————————");
+													ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
+													ap.sendMessage("§e——————————————————");
+												}
+												
+												Game.addPoints(p, points);
+											}
+										}, 10);
+									}
+									int damage = Modifiers.lasergunMWDamage;
+									if(!Modifiers.multiWeapons) damage = Modifiers.lasergunNormalDamage; 
+									DeathListener.hit(KillType.SHOT, p, hitP, damage, headshot, (d > Modifiers.minSnipeDistance), false);
+									alreadyKilledPlayers.add(hitP);
 								} 
 							}
 						}
@@ -195,41 +189,40 @@ public class LaserShooter{
 										}
 									}
 									if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
-										if(Lasertag.isProtected.get(hitP) == null); Lasertag.isProtected.put(hitP, false);
-										if(!Lasertag.isProtected.get(hitP)) {
-											if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
-												distance = (int) Math.round(d);
-												d = 100;
-												if(alreadyKilledPlayers.size() > 1) {
-													Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-														@Override
-														public void run() {
-															String killedPlayersNames = "";
-															int i = 0;
-															for(Player kp : alreadyKilledPlayers) {
-																if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
-																else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
-																i++;
-															}
-															int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
-															String pAddon = "";
-															if(points > 1) pAddon = "s";
-															for(Player ap : Game.players()) {
-																ap.sendMessage("§e——————————————————");
-																ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-																ap.sendMessage("§e——————————————————");
-															}
-															
-															Game.addPoints(p, points);
-														}
-													}, 10);
-												}
-												DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.shotgunDamage, false, false, false);
-//												p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-												alreadyKilledPlayers.add(hitP);
-											}
+										if(loc.distance(Game.map().getTeamSpawnLoc(Game.getPlayerColor(hitP).getChatColor())) < Game.map().getProtectionRaduis()) {
+											p.sendMessage("§cYou cant shoot inside the base!");
+											return;
 										}
-									} 
+										if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+											if(alreadyKilledPlayers.size() > 1) {
+												Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+													@Override
+													public void run() {
+														String killedPlayersNames = "";
+														int i = 0;
+														for(Player kp : alreadyKilledPlayers) {
+															if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
+															else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
+															i++;
+														}
+														int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+														String pAddon = "";
+														if(points > 1) pAddon = "s";
+														for(Player ap : Game.players()) {
+															ap.sendMessage("§e——————————————————");
+															ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
+															ap.sendMessage("§e——————————————————");
+														}
+														
+														Game.addPoints(p, points);
+													}
+												}, 10);
+											}
+											DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.shotgunDamage, false, false, false);
+//												p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+											alreadyKilledPlayers.add(hitP);
+										}
+									}
 								}
 							}
 						}
@@ -287,41 +280,40 @@ public class LaserShooter{
 									}
 								}
 								if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
-									if(Lasertag.isProtected.get(hitP) == null); Lasertag.isProtected.put(hitP, false);
-									if(!Lasertag.isProtected.get(hitP)) {
-										if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
-											boolean headshot = false;
-											headshot= (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25);
-											distance = (int) Math.round(d);
-//											d = 100;
-											if(alreadyKilledPlayers.size() > 1) {
-												Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-													@Override
-													public void run() {
-														String killedPlayersNames = "";
-														int i = 0;
-														for(Player kp : alreadyKilledPlayers) {
-															if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
-															else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
-															i++;
-														}
-														int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
-														String pAddon = "";
-														if(points > 1) pAddon = "s";
-														for(Player ap : Game.players()) {
-															ap.sendMessage("§e——————————————————");
-															ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-															ap.sendMessage("§e——————————————————");
-														}
-														
-														Game.addPoints(p, points);
+									if(loc.distance(Game.map().getTeamSpawnLoc(Game.getPlayerColor(hitP).getChatColor())) < Game.map().getProtectionRaduis()) {
+										p.sendMessage("§cYou cant shoot inside the base!");
+										return;
+									}
+									if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+										boolean headshot = false;
+										headshot= (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25);
+										if(alreadyKilledPlayers.size() > 1) {
+											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+												@Override
+												public void run() {
+													String killedPlayersNames = "";
+													int i = 0;
+													for(Player kp : alreadyKilledPlayers) {
+														if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
+														else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
+														i++;
 													}
-												}, 10);
-											}
-											DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.sniperdamage, headshot, (distance > Modifiers.minSnipeDistance), false);
-//											p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-											alreadyKilledPlayers.add(hitP);
+													int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+													String pAddon = "";
+													if(points > 1) pAddon = "s";
+													for(Player ap : Game.players()) {
+														ap.sendMessage("§e——————————————————");
+														ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
+														ap.sendMessage("§e——————————————————");
+													}
+													
+													Game.addPoints(p, points);
+												}
+											}, 10);
 										}
+										DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.sniperdamage, headshot, (d > Modifiers.minSnipeDistance), false);
+//											p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+										alreadyKilledPlayers.add(hitP);
 									}
 								} 
 							}
@@ -332,106 +324,10 @@ public class LaserShooter{
 			}
 			break;
 		
-//		case MINIGUN:
-//			if(minigunInterval.get(p) == null) minigunInterval.put(p, false);
-//			if(!minigunInterval.get(p)) {
-//				minigunInterval.put(p, true);
-////				Weapons.decreaseMinigunAmmo(p);
-//				
-//				Location l1 = p.getLocation();
-//				l1.setY(l1.getY()+p.getHeight()-0.225);
-//				Vector direction = l1.getDirection();
-//				direction.multiply(0.1);
-//				Location loc = l1.clone().add(direction);
-//				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
-//				
-//				for(double d = 0; d<100; d += 0.1) {
-//					if(d==0) {
-//						Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-//							@Override
-//							public void run() {
-//								minigunInterval.put(p, false);
-//							}
-//						}, 10);
-//					}
-//					loc = l1.add(direction);
-//					
-//					spawnProjectile(p, loc);
-//					
-//					
-//					Player[] inGamePlayers = Game.players();
-//					for(Player hitP : inGamePlayers) {
-//						if(hitP != p) {
-//							Location pLoc = hitP.getLocation();
-//							if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
-//								boolean fromTeam = false;
-//								if(Game.teams()) {
-//									for(Player[] team : Game.getTeams()) {
-//										boolean pInTeam = false;
-//										for(Player tp : team) if(tp == p) pInTeam = true;
-//										if(pInTeam) {
-//											for(Player thp : team) if(thp == hitP) fromTeam = true;
-//										}
-//									}
-//								}
-//								if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
-//									//if(l.isProtected.get(hitP) == null); l.isProtected.put(hitP, false);
-//									if(!Lasertag.isProtected.get(hitP)) {
-//										if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
-//											if(loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25) {
-//												headShot.put(p, true);
-//											}
-//											else {
-//												headShot.put(p, false);
-//											}
-//											distance = (int) Math.round(d);
-//											d = 100;
-////											if(!playerInLaser.contains(hitP)) playerInLaser.add(hitP);
-////											if(playerInLaser.size() > 1) {
-////												List<Player> killedPlayers = playerInLaser;
-////												Bukkit.getScheduler().scheduleSyncDelayedTask(m, new Runnable() {
-////													@Override
-////													public void run() {
-////														String killedPlayersNames = "";
-////														int i = 0;
-////														for(Player kp : killedPlayers) {
-////															if(i == 0) killedPlayersNames += Game.getPlayerColor(kp).getChatColor()+kp.getName();
-////															else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
-////															i++;
-////														}
-////														int points = Modifiers.multiKillsExtra*playerInLaser.size();
-////														String pAddon = "";
-////														if(points > 1) pAddon = "s";
-////														for(Player ap : inGamePlayers) {
-////															ap.sendMessage("§e——————————————————");
-////															ap.sendMessage(Game.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-////															ap.sendMessage("§e——————————————————");
-////														}
-////														
-////														Game.addPoints(p, points);
-////													}
-////												}, 10);
-////											}
-//											killedWith.put(hitP, Weapon.MINIGUN);
-//											killedBy.put(hitP, p);
-//											hitP.damage(100);
-//											p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-//											alreadyKilledPlayers.add(hitP);
-//										}
-//									}
-//								} 
-//							}
-//						}
-//					}
-//					if(isInBlock(loc)) return;
-//				}
-//			}
-//			break;
 		default:
 			break;
 		}
 	}
-	
 	
 	
 	
@@ -502,7 +398,8 @@ public class LaserShooter{
 	
 	
 	
-	public static void fireTest(Player p, Weapon w) {
+	public static void fireTest(Player p, Weapon w) throws NullPointerException{
+		if(w == null) throw new NullPointerException("Weapon is null");
 		p.getInventory().getItemInMainHand().addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 7);
 			
 			switch (w) {
@@ -626,6 +523,12 @@ public class LaserShooter{
 									p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 									as.setVisible(false);
 									if(!invisibleStands.contains(as)) invisibleStands.add(as);
+									Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+										@Override
+										public void run() {
+											
+										}
+									}, 20*10);
 								}
 							} 
 						}

@@ -21,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
+import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class SoloRound {
@@ -77,6 +78,7 @@ public class SoloRound {
 			p.sendTitle("§l§aGo!", "", 5, 20, 5);
 			Lasertag.isProtected.put(p, true);
 			Lasertag.playerTesting.put(p, false);
+			DeathListener.streakedPlayers.put(p, 0);
 		}
 		Lasertag.timeCountdownTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(Lasertag.minigames, new Runnable() {
 			@Override
@@ -252,6 +254,5 @@ public class SoloRound {
 		Modifiers.withMinigun = false;
 		
 		Game.reset();
-		LaserShooter.withMultiWeapons = false;
 	}
 }

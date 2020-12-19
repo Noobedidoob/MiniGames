@@ -23,6 +23,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
+import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;
 
@@ -99,6 +100,7 @@ public class TeamsRound {
 			Lasertag.isProtected.put(p, true);
 			p.sendTitle("§l§aGo!", "", 5, 20, 5);
 			Lasertag.playerTesting.put(p, false);
+			DeathListener.streakedPlayers.put(p, 0);
 		}
 		Lasertag.timeCountdownTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(Lasertag.minigames, new Runnable() {
 			@Override
@@ -318,8 +320,8 @@ public class TeamsRound {
 		Modifiers.sniperCooldown = 100;
 		Modifiers.shotgunCooldown = 40;
 		Modifiers.withMinigun = false;
+		Modifiers.multiWeapons = true;
 		Game.reset();
-		LaserShooter.withMultiWeapons = false;
 	}
 	
 }

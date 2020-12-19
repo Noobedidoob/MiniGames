@@ -160,23 +160,23 @@ public class Lasertag {
 				map.setProtectionRaduis(cs.getInt(name+".basespawn.protectionradius"));
 			}
 			
-			boolean withMiniguns = cs.getBoolean(name+".miniguns.enabled");
-			map.withMiniguns(withMiniguns);
-			if(withMiniguns) {
-				List<Coordinate> coordList = new ArrayList<Coordinate>();
-				List<Integer> xList = cs.getIntegerList(name+".miniguns.locations.x");
-				List<Integer> yList = cs.getIntegerList(name+".miniguns.locations.y");
-				List<Integer> zList = cs.getIntegerList(name+".miniguns.locations.z");
-				if(xList.size() == yList.size() && xList.size() == zList.size()) {
-					for(int i = 0; i < xList.size(); i++) {
-						Coordinate coord = new Coordinate(xList.get(i), yList.get(i), zList.get(i));
-						coordList.add(coord);
-					}
-					Coordinate[] coordinates = new Coordinate[xList.size()];
-					coordinates = coordList.toArray(coordinates);
-					map.setMinigunCoords(coordinates);
-				}
-			}
+//			boolean withMiniguns = cs.getBoolean(name+".miniguns.enabled");
+//			map.withMiniguns(withMiniguns);
+//			if(withMiniguns) {
+//				List<Coordinate> coordList = new ArrayList<Coordinate>();
+//				List<Integer> xList = cs.getIntegerList(name+".miniguns.locations.x");
+//				List<Integer> yList = cs.getIntegerList(name+".miniguns.locations.y");
+//				List<Integer> zList = cs.getIntegerList(name+".miniguns.locations.z");
+//				if(xList.size() == yList.size() && xList.size() == zList.size()) {
+//					for(int i = 0; i < xList.size(); i++) {
+//						Coordinate coord = new Coordinate(xList.get(i), yList.get(i), zList.get(i));
+//						coordList.add(coord);
+//					}
+//					Coordinate[] coordinates = new Coordinate[xList.size()];
+//					coordinates = coordList.toArray(coordinates);
+//					map.setMinigunCoords(coordinates);
+//				}
+//			}
 			
 			boolean enabled = true;
 			if(world == null) System.out.println("WORLD IS NULL!!!");
