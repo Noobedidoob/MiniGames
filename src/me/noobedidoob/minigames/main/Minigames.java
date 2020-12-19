@@ -27,9 +27,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.WorldCreator;
 import org.bukkit.event.Listener;
@@ -115,14 +112,6 @@ public class Minigames extends JavaPlugin implements Listener{
 		
 		lasertag.enable();
 		hideAndSeek.enable();
-		
-		for(Entity e : world.getEntities()) {
-			if(e.getType().equals(EntityType.ARMOR_STAND)) {
-				((ArmorStand) e).remove();
-				((ArmorStand) e).damage(100);
-				((ArmorStand) e).setVisible(true);
-			}
-		}
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);

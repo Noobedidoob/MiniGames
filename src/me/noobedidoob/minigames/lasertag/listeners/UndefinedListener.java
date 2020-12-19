@@ -41,4 +41,5 @@ public class UndefinedListener implements Listener {
 	public void onPlayerChangeGameMode(PlayerGameModeChangeEvent e) {
 		if(e.getNewGameMode() == GameMode.ADVENTURE) e.getPlayer().setAllowFlight(true);
 	}
+	
 }

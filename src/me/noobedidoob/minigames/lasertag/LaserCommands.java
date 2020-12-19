@@ -11,7 +11,6 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -24,7 +23,6 @@ import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.Modifiers;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;
 import me.noobedidoob.minigames.utils.Map;
@@ -147,44 +145,44 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 						return true;
 					} 
 				} else if(args.length == 2) {
-					if(args[0].equalsIgnoreCase("test") && sender.isOp()) {
-						if(args[1].equalsIgnoreCase("off")) {
-							Game.disableTesting();
-							for(ArmorStand as : LaserShooter.invisibleStands) {
-								as.setVisible(true);
-							}
-							sender.sendMessage("§aStopped testing Lasertag");
-							return true;
-						} else {
-							try {
-								Lasertag.testWeapon = Weapon.valueOf(args[1].toUpperCase());
-								Game.enableTesting();
-								ItemStack weapon;
-								switch (Lasertag.testWeapon.name()) {
-								case "LASERGUN":
-									weapon = Weapons.lasergunItem.clone();
-									break;
-								case "SHOTGUN":
-									weapon = Weapons.shotgunItem.clone();
-									break;
-								case "SNIPER":
-									weapon = Weapons.sniperItem.clone();
-									break;
-								default:
-									sender.sendMessage("§cYou can't use this weapon!");
-									return true;
-								}
-								ItemMeta im = weapon.getItemMeta();
-								im.setDisplayName(im.getDisplayName()+" TEST");
-								weapon.setItemMeta(im);
-								sender.sendMessage("§aTesting Lasertag with "+Lasertag.testWeapon.name());
-								if(sender instanceof Player) ((Player) sender).getInventory().addItem(weapon);
-							} catch (Exception e) {
-								sender.sendMessage("§cThere is no Weapon called "+args[1]+"!");
-							}
-							return true;
-						}
-					} 
+//					if(args[0].equalsIgnoreCase("test") && sender.isOp()) {
+//						if(args[1].equalsIgnoreCase("off")) {
+//							Game.disableTesting();
+//							for(ArmorStand as : LaserShooter.invisibleStands) {
+//								as.setVisible(true);
+//							}
+//							sender.sendMessage("§aStopped testing Lasertag");
+//							return true;
+//						} else {
+//							try {
+//								Lasertag.testWeapon = Weapon.valueOf(args[1].toUpperCase());
+//								Game.enableTesting();
+//								ItemStack weapon;
+//								switch (Lasertag.testWeapon.name()) {
+//								case "LASERGUN":
+//									weapon = Weapons.lasergunItem.clone();
+//									break;
+//								case "SHOTGUN":
+//									weapon = Weapons.shotgunItem.clone();
+//									break;
+//								case "SNIPER":
+//									weapon = Weapons.sniperItem.clone();
+//									break;
+//								default:
+//									sender.sendMessage("§cYou can't use this weapon!");
+//									return true;
+//								}
+//								ItemMeta im = weapon.getItemMeta();
+//								im.setDisplayName(im.getDisplayName()+" TEST");
+//								weapon.setItemMeta(im);
+//								sender.sendMessage("§aTesting Lasertag with "+Lasertag.testWeapon.name());
+//								if(sender instanceof Player) ((Player) sender).getInventory().addItem(weapon);
+//							} catch (Exception e) {
+//								sender.sendMessage("§cThere is no Weapon called "+args[1]+"!");
+//							}
+//							return true;
+//						}
+//					} 
 				} else if(args.length == 3) {
 					if(!Game.tagging()) {
 						if(Game.waiting()) {

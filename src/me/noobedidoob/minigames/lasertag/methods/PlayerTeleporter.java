@@ -34,7 +34,7 @@ public class PlayerTeleporter {
 			for(Player winner : winners) if(winner == p) isWinner = true;
 			
 			if(isWinner) p.teleport(Minigames.winnerPodium);
-			else p.teleport(Minigames.spawn.subtract(10, 0, 10).add(MgUtils.randomDouble(0, 20), 0, MgUtils.randomDouble(0, 20)));
+			else p.teleport(Minigames.spawn.subtract(5, 0, 5).add(MgUtils.randomDouble(0, 10), 0, MgUtils.randomDouble(0, 10)));
 		}
 	}
 	

@@ -1,11 +1,14 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.PluginManager;
 
@@ -26,13 +29,10 @@ public class InteractListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player p  = e.getPlayer();
-		if(Game.testing()) {
-			if(e.getAction().name().toUpperCase().contains("RIGHT") && e.getItem() != null) {
-				if(e.getItem().getItemMeta().getDisplayName().contains("TEST")) {
-					LaserShooter.fireTest(p);
-				}
-			}
+		if(Lasertag.playerTesting.get(p)) {
+			
 		} 
+		
 		if(Game.tagging()) {
 			Lasertag.isProtected.put(p, false);
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -61,6 +61,15 @@ public class InteractListener implements Listener {
 					PlayerZoomer.toggleZoom(p);
 				}
 			}
+		}
+		
+	}
+	
+	@EventHandler
+	public void playerInteractAtEntity(PlayerInteractEntityEvent e) {
+		Entity entity = e.getRightClicked();
+		if(entity instanceof ItemFrame) {
+			e.setCancelled(true);
 		}
 	}
 }

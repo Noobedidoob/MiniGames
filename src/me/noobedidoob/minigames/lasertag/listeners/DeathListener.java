@@ -54,7 +54,7 @@ public class DeathListener implements Listener {
 			String shotOrSnipe = "shot";
 			if(snipe) {
 				snipeExra = Modifiers.snipeShotsExtra;
-				shotOrSnipe = "snipe";
+				shotOrSnipe = "sniped";
 			}
 			
 			switch (type) {
@@ -62,7 +62,7 @@ public class DeathListener implements Listener {
 				points = Modifiers.points+Modifiers.closeRangeExtra+headshotExtra+snipeExra;
 				Game.addPoints(killer, points);
 				if(points > 1) addon = "s";
-				deathMessage.put(victim, Game.getPlayerColor(victim).getChatColor()+victim.getName()+" §7§owas "+shotOrSnipe+" by §r"+Game.getPlayerColor(killer).getChatColor()+killer.getName()+headshotAddon+" §7(§a+"+points+" Point"+addon+"§7)");
+				deathMessage.put(victim, Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o "+shotOrSnipe+" §r"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+headshotAddon+" §7(§a+"+points+" Point"+addon+"§7)");
 				break;
 			case PVP:
 				points = Modifiers.points+Modifiers.pvpExtra+backstabExtra;
@@ -89,6 +89,7 @@ public class DeathListener implements Listener {
 	public void onPlayerDies(PlayerDeathEvent e) {
 		Player p = e.getEntity();
 		if(Game.tagging()) {
+			strikedPlayers.put(p, 0);
 			if(deathMessage.get(p) != null) {
 				e.setDeathMessage(deathMessage.get(p));
 				e.setKeepInventory(true);
@@ -125,11 +126,12 @@ public class DeathListener implements Listener {
 		}
 	}
 	public static void strikeShutdown(Player killer, Player victim) {
+		strikedPlayers.put(victim, 0);
 		String pAddon = "";
 		if(Modifiers.strikeShutdown > 1) pAddon = "s";
 		for(Player ap : Game.players()) {
 			ap.sendMessage("§e——————————————————");
-			ap.sendMessage(Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the strike of"+Game.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+Modifiers.strikeExtra+" extra Point"+pAddon+"§7)");
+			ap.sendMessage(Game.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the strike of "+Game.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+Modifiers.strikeExtra+" extra Point"+pAddon+"§7)");
 			ap.sendMessage("§e——————————————————");
 		}
 		Game.addPoints(killer, Modifiers.strikeShutdown);

@@ -98,6 +98,7 @@ public class TeamsRound {
 			p.teleport(PlayerTeleporter.getPlayerSpawnLoc(p));
 			Lasertag.isProtected.put(p, true);
 			p.sendTitle("§l§aGo!", "", 5, 20, 5);
+			Lasertag.playerTesting.put(p, false);
 		}
 		Lasertag.timeCountdownTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(Lasertag.minigames, new Runnable() {
 			@Override
@@ -110,7 +111,6 @@ public class TeamsRound {
 							p.sendTitle("§c"+Leaderboard.time, "", 5, 20, 5);
 						}
 					}
-					
 					Leaderboard.time--;
 				} else {
 					Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
@@ -214,7 +214,7 @@ public class TeamsRound {
 					}
 					leaderboardString = leaderboardString.substring(0, leaderboardString.length()-2) + " §7(§d"+Game.getPlayerPoints(rank[0])+"§7)\n";
 				} else {
-					leaderboardString += Game.getPlayerColor(rank[0]).getChatColor()+" §7(§d"+Game.getPlayerPoints(rank[0])+"§7)\n";
+					leaderboardString += Game.getPlayerColor(rank[0]).getChatColor()+rank[0].getName()+" §7(§d"+Game.getPlayerPoints(rank[0])+"§7)\n";
 				}
 				r++;
 			}

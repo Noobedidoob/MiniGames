@@ -3,6 +3,7 @@ package me.noobedidoob.minigames.lasertag.methods;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -59,18 +60,21 @@ public class LaserShooter{
 				l1.setY(l1.getY()+p.getHeight()-0.225);
 				Vector direction = l1.getDirection();
 				direction.multiply(0.1);
-//				if(withMultiWeapons) {
-//					Vector newDirection = direction;
-//					direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.002,0.002));
-//					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.002,0.002));
-//					direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.002,0.002));
-//				}
+				if(withMultiWeapons) {
+					Vector newDirection = direction;
+					direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
+					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
+					direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
+				}
 				Location loc = l1.clone().add(direction);
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 				
-				for(double d = 0; d<100; d += 0.1) {
+				int range = 100;
+				if(Modifiers.multiWeapons) range = 35;
+				for(double d = 0; d<range; d += 0.1) {
 					if(d==0) Weapons.cooldownPlayer(p, Weapon.LASERGUN);
 					loc = l1.add(direction);
+					
 					
 					spawnProjectile(p, loc);
 					
@@ -144,7 +148,7 @@ public class LaserShooter{
 				startLoc.setY(startLoc.getY()+p.getEyeHeight()-0.1);
 				
 				Location[] startLocs = new Location[9];
-				float dis = 20; 
+				float dis = 16; 
 				int n = 0;
 				for(float pitch = dis; pitch > ((dis)*2)*(-1); pitch -= dis) {
 					for(float yaw = dis*(-1); yaw < dis*2; yaw += dis) {
@@ -164,7 +168,7 @@ public class LaserShooter{
 				
 				
 				
-				for(double d = 0; d<3; d += 0.1) {
+				for(double d = 0; d<6; d += 0.1) {
 					if(d==0) {
 						Weapons.cooldownPlayer(p, Weapon.SHOTGUN);
 					}
@@ -498,13 +502,13 @@ public class LaserShooter{
 	
 	
 	
-	public static void fireTest(Player p) {
+	public static void fireTest(Player p, Weapon w) {
 		p.getInventory().getItemInMainHand().addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 7);
 			
-			switch (Lasertag.testWeapon) {
+			switch (w) {
 			case LASERGUN:
 				if(!Weapons.lasergunCoolingdown.get(p)) {
-					Weapons.cooldownPlayer(p, Lasertag.testWeapon);
+					Weapons.cooldownPlayer(p, w);
 					Location startLoc = p.getLocation();
 					startLoc.setY(startLoc.getY()+p.getEyeHeight());
 					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
@@ -548,7 +552,7 @@ public class LaserShooter{
 				
 			case SHOTGUN:
 				if(!Weapons.shotgunCoolingdown.get(p)) {
-					Weapons.cooldownPlayer(p, Lasertag.testWeapon);
+					Weapons.cooldownPlayer(p, w);
 					Location startLoc = p.getLocation();
 					startLoc.setY(startLoc.getY()+p.getEyeHeight());
 					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
@@ -596,7 +600,7 @@ public class LaserShooter{
 			
 			case SNIPER:
 				if(!Weapons.sniperCoolingdown.get(p)) {
-					Weapons.cooldownPlayer(p, Lasertag.testWeapon);
+					Weapons.cooldownPlayer(p, w);
 					Location startLoc = p.getLocation();
 					startLoc.setY(startLoc.getY()+p.getEyeHeight());
 					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);

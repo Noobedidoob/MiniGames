@@ -19,7 +19,7 @@ public class Game {
 		solo = true;
 		waiting = false;
 		tagging = false;
-		testing = false;
+//		testing = false;
 		playerColor = new HashMap<Player, LasertagColor>();
 		playerPoints = new HashMap<Player, Integer>();
 		playerTeam = new HashMap<Player, Player[]>();
@@ -33,7 +33,6 @@ public class Game {
 	private static boolean capturing = false;
 	private static boolean waiting = false;
 	private static boolean tagging = false;
-	private static boolean testing = false;
 	private static Player[] players;
 	
 	private static HashMap<Player, LasertagColor> playerColor = new HashMap<Player, LasertagColor>();
@@ -85,15 +84,15 @@ public class Game {
 	public static boolean tagging() {
 		return tagging;
 	}
-	public static boolean testing() {
-		return testing;
-	}
-	public static void enableTesting() {
-		testing = true;
-	}
-	public static void disableTesting() {
-		testing = false;
-	}
+//	public static boolean testing() {
+//		return testing;
+//	}
+//	public static void enableTesting() {
+//		testing = true;
+//	}
+//	public static void disableTesting() {
+//		testing = false;
+//	}
 	
 	public static Player[] players() {
 		return players;
@@ -139,7 +138,7 @@ public class Game {
 		solo = true;
 		waiting = false;
 		tagging = false;
-		testing = false;
+//		testing = false;
 		for(Player p : players) DeathListener.strikedPlayers.put(p, 0);
 		players = new Player[] {};
 		

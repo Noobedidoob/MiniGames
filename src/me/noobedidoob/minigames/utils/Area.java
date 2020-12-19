@@ -1,5 +1,7 @@
 package me.noobedidoob.minigames.utils;
 
+import org.bukkit.Location;
+
 public class Area {
 	
 	private int maxX;
@@ -11,6 +13,19 @@ public class Area {
 	
 	private Coordinate coord1;
 	private Coordinate coord2;
+	
+	public Area(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		super();
+		this.maxX = minX;
+		this.minX = minY;
+		this.maxY = minZ;
+		this.minY = maxX;
+		this.maxZ = maxY;
+		this.minZ = maxZ;
+		
+		this.coord1 = new Coordinate(minX, minY, minZ);
+		this.coord2 = new Coordinate(maxX, maxY, maxZ);
+	}
 	
 	public Area(Coordinate coord1, Coordinate coord2) {
 		super();
@@ -100,12 +115,6 @@ public class Area {
 	}
 	
 	
-	public int[] getRandomPoint() {
-		int x = (int) (Math.random()*((maxX-minX)+1))+minX;
-		int y = (int) (Math.random()*((maxY-minY)+1))+minY;
-		int z = (int) (Math.random()*((maxZ-minZ)+1))+minZ;
-		return new int[] {x,y,z};
-	}
 	
 	public Coordinate getRandomCoordinate() {
 		int x = (int) (Math.random()*((maxX-minX)+1))+minX;
@@ -113,5 +122,16 @@ public class Area {
 		int z = (int) (Math.random()*((maxZ-minZ)+1))+minZ;
 		Coordinate coordinate = new Coordinate(x, y, z);
 		return coordinate;
+	}
+	
+	public boolean isInside(Location loc) {
+		if(loc.getX() > minX && loc.getX() < maxX) {
+			if(loc.getY() > minY && loc.getY() < maxY) {
+				if(loc.getZ() > minZ && loc.getZ() < maxZ) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

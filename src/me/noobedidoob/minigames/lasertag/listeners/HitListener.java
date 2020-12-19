@@ -43,7 +43,7 @@ public class HitListener implements Listener {
 								if(damage < p.getHealth()-1) {
 									e.setDamage(1);
 									damage--;
-								}
+								} else e.setCancelled(true);
 								DeathListener.hit(KillType.PVP, damager, p, damage, false, false, false);
 							} else {
 								if (damager.getItemInHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
@@ -51,7 +51,7 @@ public class HitListener implements Listener {
 									if(damage < p.getHealth()-1) {
 										e.setDamage(1);
 										damage--;
-									}
+									} else e.setCancelled(true);
 									DeathListener.hit(KillType.PVP, damager, p, damage, false, false, false);
 								}
 							}

@@ -29,7 +29,6 @@ import me.noobedidoob.minigames.lasertag.methods.Modifiers;
 import me.noobedidoob.minigames.lasertag.methods.SoloRound;
 import me.noobedidoob.minigames.lasertag.methods.TeamsRound;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -70,6 +69,7 @@ public class Lasertag {
 		registerMaps();
 		Modifiers.registerModifiers();
 		Weapons.registerWeapons();
+		Weapons.getTestSet();
 	}
 	public void disable() {
 		try {
@@ -90,7 +90,9 @@ public class Lasertag {
 	public static List<UUID> disconnectedPlayers = new ArrayList<UUID>();
 	public static HashMap<Player, Boolean> isProtected = new HashMap<Player, Boolean>();
 	public static boolean everybodyReady = false;
-	public static Weapon testWeapon = Weapon.LASERGUN;
+	public static Area testArea = new Area(194, 4, -98, 246, 13, -67);
+	public static HashMap<Player, Boolean> playerTesting = new HashMap<Player, Boolean>();
+
 	
 	public enum LtColorNames {
 		Red,

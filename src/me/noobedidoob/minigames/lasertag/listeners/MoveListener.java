@@ -154,6 +154,18 @@ public class MoveListener implements Listener {
 			}
 		}
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
+		
+		if(Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
+		if(!Lasertag.playerTesting.get(p) && Lasertag.testArea.isInside(e.getTo())) {
+			Lasertag.playerTesting.put(p, true);
+			p.getInventory().clear();
+			for(int i = 0; i < Weapons.testWeapons.size(); i++) {
+				p.getInventory().setItem(i, Weapons.testWeapons.get(i));
+			}
+		} else if(Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
+			Lasertag.playerTesting.put(p, false);
+			p.getInventory().clear();
+		}
 	}
 	
 	HashMap<Player, Pair> playersLastLocation = new HashMap<Player, Pair>();

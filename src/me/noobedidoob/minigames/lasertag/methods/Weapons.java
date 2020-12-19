@@ -1,6 +1,8 @@
 package me.noobedidoob.minigames.lasertag.methods;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -56,6 +58,7 @@ public class Weapons {
 			sniperCoolingdown.put(p, false);
 		});
 	}
+	
 	
 	
 	public static enum Weapon {
@@ -196,5 +199,22 @@ public class Weapons {
 		else if(type.equals(sniperItem.getType()) && name.toUpperCase().contains("SNIPER")) return Weapon.SNIPER;
 //		else if(type.equals(minigunItem.getType()) && name.toUpperCase().contains("MINIGUN")) return Weapon.MINIGUN;
 		else return null;
+	}
+	
+
+	public static List<ItemStack> testWeapons = new ArrayList<ItemStack>();
+	public static void getTestSet(){
+		testWeapons.add(lasergunItem);
+		testWeapons.add(daggerItem);
+		testWeapons.add(shotgunItem);
+		testWeapons.add(sniperItem);
+		
+		for(int i = 0; i < testWeapons.size(); i++) {
+			ItemStack item = testWeapons.get(i);
+			ItemMeta itemMeta = item.getItemMeta();
+			itemMeta.setDisplayName(itemMeta.getDisplayName()+" TEST");
+			item.setItemMeta(itemMeta);
+			testWeapons.set(i, item);
+		}
 	}
 }
