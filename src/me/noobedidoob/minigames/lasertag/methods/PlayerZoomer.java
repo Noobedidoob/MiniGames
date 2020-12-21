@@ -27,10 +27,12 @@ public class PlayerZoomer {
 		ItemStack visor = new ItemStack(Material.CARVED_PUMPKIN); 
 		p.setWalkSpeed(-0.5f);
 		p.getInventory().setHelmet(visor);
+		isPlayerZoomed.put(p, true);
 	}
 	public static void zoomPlayerOut(Player p) {
 		p.setWalkSpeed(0.2f);
 		p.getInventory().setHelmet(new ItemStack(Material.AIR));
+		isPlayerZoomed.put(p, false);
 	}
 
 }

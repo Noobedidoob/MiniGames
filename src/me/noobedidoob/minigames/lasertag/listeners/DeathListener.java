@@ -77,8 +77,9 @@ public class DeathListener implements Listener {
 					break;
 				}
 
+				if (streakedPlayers.get(victim) == null) streakedPlayers.put(victim, 0);
+				if (streakedPlayers.get(victim) >= Modifiers.minKillsForStreak) streakShutdown(killer, victim);
 				victim.damage(100);
-				
 				addStreak(killer, victim);
 				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.isProtected.put(victim, true);
@@ -125,8 +126,6 @@ public class DeathListener implements Listener {
 			}
 			Game.addPoints(p, Modifiers.streakExtra);
 		}
-		if (streakedPlayers.get(victim) == null) streakedPlayers.put(victim, 0);
-		if (streakedPlayers.get(victim) >= Modifiers.minKillsForStreak) streakShutdown(p, victim);
 	}
 	public static void streakShutdown(Player killer, Player victim) {
 		streakedPlayers.put(victim, 0);

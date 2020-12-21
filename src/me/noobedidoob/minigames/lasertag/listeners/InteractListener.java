@@ -29,6 +29,7 @@ public class InteractListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player p  = e.getPlayer();
+		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
 		if(Lasertag.playerTesting.get(p)) {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
@@ -36,6 +37,11 @@ public class InteractListener implements Listener {
 					LaserShooter.fireTest(p, Weapons.getFireWeapon(e.getItem()));
 				} catch (Exception e2) {
 					return;
+				}
+			} else if(e.getAction() == Action.LEFT_CLICK_AIR | e.getAction() == Action.LEFT_CLICK_BLOCK) {
+				if(e.getItem() == null) return;
+				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")/* | e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")*/) {
+					PlayerZoomer.toggleZoom(p);
 				}
 			}
 		} 

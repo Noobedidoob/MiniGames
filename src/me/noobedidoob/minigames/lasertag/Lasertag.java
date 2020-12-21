@@ -90,7 +90,7 @@ public class Lasertag {
 	public static List<UUID> disconnectedPlayers = new ArrayList<UUID>();
 	public static HashMap<Player, Boolean> isProtected = new HashMap<Player, Boolean>();
 	public static boolean everybodyReady = false;
-	public static Area testArea = new Area(194, 4, -98, 246, 13, -67);
+	public static Area testArea = new Area(194, 4, -98, 246, 22, -67);
 	public static HashMap<Player, Boolean> playerTesting = new HashMap<Player, Boolean>();
 
 	

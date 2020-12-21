@@ -112,7 +112,7 @@ Lasertag:
           x: 348.5
           y: 13
           z: -107.5
-        protectionradius: 2
+        protectionradius: 4
     skyhigh:
       center:
         x: 746

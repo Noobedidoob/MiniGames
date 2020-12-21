@@ -16,12 +16,12 @@ public class Area {
 	
 	public Area(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		super();
-		this.maxX = minX;
-		this.minX = minY;
-		this.maxY = minZ;
-		this.minY = maxX;
-		this.maxZ = maxY;
-		this.minZ = maxZ;
+		this.minX = minX;
+		this.minY = minY;
+		this.minZ = minZ;
+		this.maxX = maxX;
+		this.maxY = maxY;
+		this.maxZ = maxZ;
 		
 		this.coord1 = new Coordinate(minX, minY, minZ);
 		this.coord2 = new Coordinate(maxX, maxY, maxZ);
@@ -125,9 +125,9 @@ public class Area {
 	}
 	
 	public boolean isInside(Location loc) {
-		if(loc.getX() > minX && loc.getX() < maxX) {
-			if(loc.getY() > minY && loc.getY() < maxY) {
-				if(loc.getZ() > minZ && loc.getZ() < maxZ) {
+		if(loc.getX() >= minX && loc.getX() <= maxX) {
+			if(loc.getY() >= minY && loc.getY() <= maxY) {
+				if(loc.getZ() >= minZ && loc.getZ() <= maxZ) {
 					return true;
 				}
 			}

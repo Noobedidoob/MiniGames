@@ -47,6 +47,7 @@ public class JoinQuitListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
+		p.getInventory().clear();
 		Minigames.minigames.laserCommands.flagIsFollowing.put(p, false);
 //		Weapons.playerCoolingdown.put(p, false);
 		Weapons.lasergunCoolingdown.put(p, false);
@@ -71,8 +72,6 @@ public class JoinQuitListener implements Listener {
 		loadMsg.addExtra(seperator);
 		loadMsg.addExtra(urlMsg);
 		p.spigot().sendMessage(loadMsg);
-		
-		PlayerZoomer.zoomPlayerOut(p);
 		/*if(l.personalRecord.get(p.getUniqueId()) == null) {
 			l.personalRecord.put(p.getUniqueId(), 0);
 			l.uuidName.put(p.getUniqueId(), p.getName());

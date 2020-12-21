@@ -27,11 +27,14 @@ import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.util.Vector;
 
+import com.comphenix.protocol.PacketType.Play;
+
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.Modifiers;
+import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -155,16 +158,23 @@ public class MoveListener implements Listener {
 		}
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
 		
-		if(Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
-		if(!Lasertag.playerTesting.get(p) && Lasertag.testArea.isInside(e.getTo())) {
-			Lasertag.playerTesting.put(p, true);
-			p.getInventory().clear();
-			for(int i = 0; i < Weapons.testWeapons.size(); i++) {
-				p.getInventory().setItem(i, Weapons.testWeapons.get(i));
-			}
-		} else if(Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
-			Lasertag.playerTesting.put(p, false);
-			p.getInventory().clear();
+		if (!Game.isInGame(p)) {
+			if (Lasertag.playerTesting.get(p) == null)
+				Lasertag.playerTesting.put(p, false);
+			if (!Lasertag.playerTesting.get(p)) {
+				if(Lasertag.testArea.isInside(e.getTo())) {
+					Lasertag.playerTesting.put(p, true);
+					p.getInventory().clear();
+					for (int i = 0; i < Weapons.testWeapons.size(); i++) {
+						p.getInventory().setItem(i, Weapons.testWeapons.get(i));
+					}
+					p.getInventory().getItem(3).setAmount(2);
+				}
+			} else if (Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
+				Lasertag.playerTesting.put(p, false);
+				p.getInventory().clear();
+				PlayerZoomer.zoomPlayerOut(p);
+			} 
 		}
 	}
 	
