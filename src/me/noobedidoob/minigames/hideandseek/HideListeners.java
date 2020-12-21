@@ -25,6 +25,7 @@ public class HideListeners implements Listener {
 	private Minigames m;
 	private HideAndSeek h;
 	public HideListeners(Minigames minigames, HideAndSeek hideAndSeek) {
+		System.out.println("Registrated HideListeners");
 		this.m = minigames;
 		this.h = hideAndSeek;
 		Bukkit.getPluginManager().registerEvents(this, m);
@@ -93,6 +94,4 @@ public class HideListeners implements Listener {
 			}
 		}
 	}
-	
-	
 }

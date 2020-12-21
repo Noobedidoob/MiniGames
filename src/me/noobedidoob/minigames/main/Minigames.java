@@ -76,13 +76,13 @@ public class Minigames extends JavaPlugin implements Listener{
 		});
 		
 		lasertag = new Lasertag(this);
-		hideAndSeek = new HideAndSeek(this);
+//		hideAndSeek = new HideAndSeek(this);
 		laserCommands = new LaserCommands(this);
-		hideCommands = new HideCommands(this, hideAndSeek);
+//		hideCommands = new HideCommands(this, hideAndSeek);
 		getCommand("lasertag").setExecutor(laserCommands);
 		getCommand("lasertag").setTabCompleter(laserCommands);
-		getCommand("hideandseek").setExecutor(hideCommands);
-		getCommand("hideandseek").setTabCompleter(hideCommands);
+//		getCommand("hideandseek").setExecutor(hideCommands);
+//		getCommand("hideandseek").setTabCompleter(hideCommands);
 		Commands commands = new Commands(this);
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
@@ -111,7 +111,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		setServerResourcepack();
 		
 		lasertag.enable();
-		hideAndSeek.enable();
+//		hideAndSeek.enable();
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
@@ -121,7 +121,7 @@ public class Minigames extends JavaPlugin implements Listener{
 	public void onDisable() {
 		reloadConfig();
 		lasertag.disable();
-		hideAndSeek.disable();
+//		hideAndSeek.disable();
 		
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
 	}

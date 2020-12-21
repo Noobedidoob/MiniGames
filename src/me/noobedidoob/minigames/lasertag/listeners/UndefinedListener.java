@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.server.ServerListPingEvent;
@@ -40,6 +41,11 @@ public class UndefinedListener implements Listener {
 	@EventHandler
 	public void onPlayerChangeGameMode(PlayerGameModeChangeEvent e) {
 		if(e.getNewGameMode() == GameMode.ADVENTURE) e.getPlayer().setAllowFlight(true);
+	}
+	
+	@EventHandler
+	public void onPlayerPlaceBlock(BlockPlaceEvent e) {
+		if(e.getPlayer().getGameMode() != GameMode.CREATIVE) e.setCancelled(true);
 	}
 	
 }

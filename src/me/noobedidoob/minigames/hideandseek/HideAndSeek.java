@@ -31,6 +31,8 @@ public class HideAndSeek {
 			playerCountdownTime.put(p, maxDisguiseTime);
 		}
 		
+		new HideListeners(Minigames.minigames, this);
+		
 		ItemMeta undisguiseItemMeta = undisguiseItem.getItemMeta();
 		undisguiseItemMeta.setDisplayName("§c§lUNDISGUISE");
 		undisguiseItem.setItemMeta(undisguiseItemMeta);
