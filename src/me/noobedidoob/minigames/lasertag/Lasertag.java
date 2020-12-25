@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -33,7 +35,6 @@ import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
 import me.noobedidoob.minigames.utils.Map;
-import me.noobedidoob.minigames.utils.MgUtils;
 
 public class Lasertag {
 	public static Minigames minigames;
@@ -193,31 +194,42 @@ public class Lasertag {
 			map.approved = enabled;
 			if(!enabled) {
 				unenabledMaps++;
-				MgUtils.warn("The Map \""+name.substring(0, 1).toUpperCase()+name.substring(1) + "\" could not be approved: ");
-				MgUtils.warn("The given block name or criteria '"+blockName+"' from config didn't match with the found block '"+ world.getBlockAt(centerCoord.getLocation(world).subtract(0, 1, 0)).getType().name()+"' at "+centerCoord.getX()+", "+(centerCoord.getY()-1)+", "+centerCoord.getZ());
-				MgUtils.warn("The map will still be playable but won't be listed in the tab-complete list.");
+				warn("The Map \""+name.substring(0, 1).toUpperCase()+name.substring(1) + "\" could not be approved because expected block  '"+blockName+"' didnt match with "
+				+world.getBlockAt(centerCoord.getLocation(world).subtract(0, 1, 0)).getType().name()+"' at "+centerCoord.getX()+", "+(centerCoord.getY()-1)+", "+centerCoord.getZ()
+				+". The map will still be playable but won't be listed in the tab-complete list.");
 			}
 		}
 		File reloadedBefore = new File(minigames.getDataFolder()+File.pathSeparator+"reloaded.before");
-		if(unenabledMaps > cs.getKeys(false).size()/2) {
+		System.out.println(unenabledMaps+"  "+mapNames.size());
+		if(unenabledMaps > mapNames.size()/2) {
 			if(!reloadedBefore.exists()) {
-				MgUtils.informLs("Attempting to reload server due to error while enab");
+				inform("Attempting to reload server due to error while enab");
 				try {
 					if(reloadedBefore.createNewFile()) Bukkit.reload();
 					else {
-						MgUtils.warnLs("An error eoccured while creating the reloaded.before file! Therefore it is not posible to reload the server!");
-						MgUtils.informLs("Please reload the server manually in order to enable the maps!");
+						warn("An error eoccured while creating the reloaded.before file! Therefore it is not posible to reload the server!");
+						inform("Please reload the server manually in order to enable the maps!");
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			} else {
-				MgUtils.informLs("Deleting reloaded.before file...");
-				if(reloadedBefore.delete()) MgUtils.informLs("Success!");
+				inform("Deleting reloaded.before file...");
+				if(reloadedBefore.delete()) inform("Success!");
 			}
 		} else if(reloadedBefore.exists()) reloadedBefore.delete();
 	}
 	
 	
+	public static Logger logger = Bukkit.getLogger();
+	public static void inform(String msg) {
+		logger.log(Level.INFO, "[LasetTag] "+msg);
+	}
+	public static void warn(String msg) {
+		logger.warning("[LasetTag] "+msg);
+	}
+	public static void severe(String msg) {
+		logger.severe("[LasetTag] "+msg);
+	}
 	
 }

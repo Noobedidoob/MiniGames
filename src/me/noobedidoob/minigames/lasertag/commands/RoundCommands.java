@@ -107,7 +107,7 @@ public class RoundCommands {
 				long time = 0;
 				String timeName = args[args.length-3].trim();
 				String format = args[args.length-2].trim();
-				sender.sendMessage(format);
+//				sender.sendMessage(format);
 				if(!format.toLowerCase().contains("m") && !format.toLowerCase().contains("s") && !format.toLowerCase().contains("h")) {
 					format = null;
 					timeName = args[args.length-2].trim();

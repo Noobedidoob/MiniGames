@@ -19,6 +19,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,6 +32,8 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.WorldCreator;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,7 +41,6 @@ import me.noobedidoob.minigames.hideandseek.HideAndSeek;
 import me.noobedidoob.minigames.hideandseek.HideCommands;
 import me.noobedidoob.minigames.lasertag.LaserCommands;
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.utils.MgUtils;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
@@ -90,19 +94,19 @@ public class Minigames extends JavaPlugin implements Listener{
 		getCommand("lobby").setTabCompleter(commands);
 		reloadConfig();
 		if (!(new File(this.getDataFolder(), "config.yml").exists())) {
-			MgUtils.inform("config.yml was not found! Creating config.yml...");
+			inform("config.yml was not found! Creating config.yml...");
 			getConfig().options().copyDefaults(true);
 			saveConfig();
 		}
 		
 		worldName = getConfig().getString("world");
 		
-		MgUtils.inform("Refreshing \"config_README.TXT\" ...");
+		inform("Refreshing \"config_README.TXT\" ...");
 		try {
 			Files.copy(getClass().getResourceAsStream("/config_README.txt"), Paths.get(this.getDataFolder().getPath()+"/config_manual.txt"), StandardCopyOption.REPLACE_EXISTING);
-			MgUtils.inform("Successfully refreshed\"config_README.TXT\"!");
+			inform("Successfully refreshed\"config_README.TXT\"!");
 		} catch (Exception e) {
-			MgUtils.warn("Failed to refresh \"config_README.TXT\"! Caused by: "+e.getMessage());
+			warn("Failed to refresh \"config_README.TXT\"! Caused by: "+e.getMessage());
 			saveException(e);
 			
 		}
@@ -133,20 +137,24 @@ public class Minigames extends JavaPlugin implements Listener{
 	
 	@SuppressWarnings("deprecation")
 	public void setWorld() {
-		MgUtils.inform("Setting world...");
+		inform("Setting world...");
 		for (World w : Bukkit.getWorlds()) {if (w.getEnvironment() == Environment.NORMAL) {Minigames.world = w;}}
 		try {
 			File serverFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
 			if (!new File(serverFile.getPath()+"/"+worldName).exists()) {
 				unzipWorld();
-				MgUtils.inform("Loading world...");
+				inform("Loading world...");
 				this.getServer().createWorld(new WorldCreator(worldName));
 				Minigames.world = Bukkit.getWorld(worldName);
-				if(Minigames.world == null) throw new NullPointerException("World not found");
-				else MgUtils.inform("Created world successfully!");
+				if(Minigames.world == null) throw new NullPointerException("World not found after extraction");
+				else inform("Created world successfully!");
 			} else {
 				this.getServer().createWorld(new WorldCreator(worldName));
-				MgUtils.inform("Sucessfully set world. Use the command 'mg replaceworld' to replace the existing world with the original world");
+				inform("Sucessfully loaded minigame world. Use the command 'mg replaceworld' to replace the existing world with the original from the plugin");
+			}
+			if(getConfig().getBoolean("disable-other-worlds")) disableServerWorlds();
+			else {
+				inform("Consider activating the \"disable-other-worlds\" mode in the config.yml in order to start the server faster!");
 			}
 			spawn = new Location(world, 220.5, 7, -139.5);
 			world.setSpawnLocation(spawn);
@@ -160,6 +168,41 @@ public class Minigames extends JavaPlugin implements Listener{
 			askForWorld();
 		}
 		
+	}
+	
+	public void disableServerWorlds(){
+		try {
+			inform("Disabeling other worlds on this server...");
+			File propFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties").toFile();
+			FileInputStream in = new FileInputStream(propFile);
+			Properties props = new Properties();
+			props.load(in);
+			in.close();
+			
+			File bukkFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("bukkit.yml").toFile();
+			FileConfiguration cfg = YamlConfiguration.loadConfiguration(bukkFile);
+			
+			boolean name = (props.getProperty("level-name") != "Minigames_world");
+			boolean nether = (props.getProperty("allow-nether") != "false");
+			boolean end = (cfg.getString("settings.allow-end") != "false");
+
+			if(!name | !nether | !end) {
+				FileOutputStream out = new FileOutputStream(propFile);
+				props.setProperty("level-name", "Minigames_world");
+				props.setProperty("allow-nether", "false");
+				props.store(out, null);
+				out.close();
+				
+				cfg.set("settings.allow-end", "false");
+				cfg.save(bukkFile);
+				inform("Successfully disabled the other worlds from the server in the server.properties and bukkit.yml files! This changes will take effect when restarting the server!");
+			}
+				
+		} catch (IOException e) {
+			warn("Error occured while disabeling the other worlds from the server! Please try again or do it manually!");
+			warn("Error: "+e.getLocalizedMessage());
+		}
+
 	}
 	
 	public void replaceWorld() {
@@ -191,7 +234,7 @@ public class Minigames extends JavaPlugin implements Listener{
 	
 	
 	public void setServerResourcepack() {
-		MgUtils.inform("Setting server resourcepack...");
+		inform("Setting server resourcepack...");
 		Path path = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties");
         try {
             List<String> ogLines = Files.readAllLines(path);
@@ -207,15 +250,17 @@ public class Minigames extends JavaPlugin implements Listener{
             }
             if(empty == true) {
             	Files.write(path, newLines);
-            	MgUtils.inform("Server has no resourcepack. Setting server resourcepack to Minigames-texturepack!");
+            	inform("Server has no resourcepack. Setting server resourcepack to Minigames-texturepack!");
             } else {
-            	MgUtils.inform("Server already has resourcepack");
+            	inform("Server already has resourcepack");
             }
         } catch (IOException e) {
         	System.err.println("FAILED to set server resourcepack! Caused by: "+e.getMessage());
         	saveException(e);
         }
 	}
+	
+	
 	
 	
 	public void unzipWorld() throws URISyntaxException, IOException {
@@ -273,58 +318,6 @@ public class Minigames extends JavaPlugin implements Listener{
         System.out.println(" "); System.out.println(" "); System.out.println(" "); System.out.println(" ");
     }
 	
-//	public void unzipWorld() throws URISyntaxException, IOException {
-//		String zipFilePath = "/Minigames_world.zip";
-//		File serverFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
-//		String destDir = serverFile.getPath()+"/"+worldName;
-//		String tempFilePath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getPath()+"/TemporaryFile_please-delete.zip";
-//		
-//		InputStream zipStream = getClass().getResourceAsStream(zipFilePath);
-//		Path zipDestPath = Paths.get(tempFilePath);
-//		Files.copy(zipStream, zipDestPath, StandardCopyOption.REPLACE_EXISTING);
-//		
-//		File tempFile = new File(tempFilePath);
-//		ZipFile zipFile = new ZipFile(new File(tempFilePath));
-//		try {
-//			System.out.println(" "); System.out.println(" "); System.out.println(" "); System.out.println(" ");
-//			System.out.println("Extracting resource"+zipFilePath+" to "+destDir+"...");
-//			System.out.println("Creating temporary file \"TemporaryFile_please-delete.zip\" in \""+tempFile.getParentFile().getPath()+"\"...");
-//	        Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//	        while(entries.hasMoreElements()){
-//	            ZipEntry entry = entries.nextElement();
-//	            if(entry.isDirectory()){
-//	                System.out.println("Extracting directory : " + entry.getName());
-//	                String destPath = destDir + File.separator + entry.getName();
-//	                File file = new File(destPath);
-//	                file.mkdirs();
-//	            } else {
-//	                try {
-//						String destPath = destDir + File.separator + entry.getName();
-//						ZipInputStream zis = new ZipInputStream(new FileInputStream(tempFile));
-//						byte[] buffer = new byte[1024];
-//						FileOutputStream fos = new FileOutputStream(destPath);
-//						int len;
-//						while ((len = zis.read(buffer)) > 0) {
-//							fos.write(buffer, 0, len);
-//						}
-//						fos.close();
-//						zis.close();
-//						System.out.println("Extracting file      : " + entry.getName());
-//					} catch (FileNotFoundException e) {
-//						System.out.println("Error occurd: "+e.getMessage());
-//					} 
-//	            }
-//	        }
-//		} catch (IOException e) {
-//			tempFile.delete();
-//			throw e;
-//		}
-//        zipFile.close();
-//        if(tempFile.delete()) System.out.println("DELETED temporary file SUCCESSFULLY!");
-//		else System.out.println("FAILED to DELETE temporary file!");
-//        System.out.println("Extraction COMPLETE!");
-//        System.out.println(" "); System.out.println(" "); System.out.println(" "); System.out.println(" ");
-//    }
 	
 	public void saveException(Exception e) {
 		StringWriter stackTraceWriter = new StringWriter();
@@ -339,7 +332,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		try {
 			String breaks = "";
 			if(exceptionFile.createNewFile()) {
-				MgUtils.inform("Created ExceptionStackTraces.txt");
+				inform("Created ExceptionStackTraces.txt");
 				breaks = "\n\n";
 			}
 			FileWriter writer = new FileWriter(exceptionFile);
@@ -349,5 +342,16 @@ public class Minigames extends JavaPlugin implements Listener{
 			e1.printStackTrace();
 		}
 		
+	}
+
+	public static Logger logger = Bukkit.getLogger();
+	public static void inform(String msg) {
+		logger.log(Level.INFO, "[MiniGamse] "+msg);
+	}
+	public static void warn(String msg) {
+		logger.warning("[MiniGamse] "+msg);
+	}
+	public static void severe(String msg) {
+		logger.severe("[MiniGamse] "+msg);
 	}
 }

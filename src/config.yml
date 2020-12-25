@@ -1,5 +1,6 @@
 world: Minigames_world
-resetworld: true
+reset-world: true
+disable-other-worlds: true
 Lasertag:
   maps:
     town:
@@ -283,3 +284,31 @@ Lasertag:
           max: -70
       basespawn:
         enabled: false
+    unknown:
+      center:
+        x: 98
+        y: 4
+        z: -158
+        block: packed_ice
+      area:
+        randomspawn: false
+        x:
+          min: 46
+          max: 181
+        y:
+          min: 4
+          max: 34
+        z:
+          min: -185
+          max: -106
+      basespawn:
+        enabled: true
+        red:
+          x: 150.5
+          y: 14
+          z: -152,5
+        blue:
+          x: 69.5
+          y: 8
+          z: -126.5
+        protectionradius: 4
