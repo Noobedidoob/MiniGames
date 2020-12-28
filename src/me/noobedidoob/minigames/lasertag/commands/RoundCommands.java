@@ -11,9 +11,8 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
 import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.Leaderboard;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
-import me.noobedidoob.minigames.lasertag.methods.SoloRound;
-import me.noobedidoob.minigames.lasertag.methods.TeamsRound;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
+import me.noobedidoob.minigames.lasertag.methods.RoundManager;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Map;
@@ -24,11 +23,100 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class RoundCommands {
+	
+
+	@SuppressWarnings("unused")
+	private Minigames minigames;
+	public RoundCommands(Minigames minigames) {
+		this.minigames = minigames;
+	}
+	
+	
+
+	public void perform(CommandSender sender, String[] args) {
+		if (args.length == 1) {
+			if (args[0].equalsIgnoreCase("start") && sender.isOp()) {
+				if (start(args, sender)) return;
+			} else if (args[0].equalsIgnoreCase("cancel") && sender.isOp()) {
+				if (cancel(args, sender)) return;
+			} else if (args[0].equalsIgnoreCase("stop") && sender.isOp()) {
+				if (stop(args, sender)) return;
+			} else if (args[0].equalsIgnoreCase("end") && sender.isOp()) {
+				if (end(args, sender)) return;
+			} 
+		} else if(args.length > 3) {
+			if(args[0].equalsIgnoreCase("new") && sender.isOp()) {
+				if(args[1].equalsIgnoreCase("solo")) {
+					if(newSolo(args, sender)) return;
+				} else if(args[1].equalsIgnoreCase("teams")) {
+					if(newTeams(args, sender)) return;
+				}
+			}
+		}
+		sender.sendMessage("§cSyntax ERROR! Please use §e/lt §cto see all commands and their arguments");
+	}
+	
+	public List<String> getTabComplete(List<String> list, CommandSender sender, String[] args) {
+		if(args.length == 1) {
+			
+			if(!Game.waiting() && !Game.tagging() && sender.isOp()) list.add("new");
+			if(Game.waiting() && sender.isOp()) list.add("start");
+			if(Game.waiting() && sender.isOp()) list.add("cancel");
+			if(Game.tagging() && sender.isOp()) list.add("stop");
+		} else if(args.length == 2) {
+			String prevArg = args[args.length-2];
+			if(prevArg.equalsIgnoreCase("new")) {
+				if(sender.isOp()) list.add("solo");
+				if(sender.isOp()) list.add("teams");
+			} 
+		} else {
+			String prevArg = args[args.length-2];
+			try {
+				if(Mod.valueOf(prevArg.toUpperCase().replaceAll("-", "_")) != null) return list;
+			} catch (IllegalArgumentException e) {
+				
+			}
+			try {
+				@SuppressWarnings("unused")
+				int i = Integer.parseInt(prevArg);
+				i++;
+				if(sender.isOp()) {
+					for(Map map : Lasertag.maps.values()) {
+						if(map.approved) list.add(map.getName());
+					}
+				}
+			} catch (NumberFormatException e) {
+				try {
+					@SuppressWarnings("unused")
+					int i = Integer.parseInt(args[args.length-3]);
+					i++;
+					if(sender.isOp()) {
+						for(Map map : Lasertag.maps.values()) {
+							if(map.approved) list.add(map.getName());
+						}
+					}
+				} catch (NumberFormatException e2) {
+					if(args[1].equalsIgnoreCase("teams")) {
+						if(args[args.length-3] != "vs") {
+							if(sender.isOp()) list.add("vs");
+						}
+					}
+					for(Player p : Bukkit.getOnlinePlayers()) {
+						if(!String.join(" ", args).contains(p.getName())) 
+						if(sender.isOp()) list.add(p.getName());
+					}
+				}
+			}
+			
+		}
+		
+		return list;
+	}
+	
 	public static boolean cancel(String[] args, CommandSender sender) {
 		if(Game.waiting()) {
 			sender.sendMessage("§aCancelled the round!");
-			if(Game.solo()) SoloRound.cancel();
-			else if (Game.teams()) TeamsRound.cancel();
+			RoundManager.cancel();
 		} else sender.sendMessage("§cThere is no registrated round to cancel!");
 		return true;
 	}
@@ -36,16 +124,14 @@ public class RoundCommands {
 	public static boolean start(String[] args, CommandSender sender) {
 		if(!Game.tagging()) {
 			if(Game.waiting()) {
-				if(Modifiers.multiWeapons) {
+				if(Mod.withMultiweapons()) {
 					boolean allReady = true;
 					Player[] allPlayers = Game.players();
 					for(Player ap : allPlayers) {
 						if(!Weapons.hasChoosenWeapon.get(ap)) allReady = false;
 					}
 					if(allReady) {
-						if(Game.solo()) SoloRound.start();
-						else if (Game.teams()) TeamsRound.start();
-						Game.start();
+						RoundManager.start();
 					} else {
 						List<Player> unreadyPlayersList = new ArrayList<Player>();
 						for(Player ap : allPlayers) {
@@ -73,9 +159,7 @@ public class RoundCommands {
 						sender.sendMessage("§cNot everyone is ready! The player"+addon+" "+unreadyPlayers+" §cdidn't choose "+itsTheir+" weapon yet!");
 					}
 				} else {
-					if(Game.solo()) SoloRound.start();
-					else if (Game.teams()) TeamsRound.start();
-					Game.start();
+					RoundManager.start();
 				}
 				return true;
 			} else sender.sendMessage("§cThere is no registrated round! Please use §e/lt new <teams | solo> §cto registrate a new round"); return true;
@@ -88,8 +172,7 @@ public class RoundCommands {
 				igp.sendTitle("§c§lStopped the game!", "", 20, 20*5, 20);
 			}
 			Leaderboard.time = 0;
-			if(Game.solo()) SoloRound.stop(true);
-			else if (Game.teams()) TeamsRound.stop(true);
+			RoundManager.stop(true);
 		} else sender.sendMessage("§cThere is no round to stop!");
 		return true;
 	}
@@ -181,7 +264,7 @@ public class RoundCommands {
 				
 				Game.register(true, Lasertag.maps.get(mapName), players, false);
 				Leaderboard.time = time;
-				SoloRound.register();
+				RoundManager.registerSolo();
 				
 				sender.sendMessage("§aRegistrated the solo round with the players "+allArgs+"! Type §e/lt start §ato begin");
 				
@@ -307,7 +390,7 @@ public class RoundCommands {
 				
 				Game.register(false, Lasertag.maps.get(mapName), allPlayers, false);
 				Leaderboard.time = time;
-				TeamsRound.register(teamsInList);
+				RoundManager.registerTeams(teamsInList);
 				
 				
 				sender.sendMessage("§aRegistrated the team round with the teams "+allArgs+"! Type §e/lt start §ato begin");
@@ -338,9 +421,10 @@ public class RoundCommands {
 		if(Game.tagging()) {
 			try {
 				String timeName = args[1];
-				String format = args[2];
-				if(!format.contains("m") && !format.contains("s") && !format.contains("h")) format = null;
-				Leaderboard.time = MgUtils.getTimeFromArgs(timeName, format);
+				String format = "m";
+				if(args.length > 2) format = args[2];
+				if(!format.contains("m") && !format.contains("s") && !format.contains("h")) Leaderboard.time = MgUtils.getTimeFromArgs(timeName, "m");
+				else Leaderboard.time = MgUtils.getTimeFromArgs(timeName, format);
 				Bukkit.broadcastMessage("§a§lChanged the rounds time to "+MgUtils.getTimeFormatFromLong(MgUtils.getTimeFromArgs(timeName, format), format.substring(0, 1))+format);
 			} catch (NumberFormatException e) {
 				sender.sendMessage("§cThe given argument §e"+e.getMessage().replace("For input string: ","")+" §cis not a Number!");

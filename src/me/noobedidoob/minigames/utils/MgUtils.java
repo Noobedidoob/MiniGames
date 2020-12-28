@@ -149,6 +149,13 @@ public class MgUtils {
 
     }
 	
+	public static boolean contains(String string, String... strings) {
+		for(String s : strings) {
+			if(string.toUpperCase().contains(s.toUpperCase())) return true;
+		}
+		return false;
+	}
+	
 	
 	public static boolean isBetween(double min, double value, double max) {
 		if(value < max && value > min) return true;

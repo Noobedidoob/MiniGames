@@ -16,7 +16,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
 
@@ -62,7 +62,7 @@ public class ClickInventoryListener implements Listener {
 				}
 				
 				if(ready) {
-					if(p.getInventory().getItem(2).getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) p.getInventory().getItem(2).setAmount(Modifiers.sniperAmmoBeforeCooldown);
+					if(p.getInventory().getItem(2).getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
 					p.closeInventory();
 					Weapons.hasChoosenWeapon.put((Player) p, true);
 					

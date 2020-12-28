@@ -10,7 +10,7 @@ import org.bukkit.plugin.PluginManager;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class HitListener implements Listener {
@@ -37,10 +37,10 @@ public class HitListener implements Listener {
 							damager.sendMessage("§cHe still has spawnprotection! You can't hit him!");
 							e.setCancelled(true);
 						} else {
-							if (!Modifiers.multiWeapons) {
+							if (!Mod.multiWeapons()) {
 								double damage = e.getDamage();
 								if (p.getInventory().getItemInMainHand() != null) {
-									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = Modifiers.lasergunPVPDamage;
+									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = Mod.LASERGUN_PVP_DAMAGE.getInt();
 								}
 								if(damage < p.getHealth()-1) {
 									e.setDamage(1);
@@ -49,7 +49,7 @@ public class HitListener implements Listener {
 								DeathListener.hit(KillType.PVP, damager, p, damage, false, false, false);
 							} else {
 								if (damager.getItemInHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
-									double damage = Modifiers.stabberDamage;
+									double damage = Mod.STABBER_DAMAGE.getInt();
 									if(damage < p.getHealth()-1) {
 										e.setDamage(1);
 										damage--;

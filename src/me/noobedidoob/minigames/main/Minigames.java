@@ -38,17 +38,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.noobedidoob.minigames.hideandseek.HideAndSeek;
-import me.noobedidoob.minigames.hideandseek.HideCommands;
-import me.noobedidoob.minigames.lasertag.LaserCommands;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
 	public Lasertag lasertag;
 	public HideAndSeek hideAndSeek;
-	
-	public LaserCommands laserCommands;
-	public HideCommands hideCommands;
 	
 	public static String texturepackURL = "https://www.dropbox.com/s/d3l1ciaf58gvpbf/Laserguns.zip?dl=1";
 	
@@ -80,13 +75,6 @@ public class Minigames extends JavaPlugin implements Listener{
 		});
 		
 		lasertag = new Lasertag(this);
-//		hideAndSeek = new HideAndSeek(this);
-		laserCommands = new LaserCommands(this);
-//		hideCommands = new HideCommands(this, hideAndSeek);
-		getCommand("lasertag").setExecutor(laserCommands);
-		getCommand("lasertag").setTabCompleter(laserCommands);
-//		getCommand("hideandseek").setExecutor(hideCommands);
-//		getCommand("hideandseek").setTabCompleter(hideCommands);
 		Commands commands = new Commands(this);
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
@@ -101,7 +89,6 @@ public class Minigames extends JavaPlugin implements Listener{
 		
 		worldName = getConfig().getString("world");
 		
-		inform("Refreshing \"config_README.TXT\" ...");
 		try {
 			Files.copy(getClass().getResourceAsStream("/config_README.txt"), Paths.get(this.getDataFolder().getPath()+"/config_manual.txt"), StandardCopyOption.REPLACE_EXISTING);
 			inform("Successfully refreshed\"config_README.TXT\"!");
@@ -137,7 +124,6 @@ public class Minigames extends JavaPlugin implements Listener{
 	
 	@SuppressWarnings("deprecation")
 	public void setWorld() {
-		inform("Setting world...");
 		for (World w : Bukkit.getWorlds()) {if (w.getEnvironment() == Environment.NORMAL) {Minigames.world = w;}}
 		try {
 			File serverFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
@@ -172,7 +158,6 @@ public class Minigames extends JavaPlugin implements Listener{
 	
 	public void disableServerWorlds(){
 		try {
-			inform("Disabeling other worlds on this server...");
 			File propFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties").toFile();
 			FileInputStream in = new FileInputStream(propFile);
 			Properties props = new Properties();
@@ -181,12 +166,9 @@ public class Minigames extends JavaPlugin implements Listener{
 			
 			File bukkFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("bukkit.yml").toFile();
 			FileConfiguration cfg = YamlConfiguration.loadConfiguration(bukkFile);
-			
-			boolean name = (props.getProperty("level-name") != "Minigames_world");
-			boolean nether = (props.getProperty("allow-nether") != "false");
-			boolean end = (cfg.getString("settings.allow-end") != "false");
 
-			if(!name | !nether | !end) {
+			if(!(props.getProperty("level-name") != "Minigames_world") | !(props.getProperty("allow-nether") != "false") | !(cfg.getString("settings.allow-end") != "false")) {
+				inform("Disabeling other worlds on this server...");
 				FileOutputStream out = new FileOutputStream(propFile);
 				props.setProperty("level-name", "Minigames_world");
 				props.setProperty("allow-nether", "false");

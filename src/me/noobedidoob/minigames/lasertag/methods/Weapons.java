@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 
 public class Weapons {
 
@@ -80,36 +81,38 @@ public class Weapons {
 	public static void cooldownPlayer(Player p, Weapon weapon, boolean testing) {
 		if(weapon == Weapon.LASERGUN) {
 			lasergunCoolingdown.put(p, true);
-			p.setCooldown(Material.DIAMOND_HOE, Modifiers.lasergunCooldown);
+			int cooldown = Mod.LASERGUN_COOLDOWN_TICKS.getInt();
+			if(Mod.withMultiweapons()) cooldown = Mod.LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS.getInt();
+			p.setCooldown(Material.DIAMOND_HOE, cooldown);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
 				public void run() {
 					lasergunCoolingdown.put(p, false);
 				}
-			}, Modifiers.lasergunCooldown);
+			}, cooldown);
 		} else if(weapon == Weapon.SNIPER) {
 			sniperCoolingdown.put(p, true);
-			p.setCooldown(Material.DIAMOND_PICKAXE, Modifiers.sniperCooldown);
+			p.setCooldown(Material.DIAMOND_PICKAXE, Mod.SNIPER_COOLDOWN_TICKS.getInt());
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
 				public void run() {
 					sniperCoolingdown.put(p, false);
-					if(!testing) p.getInventory().getItem(2).setAmount(Modifiers.sniperAmmoBeforeCooldown);
+					if(!testing) p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
 					else {
-						p.getInventory().getItem(3).setAmount(Modifiers.sniperAmmoBeforeCooldown);
+						p.getInventory().getItem(3).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
 						LaserShooter.playersSnipershots.put(p, 0);
 					}
 				}
-			}, Modifiers.sniperCooldown);
+			}, Mod.SNIPER_COOLDOWN_TICKS.getInt());
 		} else if(weapon == Weapon.SHOTGUN) {
 			shotgunCoolingdown.put(p, true);
-			p.setCooldown(Material.DIAMOND_SHOVEL, Modifiers.shotgunCooldown);
+			p.setCooldown(Material.DIAMOND_SHOVEL, Mod.SHOTGUN_COOLDOWN_TICKS.getInt());
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
 				public void run() {
 					shotgunCoolingdown.put(p, false);
 				}
-			}, Modifiers.shotgunCooldown);
+			}, Mod.SHOTGUN_COOLDOWN_TICKS.getInt());
 		}
 	}
 	

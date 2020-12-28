@@ -13,7 +13,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.main.Minigames;
 
@@ -32,7 +32,7 @@ public class DropSwitchItemListener implements Listener {
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
 		if(((Game.tagging() | Game.waiting()) && Game.isInGame(p)) | Lasertag.playerTesting.get(p)) {
 			if (Game.isInGame(p)) {
-				if (!Modifiers.multiWeapons) PlayerZoomer.toggleZoom(p);
+				if (!Mod.multiWeapons()) PlayerZoomer.toggleZoom(p);
 			} else if(item != null) {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) {
 					PlayerZoomer.toggleZoom(p);
@@ -51,7 +51,7 @@ public class DropSwitchItemListener implements Listener {
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
 		if(((Game.tagging() | Game.waiting()) && Game.isInGame(p)) | Lasertag.playerTesting.get(p)) {
 			if (Game.isInGame(p)) {
-				if (!Modifiers.multiWeapons) PlayerZoomer.toggleZoom(p);
+				if (!Mod.multiWeapons()) PlayerZoomer.toggleZoom(p);
 				else if(item != null && item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) PlayerZoomer.toggleZoom(p); 
 			} else if(item != null && (item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER") | item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN"))) {
 				PlayerZoomer.toggleZoom(p);

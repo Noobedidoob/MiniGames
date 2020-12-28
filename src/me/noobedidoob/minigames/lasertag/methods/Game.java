@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.utils.LasertagColor;
 import me.noobedidoob.minigames.utils.Map;
 
@@ -148,7 +149,7 @@ public class Game {
 		teamColor = new HashMap<Player[], LasertagColor>();
 		teamPoints = new HashMap<Player[], Integer>();
 		teams = new ArrayList<Player[]>();
-		Modifiers.multiWeapons = false;
+		Mod.resetMods();
 	}
 	
 	public static boolean isInGame(Player p) {

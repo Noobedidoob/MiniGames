@@ -13,6 +13,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.utils.MgUtils;
 
 public class Leaderboard {
@@ -70,8 +71,8 @@ public class Leaderboard {
 			
 			for(Player p : Game.players()) {
 				p.setScoreboard(board);
-				if(Modifiers.highLightPlayers) {
-					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time), Modifiers.glowingAmplifier, false, false));
+				if(Mod.HIGHLIGHT_PLAYERS.getBoolean()) {
+					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, Mod.HIGHLIGHT_POWER.getInt(), false, false));
 				}
 				if(Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
 				else if(Lasertag.isProtected.get(p)) {
@@ -111,8 +112,8 @@ public class Leaderboard {
 			}
 			for(Player p : Game.players()) {
 				p.setScoreboard(board);
-				if(Modifiers.highLightPlayers) {
-					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time), Modifiers.glowingAmplifier, false, false));
+				if(Mod.HIGHLIGHT_PLAYERS.getBoolean()) {
+					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, Mod.HIGHLIGHT_POWER.getInt(), false, false));
 				}
 				//if(isProtected.get(p) == null) isProtected.put(p, false);
 				try{

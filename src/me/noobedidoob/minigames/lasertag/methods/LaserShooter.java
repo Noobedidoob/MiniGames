@@ -27,6 +27,7 @@ import org.bukkit.util.Vector;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.main.Minigames;
 
@@ -40,20 +41,15 @@ public class LaserShooter{
 		
 		switch (w) {
 		case LASERGUN:
-//			if(Weapons.playerCoolingdown.get(p) == null) Weapons.playerCoolingdown.put(p, false);
-//			if(Weapons.playerReloading.get(p) == null) Weapons.playerReloading.put(p, false);
-//			if(!Weapons.playerCoolingdown.get(p) && !Weapons.playerReloading.get(p)) {
-//				Weapons.playerCoolingdown.put(p, true);
 			if(Weapons.lasergunCoolingdown.get(p) == null) Weapons.lasergunCoolingdown.put(p, false);
 			if(!Weapons.lasergunCoolingdown.get(p)) {
 				Weapons.lasergunCoolingdown.put(p, true);
-//				if(Modifiers.withAmmo) Weapons.decreaseAmmo(p, 1);
 				
 				Location l1 = p.getLocation();
 				l1.setY(l1.getY()+p.getHeight()-0.225);
 				Vector direction = l1.getDirection();
 				direction.multiply(0.1);
-				if(Modifiers.multiWeapons) {
+				if(Mod.withMultiweapons()) {
 					Vector newDirection = direction;
 					direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
 					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.001,0.001));
@@ -63,7 +59,7 @@ public class LaserShooter{
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 				
 				int range = 100;
-				if(Modifiers.multiWeapons) range = 35;
+				if(Mod.withMultiweapons()) range = 35;
 				for(double d = 0; d<range; d += 0.1) {
 					if(d==0) Weapons.cooldownPlayer(p, Weapon.LASERGUN, false);
 					loc = l1.add(direction);
@@ -103,7 +99,7 @@ public class LaserShooter{
 													else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
 													i++;
 												}
-												int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+												int points =Mod.MULTIKILLS_EXTRA.getInt()*alreadyKilledPlayers.size();
 												String pAddon = "";
 												if(points > 1) pAddon = "s";
 												for(Player ap : Game.players()) {
@@ -116,9 +112,9 @@ public class LaserShooter{
 											}
 										}, 10);
 									}
-									int damage = Modifiers.lasergunMWDamage;
-									if(!Modifiers.multiWeapons) damage = Modifiers.lasergunNormalDamage; 
-									DeathListener.hit(KillType.SHOT, p, hitP, damage, headshot, (d > Modifiers.minSnipeDistance), false);
+									int damage = Mod.LASERGUN_NORMAL_DAMAGE.getInt();
+									if(Mod.withMultiweapons()) damage = Mod.LASERGUN_MULTIWEAPONS_DAMAGE.getInt(); 
+									DeathListener.hit(KillType.SHOT, p, hitP, damage, headshot, (d > Mod.MINIMAL_SNIPE_DISTANCE.getInt()), false);
 									alreadyKilledPlayers.add(hitP);
 								} 
 							}
@@ -134,7 +130,7 @@ public class LaserShooter{
 			if(Weapons.shotgunCoolingdown.get(p) == null) Weapons.shotgunCoolingdown.put(p, false);
 			if(!Weapons.shotgunCoolingdown.get(p)) {
 				Weapons.shotgunCoolingdown.put(p, true);
-//				if(Modifiers.withAmmo) Weapons.decreaseAmmo(p, 1);
+//				if(Mod.withAmmo) Weapons.decreaseAmmo(p, 1);
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 				Location startLoc = p.getLocation();
 				startLoc.setY(startLoc.getY()+p.getEyeHeight()-0.1);
@@ -203,7 +199,7 @@ public class LaserShooter{
 															else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
 															i++;
 														}
-														int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+														int points = Mod.MULTIKILLS_EXTRA.getInt()*alreadyKilledPlayers.size();
 														String pAddon = "";
 														if(points > 1) pAddon = "s";
 														for(Player ap : Game.players()) {
@@ -216,7 +212,7 @@ public class LaserShooter{
 													}
 												}, 10);
 											}
-											DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.shotgunDamage, false, false, false);
+											DeathListener.hit(KillType.SHOT, p, hitP, Mod.SHOTGUN_DAMAGE.getInt(), false, false, false);
 //												p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 											alreadyKilledPlayers.add(hitP);
 										}
@@ -234,7 +230,7 @@ public class LaserShooter{
 		case SNIPER:
 			if(Weapons.sniperCoolingdown.get(p) == null) Weapons.sniperCoolingdown.put(p, false);
 			if(!Weapons.sniperCoolingdown.get(p)) {
-//				if(Modifiers.withAmmo) Weapons.decreaseAmmo(p, 1);
+//				if(Mod.withAmmo) Weapons.decreaseAmmo(p, 1);
 				
 				Location l1 = p.getLocation();
 				l1.setY(l1.getY()+p.getHeight()-0.225);
@@ -247,13 +243,13 @@ public class LaserShooter{
 					if(d==0) {
 						if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
 						int shots = playersSnipershots.get(p);
-						if(shots == Modifiers.sniperAmmoBeforeCooldown-1) {
+						if(shots == Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt()-1) {
 							Weapons.cooldownPlayer(p, Weapon.SNIPER, false);
 							playersSnipershots.put(p, 0);
 							p.getInventory().getItem(2).setAmount(1);
 						} else {
 							playersSnipershots.put(p, shots+1);
-							p.getInventory().getItem(2).setAmount(Modifiers.sniperAmmoBeforeCooldown-1-shots);
+							p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt()-1-shots);
 						}
 						
 					}
@@ -296,7 +292,7 @@ public class LaserShooter{
 														else killedPlayersNames += ", "+Game.getPlayerColor(kp).getChatColor()+kp.getName();
 														i++;
 													}
-													int points = Modifiers.multiKillsExtra*alreadyKilledPlayers.size();
+													int points = Mod.MULTIKILLS_EXTRA.getInt()*alreadyKilledPlayers.size();
 													String pAddon = "";
 													if(points > 1) pAddon = "s";
 													for(Player ap : Game.players()) {
@@ -309,7 +305,7 @@ public class LaserShooter{
 												}
 											}, 10);
 										}
-										DeathListener.hit(KillType.SHOT, p, hitP, Modifiers.sniperdamage, headshot, (d > Modifiers.minSnipeDistance), false);
+										DeathListener.hit(KillType.SHOT, p, hitP, Mod.SNIPER_DAMAGE.getInt(), headshot, (d > Mod.MINIMAL_SNIPE_DISTANCE.getInt()), false);
 //											p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 										alreadyKilledPlayers.add(hitP);
 									}
@@ -334,9 +330,9 @@ public class LaserShooter{
 		double px = playerLoc.getX(); double py = playerLoc.getY(); double pz = playerLoc.getZ(); World pw = playerLoc.getWorld();
 		
 		if(lw == pw) {
-			if(lx <= px+(width+Modifiers.widthAddon)/2 && lx >= px-(width+Modifiers.widthAddon)/2) {
-				if(ly <= py+height+Modifiers.heightAddon && ly >= py) {
-					if(lz <= pz+(width+Modifiers.widthAddon)/2 && lz >= pz-(width+Modifiers.widthAddon)/2) {
+			if(lx <= px+(width+Mod.WIDTH_ADDON.getDouble())/2 && lx >= px-(width+Mod.WIDTH_ADDON.getDouble())/2) {
+				if(ly <= py+height+Mod.HEIGHT_ADDON.getDouble() && ly >= py) {
+					if(lz <= pz+(width+Mod.WIDTH_ADDON.getDouble())/2 && lz >= pz-(width+Mod.WIDTH_ADDON.getDouble())/2) {
 						return true;
 					}
 				}
@@ -358,7 +354,7 @@ public class LaserShooter{
 			}, 20*5);
 			return true;
 		}
-		if(!Modifiers.shootThroughBlocks) {
+		if(!Mod.SHOOT_THROUGH_BLOCKS.getBoolean()) {
 			Material m = Minigames.world.getBlockAt(loc).getType();
 			if(!m.isAir() && !m.name().contains("Fence")) {
 				if(m.isSolid()) {
@@ -413,6 +409,7 @@ public class LaserShooter{
 				for(double d = 0; d<100; d += 0.1) {
 					loc = startLoc.add(direction);
 					spawnTestProjectile(p, loc, Color.fromRGB(0, 170, 255));
+
 					if(!checkloc(p, loc)) return;
 				}
 			}
@@ -480,13 +477,13 @@ public class LaserShooter{
 					if(d==0) {
 						if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
 						int shots = playersSnipershots.get(p);
-						if(shots == Modifiers.sniperAmmoBeforeCooldown-1) {
+						if(shots == Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt()-1) {
 							Weapons.cooldownPlayer(p, Weapon.SNIPER, true);
 							playersSnipershots.put(p, 0);
 							p.getInventory().getItem(3).setAmount(1);
 						} else {
 							playersSnipershots.put(p, shots+1);
-							p.getInventory().getItem(3).setAmount(Modifiers.sniperAmmoBeforeCooldown-1-shots);
+							p.getInventory().getItem(3).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt()-1-shots);
 						}
 						
 					}
@@ -506,19 +503,19 @@ public class LaserShooter{
 	
 	private static boolean checkloc(Player p, Location loc) {
 		if(!Lasertag.testArea.isInside(loc)) return false;
-		for(Entity entity : p.getNearbyEntities(100, 100, 100)) {
-			double width = entity.getWidth();
-			double height = entity.getHeight();
-			double substract = 0;
-			if(entity instanceof ItemFrame) {
-				width += width/4;
-				height += height;
-				substract = 0.5d;
-			}
-			if(compareLaserLocs(loc, entity.getLocation().subtract(0, substract, 0), height, width)) {
-				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-			}
-		}
+//		for(Entity entity : p.getNearbyEntities(100, 100, 100)) {
+//			double width = entity.getWidth();
+//			double height = entity.getHeight();
+//			double substract = 0;
+//			if(entity instanceof ItemFrame) {
+//				width += width/4;
+//				height += height;
+//				substract = 0.5d;
+//			}
+//			if(compareLaserLocs(loc, entity.getLocation().subtract(0, substract, 0), height, width)) {
+//				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+//			}
+//		}
 		if(isInBlock(loc)) return false;
 		return true;
 	}
@@ -526,4 +523,5 @@ public class LaserShooter{
 	public static void spawnTestProjectile(Player p, Location loc, Color c) {
 		p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f));
 	}
+	
 }

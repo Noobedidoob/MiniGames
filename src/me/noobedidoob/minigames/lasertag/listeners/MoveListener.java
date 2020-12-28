@@ -33,7 +33,7 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
@@ -91,7 +91,7 @@ public class MoveListener implements Listener {
 			if(e.getTo().getY() < 0) {
 				e.getPlayer().damage(100);
 			}
-			if(Modifiers.multiWeapons) {
+			if(Mod.withMultiweapons()) {
 				if (Game.map().withMiniguns()) {
 					for (Coordinate coord : Game.map().getMinigunCoords()) {
 						if (currentPlayersMinigunCoord.get(p) == null) {
@@ -192,12 +192,13 @@ public class MoveListener implements Listener {
 	        direction.setY(0.8);
 	        p.setVelocity(direction);
 	        p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1, 1);
+	        Lasertag.animateExpBar(p, 20*3);
 	        Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 				@Override
 				public void run() {
 					p.setAllowFlight(true);
 				}
-			}, 60);
+			}, 20*3);
 		} else if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
 			e.setCancelled(true);
 			p.setFlying(false);

@@ -48,7 +48,7 @@ public class JoinQuitListener implements Listener {
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
 		p.getInventory().clear();
-		Minigames.minigames.laserCommands.flagIsFollowing.put(p, false);
+		Lasertag.laserCommands.flagIsFollowing.put(p, false);
 //		Weapons.playerCoolingdown.put(p, false);
 		Weapons.lasergunCoolingdown.put(p, false);
 		Weapons.shotgunCoolingdown.put(p, false);

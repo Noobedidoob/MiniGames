@@ -16,6 +16,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
+import me.noobedidoob.minigames.lasertag.commands.RoundCommands;
 import me.noobedidoob.minigames.lasertag.listeners.ClickInventoryListener;
 import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
@@ -27,9 +29,7 @@ import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
 import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.Modifiers;
-import me.noobedidoob.minigames.lasertag.methods.SoloRound;
-import me.noobedidoob.minigames.lasertag.methods.TeamsRound;
+import me.noobedidoob.minigames.lasertag.methods.RoundManager;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
@@ -38,8 +38,15 @@ import me.noobedidoob.minigames.utils.Map;
 
 public class Lasertag {
 	public static Minigames minigames;
+	public static Lasertag lasertag;
+	public static LaserCommands laserCommands;
+	public static ModifierCommands modifierCommands;
+	public static RoundCommands roundCommands;
+	
+	
 	public Lasertag(Minigames minigames) {
 		Lasertag.minigames = minigames;
+		lasertag = this;
 		
 		new Game();
 		
@@ -57,6 +64,15 @@ public class Lasertag {
 	
 	
 	public void enable() {
+		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new RoundCommands(minigames));
+		minigames.getCommand("lasertag").setExecutor(laserCommands);
+		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
+//		modifierCommands = new ModifierCommands(minigames);
+//		minigames.getCommand("lasertag").setExecutor(modifierCommands);
+//		minigames.getCommand("lasertag").setTabCompleter(modifierCommands);
+//		roundCommands = new RoundCommands(minigames);
+//		minigames.getCommand("lasertag").setExecutor(roundCommands);
+//		minigames.getCommand("lasertag").setTabCompleter(roundCommands);
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
 //			Weapons.playerCoolingdown.put(p, false);
@@ -64,19 +80,18 @@ public class Lasertag {
 //			Weapons.playerMinigunAmmo.put(p, Modifiers.minigunAmmo);
 //			Weapons.playerMinigunCooldown.put(p, false);
 //			Weapons.playerReloading.put(p, false);
-			Minigames.minigames.laserCommands.flagIsFollowing.put(p, false);
+			laserCommands.flagIsFollowing.put(p, false);
+			p.setExp(1f);
 		}
 		
 		registerMaps();
-		Modifiers.registerModifiers();
 		Weapons.registerWeapons();
 		Weapons.getTestSet();
 	}
 	public void disable() {
 		try {
 			if(Game.tagging()) {
-				if(Game.teams()) TeamsRound.stop(true);
-				else SoloRound.stop(true);
+				RoundManager.stop(true);
 			}
 		} catch (Exception e) {
 		}
@@ -200,8 +215,7 @@ public class Lasertag {
 			}
 		}
 		File reloadedBefore = new File(minigames.getDataFolder()+File.pathSeparator+"reloaded.before");
-		System.out.println(unenabledMaps+"  "+mapNames.size());
-		if(unenabledMaps > mapNames.size()/2) {
+		if(unenabledMaps > (mapNames.size()/2)) {
 			if(!reloadedBefore.exists()) {
 				inform("Attempting to reload server due to error while enab");
 				try {
@@ -218,6 +232,27 @@ public class Lasertag {
 				if(reloadedBefore.delete()) inform("Success!");
 			}
 		} else if(reloadedBefore.exists()) reloadedBefore.delete();
+	}
+	
+	private static int repeater;
+	public static void animateExpBar(Player p, long ticks) {
+		p.setExp(0);
+		repeater = Bukkit.getScheduler().scheduleSyncRepeatingTask(minigames, new Runnable() {
+			float funit = 1f/ticks;
+			float f = 0f;
+			float t = 0;
+			@Override
+			public void run() {
+				if(t < ticks) {
+					t++;
+					f = f + funit;
+					p.setExp(f);
+				} else {
+					Bukkit.getScheduler().cancelTask(repeater);
+					p.setExp(1f);
+				}
+			}
+		}, 0, 1);
 	}
 	
 	
