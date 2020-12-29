@@ -168,4 +168,18 @@ public class MgUtils {
 	public static double randomDouble(int min, int max) {
 		return (Math.random() * ((max - min) + 1)) + min;
 	}
+	
+	public static boolean isNumericOnly(String s) {
+		if(s.matches("\\d+")) return true;
+		return false;
+	}
+	public static boolean isAlphabeticOnly(String s) {
+		char[] chars = s.toCharArray();
+	    for (char c : chars) {
+	        if(!Character.isLetter(c)) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
 }

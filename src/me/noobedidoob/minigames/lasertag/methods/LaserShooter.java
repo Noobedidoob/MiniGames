@@ -12,7 +12,6 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.Tag;
-import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Slab;
@@ -69,8 +68,7 @@ public class LaserShooter{
 					
 					for(Player hitP : Game.players()) {
 						if(hitP != p) {
-							Location pLoc = hitP.getLocation();
-							if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(Game.teams()) {
 									for(Player[] team : Game.getTeams()) {
@@ -169,9 +167,8 @@ public class LaserShooter{
 					
 					for(Player hitP : Game.players()) {
 						if(hitP != p) {
-							Location pLoc = hitP.getLocation();
 							for(Location loc : locs) {
-								if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+								if(isLaserInsideEntity(hitP, loc)) {
 									boolean fromTeam = false;
 									if(Game.teams()) {
 										for(Player[] team : Game.getTeams()) {
@@ -187,7 +184,7 @@ public class LaserShooter{
 											p.sendMessage("§cYou cant shoot inside the base!");
 											return;
 										}
-										if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+										if(isLaserInsideEntity(hitP, loc)) {
 											if(alreadyKilledPlayers.size() > 1) {
 												Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 													@Override
@@ -261,8 +258,7 @@ public class LaserShooter{
 					Player[] inGamePlayers = Game.players();
 					for(Player hitP : inGamePlayers) {
 						if(hitP != p) {
-							Location pLoc = hitP.getLocation();
-							if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(Game.teams()) {
 									for(Player[] team : Game.getTeams()) {
@@ -278,7 +274,7 @@ public class LaserShooter{
 										p.sendMessage("§cYou cant shoot inside the base!");
 										return;
 									}
-									if(compareLaserLocs(loc, pLoc, hitP.getHeight(), hitP.getWidth())) {
+									if(isLaserInsideEntity(hitP, loc)) {
 										boolean headshot = false;
 										headshot= (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25);
 										if(alreadyKilledPlayers.size() > 1) {
@@ -323,18 +319,43 @@ public class LaserShooter{
 		}
 	}
 	
+//	public static void colorPlayerHitBox(Player p) {
+//		HitBox hb = new HitBox(p);
+//		for(double x = hb.getMinX(); x <= hb.getMaxX(); x += 0.1) {
+//			for(double y = hb.getMinY(); y <= hb.getMaxY(); y += 0.1) {
+//				for(double z = hb.getMinZ(); z <= hb.getMaxZ(); z += 0.1) {
+//					spawnTestProjectile(p, new Location(p.getWorld(), x, y, z), Color.RED);
+//				}
+//			}
+//		}
+//		
+//	}
 	
 	
-	public static boolean compareLaserLocs(Location laserLoc, Location playerLoc, double height, double width) {
-		double lx = laserLoc.getX(); double ly = laserLoc.getY(); double lz = laserLoc.getZ(); World lw = laserLoc.getWorld();
-		double px = playerLoc.getX(); double py = playerLoc.getY(); double pz = playerLoc.getZ(); World pw = playerLoc.getWorld();
+	public static boolean isLaserInsideEntity(Entity p, Location loc) {
+//		if(new HitBox(p).isInside(loc)) return true;
 		
-		if(lw == pw) {
-			if(lx <= px+(width+Mod.WIDTH_ADDON.getDouble())/2 && lx >= px-(width+Mod.WIDTH_ADDON.getDouble())/2) {
-				if(ly <= py+height+Mod.HEIGHT_ADDON.getDouble() && ly >= py) {
-					if(lz <= pz+(width+Mod.WIDTH_ADDON.getDouble())/2 && lz >= pz-(width+Mod.WIDTH_ADDON.getDouble())/2) {
-						return true;
-					}
+		double x = loc.getX();
+		double y = loc.getY();
+		double z = loc.getZ();
+		
+		double width = p.getWidth()+Mod.WIDTH_ADDON.getDouble();
+		double height = p.getHeight()+Mod.HEIGHT_ADDON.getDouble()+0.15;
+		
+//		System.out.println("HEIGHT_ADDON: "+Mod.HEIGHT_ADDON.getDouble());
+//		System.out.println("WIDTH_ADDON: "+Mod.WIDTH_ADDON.getDouble());
+		
+		double minX = p.getLocation().getX()-(width/2);
+		double minY = p.getLocation().getY();
+		double minZ = p.getLocation().getZ()-(width/2);
+		double maxX = (p.getLocation().getX()-(width/2))+width;
+		double maxY = p.getLocation().getY()+height;
+		double maxZ = (p.getLocation().getZ()-(width/2))+width;
+		
+		if(minX <= x && x <= maxX) {
+			if(minY <= y && y <= maxY) {
+				if(minZ <= z && z <= maxZ) {
+					return true;
 				}
 			}
 		}
@@ -496,6 +517,7 @@ public class LaserShooter{
 			}
 			break;
 		default:
+			
 			break;
 		}
 			
@@ -503,20 +525,19 @@ public class LaserShooter{
 	
 	private static boolean checkloc(Player p, Location loc) {
 		if(!Lasertag.testArea.isInside(loc)) return false;
-//		for(Entity entity : p.getNearbyEntities(100, 100, 100)) {
-//			double width = entity.getWidth();
-//			double height = entity.getHeight();
-//			double substract = 0;
-//			if(entity instanceof ItemFrame) {
-//				width += width/4;
-//				height += height;
-//				substract = 0.5d;
-//			}
-//			if(compareLaserLocs(loc, entity.getLocation().subtract(0, substract, 0), height, width)) {
-//				p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-//			}
-//		}
 		if(isInBlock(loc)) return false;
+		for(Entity entity : loc.getWorld().getNearbyEntities(loc, 2, 2, 2)) {
+			if (entity != p) {
+				if (entity instanceof ItemFrame) {
+					if(isLaserInsideEntity(entity, loc)) {
+						p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+					}
+				} else
+				if(isLaserInsideEntity(entity, loc)) {
+					p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+				} 
+			}
+		}
 		return true;
 	}
 	

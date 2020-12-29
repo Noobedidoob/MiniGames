@@ -14,6 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.utils.MgUtils;
 
 public class ModifierCommands  {
 	
@@ -41,11 +42,24 @@ public class ModifierCommands  {
 			Mod m = Mod.valueOf(args[1].toUpperCase().replace("-", "_"));
 			String valString = args[2];
 			Object value = valString;
+			
+			if(MgUtils.isNumericOnly(valString)) {
+				value = Integer.parseInt(valString);
+			} else if(MgUtils.isAlphabeticOnly(valString)) {
+				if(valString.equalsIgnoreCase("true") | valString.equalsIgnoreCase("false")) value = Boolean.parseBoolean(valString);
+				else {
+					sender.sendMessage("§cThe given value is invalid! Please use a §evalid number §cor §etrue§c/§efalse!");
+					return;
+				}
+			} else {
+				
+			}
+			
 			try {
 				value = Integer.parseInt(valString);
 			} catch (NumberFormatException e1) {
 				try {
-					value = Double.parseDouble(valString);
+					value = Double.parseDouble(valString+"d");
 				} catch (NumberFormatException e2) {
 					if(valString.equalsIgnoreCase("true") | valString.equalsIgnoreCase("false")) value = Boolean.parseBoolean(valString);
 					else {
@@ -160,8 +174,8 @@ private static HashMap<Mod, Object> modifierValue = new HashMap<Mod, Object>();
 		MIN_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
 		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
 		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
-		WIDTH_ADDON(0, "Addon to a players hitbox width"),
-		HEIGHT_ADDON(0, "Addon to a players hitbox height"),
+		WIDTH_ADDON(0d, "Addon to a players hitbox width"),
+		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
 //		WITHEVENTS
 		SHOOT_THROUGH_BLOCKS(false, "Shoot through blocks"),
 		HIGHLIGHT_PLAYERS(false, "Making players glow and more visible"),
@@ -196,17 +210,26 @@ private static HashMap<Mod, Object> modifierValue = new HashMap<Mod, Object>();
         public Object get() {
         	return currentValue;
         }
-        public Integer getInt() {
-        	if(currentValue instanceof Integer) return (int) currentValue;
-        	else return null;
+        public int getInt() {
+        	try {
+				return (int) currentValue;
+			} catch (Exception e) {
+				return 0;
+			}
         }
-        public Double getDouble() {
-        	if(currentValue instanceof Double) return (double) currentValue;
-        	else return null;
+        public double getDouble() {
+		    try {
+		    	return (double) currentValue;
+			} catch (Exception e) {
+				return 0;
+			}
         }
-        public Boolean getBoolean() {
-        	if(currentValue instanceof Boolean) return (boolean) currentValue;
-        	else return null;
+        public boolean getBoolean() {
+	        try {
+	        	return (boolean) currentValue;
+			} catch (Exception e) {
+				return false;
+			}
         }
         
         public void set(Object value) {
@@ -219,17 +242,26 @@ private static HashMap<Mod, Object> modifierValue = new HashMap<Mod, Object>();
         public Object getOg() {
             return ogValue;
         }
-        public Integer getOgInt() {
-        	if(ogValue instanceof Integer) return (int) ogValue;
-        	else return null;
+        public int getOgInt() {
+        	try {
+				return (int) ogValue;
+			} catch (Exception e) {
+				return 0;
+			}
         }
-        public Double getOgDouble() {
-        	if(ogValue instanceof Integer) return (double) ogValue;
-        	else return null;
+        public double getOgDouble() {
+        	try {
+				return (double) ogValue;
+			} catch (Exception e) {
+				return 0;
+			}
         }
-        public Boolean getOgBoolean() {
-        	if(ogValue instanceof Integer) return (boolean) ogValue;
-        	else return null;
+        public boolean getOgBoolean() {
+        	try {
+				return (boolean) ogValue;
+			} catch (Exception e) {
+				return false;
+			}
         }
         
         

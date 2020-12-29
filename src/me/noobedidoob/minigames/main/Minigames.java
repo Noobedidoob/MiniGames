@@ -67,12 +67,12 @@ public class Minigames extends JavaPlugin implements Listener{
 		
 //		new GUI(Bukkit.getServer().getName());
 		
-		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
-			StringWriter stackTraceWriter = new StringWriter();
-        	e.printStackTrace(new PrintWriter(stackTraceWriter));
-			String stackTrace = stackTraceWriter.toString();
-			Bukkit.broadcastMessage(stackTrace);
-		});
+//		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
+//			StringWriter stackTraceWriter = new StringWriter();
+//        	e.printStackTrace(new PrintWriter(stackTraceWriter));
+//			String stackTrace = stackTraceWriter.toString();
+//			Bukkit.broadcastMessage(stackTrace);
+//		});
 		
 		lasertag = new Lasertag(this);
 		Commands commands = new Commands(this);

@@ -142,8 +142,10 @@ public class RoundManager {
 		Weapons.registerWeapons();
 		if(externalStop) {
 			Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
-			try { for(Player p : Game.players()) { p.sendTitle("§cStopped the game!","",20, 20*4, 20); }
-			} catch (Exception e) { }
+			for(Player p : Game.players()) { 
+				p.sendTitle("§cStopped the game!","",20, 20*4, 20);
+				p.teleport(Minigames.spawn);
+			}
 			Game.reset();
 		} else {
 			if(Game.solo()) evaluateSolo();

@@ -47,6 +47,8 @@ public class JoinQuitListener implements Listener {
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
+		p.setGameMode(GameMode.ADVENTURE);
+		p.setExp(1f);
 		p.getInventory().clear();
 		Lasertag.laserCommands.flagIsFollowing.put(p, false);
 //		Weapons.playerCoolingdown.put(p, false);
