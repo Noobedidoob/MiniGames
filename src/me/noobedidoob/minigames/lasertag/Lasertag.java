@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffectType;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
-import me.noobedidoob.minigames.lasertag.commands.RoundCommands;
+import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.listeners.ClickInventoryListener;
 import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
@@ -28,9 +28,8 @@ import me.noobedidoob.minigames.lasertag.listeners.JoinQuitListener;
 import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
-import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.RoundManager;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -41,14 +40,14 @@ public class Lasertag {
 	public static Lasertag lasertag;
 	public static LaserCommands laserCommands;
 	public static ModifierCommands modifierCommands;
-	public static RoundCommands roundCommands;
+	public static SessionCommands sessionCommands;
 	
 	
 	public Lasertag(Minigames minigames) {
 		Lasertag.minigames = minigames;
 		lasertag = this;
 		
-		new Game();
+//		new Game();
 		
 		new InteractListener(minigames);
 		new ClickInventoryListener(minigames);
@@ -64,15 +63,15 @@ public class Lasertag {
 	
 	
 	public void enable() {
-		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new RoundCommands(minigames));
+		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new SessionCommands(minigames));
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
 //		modifierCommands = new ModifierCommands(minigames);
 //		minigames.getCommand("lasertag").setExecutor(modifierCommands);
 //		minigames.getCommand("lasertag").setTabCompleter(modifierCommands);
-//		roundCommands = new RoundCommands(minigames);
-//		minigames.getCommand("lasertag").setExecutor(roundCommands);
-//		minigames.getCommand("lasertag").setTabCompleter(roundCommands);
+//		sessionCommands = new SessionCommands(minigames);
+//		minigames.getCommand("lasertag").setExecutor(sessionCommands);
+//		minigames.getCommand("lasertag").setTabCompleter(sessionCommands);
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
 //			Weapons.playerCoolingdown.put(p, false);
@@ -89,11 +88,12 @@ public class Lasertag {
 		Weapons.getTestSet();
 	}
 	public void disable() {
-		try {
-			if(Game.tagging()) {
-				RoundManager.stop(true);
+		for(Player p : Bukkit.getOnlinePlayers()) {
+			if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).getOwner() == p) {
+				Session session = Session.getPlayerSession(p);
+				if(!session.tagging()) session.close();
+				else session.stop(true, true);
 			}
-		} catch (Exception e) {
 		}
 	}
 	
@@ -109,17 +109,6 @@ public class Lasertag {
 	public static Area testArea = new Area(194, 4, -98, 246, 22, -67);
 	public static HashMap<Player, Boolean> playerTesting = new HashMap<Player, Boolean>();
 
-	
-	public enum LtColorNames {
-		Red,
-		Blue,
-		Green,
-		Yellow,
-		Purple,
-		Gray,
-		Orange,
-		White
-	}
 	
 	public enum GameType {
 		SOLO,
@@ -146,14 +135,6 @@ public class Lasertag {
 			Coordinate centerCoord = new Coordinate(cs.getInt(name+".center.x"), cs.getInt(name+".center.y"), cs.getInt(name+".center.z"));
 			Coordinate coord1 = new Coordinate(cs.getInt(name+".area.x.min"), cs.getInt(name+".area.y.min"), cs.getInt(name+".area.z.min"));
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
-//			int gatherYMin = coord1.getY();
-//			int gatherYMax = coord2.getY();
-//			if(cs.isConfigurationSection(name+".gather.y.min") && cs.isConfigurationSection(name+".gather.y.max")) {
-//				gatherYMin = cs.getInt(name+".gather.y.min");
-//				gatherYMax = cs.getInt(name+".gather.y.max");
-//			}
-//			Coordinate gatherCoord1 = new Coordinate(cs.getInt(name+".gather.x.min"), gatherYMin, cs.getInt(name+".gather.z.min"));
-//			Coordinate gatherCoord2 = new Coordinate(cs.getInt(name+".gather.x.max"), gatherYMax, cs.getInt(name+".gather.z.max"));
 			
 			Map map = new Map(name, centerCoord, new Area(coord1, coord2), /*new Area(gatherCoord1, gatherCoord2), */world);
 			maps.put(name, map);
@@ -176,23 +157,6 @@ public class Lasertag {
 				map.setProtectionRaduis(cs.getInt(name+".basespawn.protectionradius"));
 			}
 			
-//			boolean withMiniguns = cs.getBoolean(name+".miniguns.enabled");
-//			map.withMiniguns(withMiniguns);
-//			if(withMiniguns) {
-//				List<Coordinate> coordList = new ArrayList<Coordinate>();
-//				List<Integer> xList = cs.getIntegerList(name+".miniguns.locations.x");
-//				List<Integer> yList = cs.getIntegerList(name+".miniguns.locations.y");
-//				List<Integer> zList = cs.getIntegerList(name+".miniguns.locations.z");
-//				if(xList.size() == yList.size() && xList.size() == zList.size()) {
-//					for(int i = 0; i < xList.size(); i++) {
-//						Coordinate coord = new Coordinate(xList.get(i), yList.get(i), zList.get(i));
-//						coordList.add(coord);
-//					}
-//					Coordinate[] coordinates = new Coordinate[xList.size()];
-//					coordinates = coordList.toArray(coordinates);
-//					map.setMinigunCoords(coordinates);
-//				}
-//			}
 			
 			boolean enabled = true;
 			if(world == null) System.out.println("WORLD IS NULL!!!");

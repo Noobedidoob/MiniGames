@@ -3,8 +3,6 @@ package me.noobedidoob.minigames.utils;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 
-import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
-
 public class LasertagColor {
 	
 	private LtColorNames colorName;
@@ -61,5 +59,24 @@ public class LasertagColor {
 	}
 	public int getOrdinal() {
 		return ordinal;
+	}
+	
+	
+	public enum LtColorNames {
+		Red,
+		Blue,
+		Green,
+		Yellow,
+		Purple,
+		Gray,
+		Orange,
+		White;
+		
+		public ChatColor getChatColor() {
+			return new LasertagColor(this).getChatColor();
+		}
+		public Color getColor() {
+			return new LasertagColor(this).getColor();
+		}
 	}
 }

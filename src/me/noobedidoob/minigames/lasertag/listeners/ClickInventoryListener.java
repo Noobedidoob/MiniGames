@@ -3,7 +3,6 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,9 +14,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class ClickInventoryListener implements Listener {
@@ -30,24 +29,26 @@ public class ClickInventoryListener implements Listener {
 	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerClickInventory(InventoryClickEvent e) {
-		HumanEntity he = e.getWhoClicked();
-		if(Game.waiting() && he instanceof Player) {
-			Player p = (Player) he;
+		if(!(e.getWhoClicked() instanceof Player)) return;
+		Player p = (Player) e.getWhoClicked();
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		if(session.waiting()) {
 			if(e.getInventory().contains(Material.WHITE_STAINED_GLASS_PANE) && e.getInventory().contains(Weapons.shotgunItem.getType()) && e.getInventory().contains(Weapons.sniperItem.getType())) {
 				int slot = e.getSlot();
 				ItemStack newShotgun = Weapons.shotgunItem;
 				ItemMeta newShotgunMeta = newShotgun.getItemMeta();
 				ItemStack newSniper = Weapons.sniperItem;
 				ItemMeta newSnipernMeta = newSniper.getItemMeta();
-				if (Game.teams()) {
-					newShotgunMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(p)).getChatColor()
-							+ "§lShotgun #" + (Game.getTeamColor(Game.getPlayerTeam(p)).getOrdinal()+1));
-					newSnipernMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(p)).getChatColor()
-							+ "§lSniper #" + (Game.getTeamColor(Game.getPlayerTeam(p)).getOrdinal()+1));
+				if (session.isTeams()) {
+					newShotgunMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
+							+ "§lShotgun #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
+					newSnipernMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
+							+ "§lSniper #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
 				} else {
-					int ordinal = Game.getPlayerColor(p).getOrdinal();
-					newShotgunMeta.setDisplayName(Game.getPlayerColor(p).getChatColor() + "§lShotgun #" + (ordinal + 1));
-					newSnipernMeta.setDisplayName(Game.getPlayerColor(p).getChatColor() + "§lSniper #" + (ordinal + 1));
+					int ordinal = session.getPlayerColor(p).getOrdinal();
+					newShotgunMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lShotgun #" + (ordinal + 1));
+					newSnipernMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lSniper #" + (ordinal + 1));
 				}
 				newShotgun.setItemMeta(newShotgunMeta);
 				newSniper.setItemMeta(newSnipernMeta);
@@ -62,17 +63,17 @@ public class ClickInventoryListener implements Listener {
 				}
 				
 				if(ready) {
-					if(p.getInventory().getItem(2).getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
+					if(p.getInventory().getItem(2).getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) p.getInventory().getItem(2).setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
 					p.closeInventory();
 					Weapons.hasChoosenWeapon.put((Player) p, true);
 					
 					boolean allReady = true;
-					for(Player ap : Game.players()) {
+					for(Player ap : session.getPlayers()) {
 						if(!Weapons.hasChoosenWeapon.get(ap)) allReady = false;
 					}
 					
 					if(allReady) {
-						for(Player ap : Game.players()) {
+						for(Player ap : session.getPlayers()) {
 							ap.sendMessage("§a§lEverybody is ready!!");
 							Lasertag.everybodyReady = true;
 						}
@@ -80,7 +81,7 @@ public class ClickInventoryListener implements Listener {
 				}
 			}
 		}
-		if(he.getGameMode() != GameMode.CREATIVE) e.setCancelled(true);
+		if(p.getGameMode() != GameMode.CREATIVE) e.setCancelled(true);
 	}
 	
 	
@@ -88,7 +89,9 @@ public class ClickInventoryListener implements Listener {
 	public void onPlayerCloseInventory(InventoryCloseEvent e) {
 		try {
 			Player p = (Player) e.getPlayer();
-			if(Game.waiting()) {
+			Session session = Session.getPlayerSession(p);
+			if(session == null) return;
+			if(session.waiting()) {
 				if(e.getInventory().contains(Material.WHITE_STAINED_GLASS_PANE) && e.getInventory().contains(Weapons.shotgunItem.getType()) && e.getInventory().contains(Weapons.sniperItem.getType())) {
 					if(!Weapons.hasChoosenWeapon.get(p)) {
 						Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {

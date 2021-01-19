@@ -99,6 +99,13 @@ public class MgUtils {
 		return time;
 	}
 	
+	public enum TimeFormat{
+		SECONDS,
+		MINUTES,
+		HOURS;
+	}
+	
+	
 	public enum ServerProperty {
 
         SPAWN_PROTECTION("spawn-protection"),

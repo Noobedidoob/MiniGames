@@ -13,7 +13,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
+import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.Session;
 
 public class Weapons {
 
@@ -79,10 +80,12 @@ public class Weapons {
 	public static HashMap<Player, Integer> sniperCountdown = new HashMap<Player, Integer>();
 	public static HashMap<Player, Integer> sniperCountdownTime = new HashMap<Player, Integer>();
 	public static void cooldownPlayer(Player p, Weapon weapon, boolean testing) {
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
 		if(weapon == Weapon.LASERGUN) {
 			lasergunCoolingdown.put(p, true);
-			int cooldown = Mod.LASERGUN_COOLDOWN_TICKS.getInt();
-			if(Mod.withMultiweapons()) cooldown = Mod.LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS.getInt();
+			int cooldown = session.getIntMod(Mod.LASERGUN_COOLDOWN_TICKS);
+			if(session.withMultiweapons()) cooldown = session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS);
 			p.setCooldown(Material.DIAMOND_HOE, cooldown);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
@@ -92,47 +95,49 @@ public class Weapons {
 			}, cooldown);
 		} else if(weapon == Weapon.SNIPER) {
 			sniperCoolingdown.put(p, true);
-			p.setCooldown(Material.DIAMOND_PICKAXE, Mod.SNIPER_COOLDOWN_TICKS.getInt());
+			p.setCooldown(Material.DIAMOND_PICKAXE, session.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
 				public void run() {
 					sniperCoolingdown.put(p, false);
-					if(!testing) p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
+					if(!testing) p.getInventory().getItem(2).setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
 					else {
-						p.getInventory().getItem(3).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getInt());
+						p.getInventory().getItem(3).setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
 						LaserShooter.playersSnipershots.put(p, 0);
 					}
 				}
-			}, Mod.SNIPER_COOLDOWN_TICKS.getInt());
+			}, session.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
 		} else if(weapon == Weapon.SHOTGUN) {
 			shotgunCoolingdown.put(p, true);
-			p.setCooldown(Material.DIAMOND_SHOVEL, Mod.SHOTGUN_COOLDOWN_TICKS.getInt());
+			p.setCooldown(Material.DIAMOND_SHOVEL, session.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS));
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override
 				public void run() {
 					shotgunCoolingdown.put(p, false);
 				}
-			}, Mod.SHOTGUN_COOLDOWN_TICKS.getInt());
+			}, session.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS));
 		}
 	}
 	
 	public static Inventory getPlayersWeaponsInv(Player p) {
+		Session session = Session.getPlayerSession(p);
 		Inventory weaponsInv = Bukkit.createInventory(null, 9, "§aChoose your secondary weapon!");
+		if(session == null) return weaponsInv;
 		ItemStack glass = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
 		
 		ItemStack newShotgun = Weapons.shotgunItem;
 		ItemMeta newShotgunMeta = newShotgun.getItemMeta();
 		ItemStack newSniper = Weapons.sniperItem;
 		ItemMeta newSnipernMeta = newSniper.getItemMeta();
-		if (Game.teams()) {
-			newShotgunMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(p)).getChatColor()
-					+ "§lShotgun #" + (Game.getTeamColor(Game.getPlayerTeam(p)).getOrdinal()+1));
-			newSnipernMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(p)).getChatColor()
-					+ "§lSniper #" + (Game.getTeamColor(Game.getPlayerTeam(p)).getOrdinal()+1));
+		if (session.isTeams()) {
+			newShotgunMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
+					+ "§lShotgun #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
+			newSnipernMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
+					+ "§lSniper #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
 		} else {
-			int ordinal = Game.getPlayerColor(p).getOrdinal();
-			newShotgunMeta.setDisplayName(Game.getPlayerColor(p).getChatColor() + "§lShotgun #" + (ordinal + 1));
-			newSnipernMeta.setDisplayName(Game.getPlayerColor(p).getChatColor() + "§lSniper #" + (ordinal + 1));
+			int ordinal = session.getPlayerColor(p).getOrdinal();
+			newShotgunMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lShotgun #" + (ordinal + 1));
+			newSnipernMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lSniper #" + (ordinal + 1));
 		}
 		newShotgun.setItemMeta(newShotgunMeta);
 		newSniper.setItemMeta(newSnipernMeta);

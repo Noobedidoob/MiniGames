@@ -8,7 +8,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.plugin.PluginManager;
 
-import me.noobedidoob.minigames.lasertag.methods.Game;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class DamageListener implements Listener {
@@ -22,8 +22,10 @@ public class DamageListener implements Listener {
 	@EventHandler
 	public void onPlayerDamage(EntityDamageEvent e) {
 		if(e.getEntity() instanceof Player) {
+			Session session = Session.getPlayerSession((Player) e.getEntity());
+			if(session == null) return;
 			DamageCause dc = e.getCause();
-			if(Game.tagging()) {
+			if(session.tagging()) {
 				if(dc == DamageCause.FALL) e.setCancelled(true);
 			} else {
 				e.setCancelled(true);

@@ -1,6 +1,5 @@
 package me.noobedidoob.minigames.lasertag.commands;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -11,8 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.MgUtils;
 
@@ -26,6 +26,10 @@ public class ModifierCommands  {
 	
 	
 	public void perform(CommandSender sender, String[] args) {
+		if(!(sender instanceof Player)) {
+			sender.sendMessage("You have to be a player to perfrom this command!");
+			return;
+		}
 		
 		if(args[0].equalsIgnoreCase("getModifiers") | args[0].equalsIgnoreCase("modifiers")) {
 			sender.sendMessage("\n§7—————————§d§lModifiers§r§7—————————");
@@ -39,6 +43,15 @@ public class ModifierCommands  {
 				sender.sendMessage("§7"+m.name()+" <§e"+m.getValueTypeName()+"§7>");
 			}
 		} else if(args[0].equalsIgnoreCase("setmodifier")) {
+			if(!(sender instanceof Player)) {
+				sender.sendMessage("You can only perform this command as a player!");
+				return;
+			}
+			Session session = Session.getPlayerSession((Player) sender);
+			if(session == null) {
+				sender.sendMessage("§cYou have to be in a session to perform this command!");
+				return;
+			}
 			Mod m = Mod.valueOf(args[1].toUpperCase().replace("-", "_"));
 			String valString = args[2];
 			Object value = valString;
@@ -70,7 +83,7 @@ public class ModifierCommands  {
 			}
 			if(m != null) {
 				if(value.getClass() == m.getOg().getClass()) {
-					m.set(value);
+					session.setMod(m, value);
 					if(m == Mod.WITH_MULTIWEAPONS && (boolean) value) {
 						Bukkit.dispatchCommand(sender, "lt withmultiweapons");
 					}
@@ -85,23 +98,32 @@ public class ModifierCommands  {
 				return;
 			}
 		} else if(args[0].equalsIgnoreCase("withmultiweapons")) {
-			if (Game.waiting()) {
-				Mod.WITH_MULTIWEAPONS.set(true);
+			if(!(sender instanceof Player)) {
+				sender.sendMessage("You can only perform this command as a player!");
+				return;
+			}
+			Session session = Session.getPlayerSession((Player) sender);
+			if(session == null) {
+				sender.sendMessage("§cYou have to be in a session to perform this command!");
+				return;
+			}
+			if (session.waiting()) {
+				session.setMod(Mod.WITH_MULTIWEAPONS, true);
 				ItemStack newLasergun = Weapons.lasergunItem;
 				ItemStack newDagger = Weapons.daggerItem;
 				newLasergun.removeEnchantment(Enchantment.DAMAGE_ALL);
 				ItemMeta newLasergunMeta = newLasergun.getItemMeta();
 				ItemMeta newDaggerMeta = newLasergun.getItemMeta();
-				for (Player ap : Game.players()) {
-					if (Game.teams()) {
-						newLasergunMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(ap)).getChatColor()
-								+ "§lLasergun #" + (Game.getTeamColor(Game.getPlayerTeam(ap)).getOrdinal()+1));
-						newDaggerMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(ap)).getChatColor()
-								+ "§lDagger #" + (Game.getTeamColor(Game.getPlayerTeam(ap)).getOrdinal()+1));
+				for (Player ap : session.getPlayers()) {
+					if (session.isTeams()) {
+						newLasergunMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(ap)).getChatColor()
+								+ "§lLasergun #" + (session.getTeamColor(session.getPlayerTeam(ap)).getOrdinal()+1));
+						newDaggerMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(ap)).getChatColor()
+								+ "§lDagger #" + (session.getTeamColor(session.getPlayerTeam(ap)).getOrdinal()+1));
 					} else {
-						int ordinal = Game.getPlayerColor(ap).getOrdinal();
-						newLasergunMeta.setDisplayName(Game.getPlayerColor(ap).getChatColor() + "§lLasergun #" + (ordinal + 1));
-						newDaggerMeta.setDisplayName(Game.getPlayerColor(ap).getChatColor() + "§lDagger #" + (ordinal + 1));
+						int ordinal = session.getPlayerColor(ap).getOrdinal();
+						newLasergunMeta.setDisplayName(session.getPlayerColor(ap).getChatColor() + "§lLasergun #" + (ordinal + 1));
+						newDaggerMeta.setDisplayName(session.getPlayerColor(ap).getChatColor() + "§lDagger #" + (ordinal + 1));
 					}
 					newLasergun.setItemMeta(newLasergunMeta);
 					newDagger.setItemMeta(newDaggerMeta);
@@ -123,11 +145,15 @@ public class ModifierCommands  {
 	}
 	
 	public List<String> getTabComplete(List<String> list, CommandSender sender, String[] args) {
+		if(!(sender instanceof Player)) {
+			sender.sendMessage("You have to be a player to perfrom this command!");
+			return list;
+		}
 		
 		if(args.length == 1) {
 			list.add("getModifiers");
 			list.add("getModifierTypes");
-			if(Game.waiting() && sender.isOp()) {
+			if(sender instanceof Player && Session.getPlayerSession((Player) sender) != null && Session.getPlayerSession((Player) sender).waiting() && sender.isOp()) {
 				list.add("withmultiweapons");
 				list.add("setModifier");
 			}
@@ -157,129 +183,4 @@ public class ModifierCommands  {
 		
 		return list;
 	}
-	
-private static HashMap<Mod, Object> modifierValue = new HashMap<Mod, Object>();
-	
-	public enum Mod{
-		POINTS(1, "Normal amount of points a player gets"),
-		WITH_MULTIWEAPONS(false, "Playing with multiple weapons"),
-		SNIPER_SHOT_EXTRA(1, "Extra points when killing with snipe-shot"),
-		MINIMAL_SNIPE_DISTANCE(35, "Minimal distance of a shot to be a sniper shot"),
-		NORMAL_SHOT_EXTRA(0, "Extra points when a player shot normal"),
-		BACKSTAB_EXTRA(0, "Extra points when backstabbing"),
-		PVP_EXTRA(0, "Extra ponts when killed at melee"),
-		HEADSHOT_EXTRA(1, "Extra ponts when killing with headshot"),
-		STREAK_EXTRA(2, "Extra points when having a streak"),
-		STREAK_SHUTDOWN(2, "Extra points when shutting down a streak"),
-		MIN_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
-		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
-		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
-		WIDTH_ADDON(0d, "Addon to a players hitbox width"),
-		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
-//		WITHEVENTS
-		SHOOT_THROUGH_BLOCKS(false, "Shoot through blocks"),
-		HIGHLIGHT_PLAYERS(false, "Making players glow and more visible"),
-		HIGHLIGHT_POWER(255, "Glowing power"),
-		LASERGUN_COOLDOWN_TICKS(12, "Ticks a lasergun takes to cool down"),
-		LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS(2, "Ticks a lasergun takes to cool down when playing with multiple weapons"),
-		SNIPER_COOLDOWN_TICKS(100, "Ticks a sniperrifle takes to cool down"),
-		SHOTGUN_COOLDOWN_TICKS(40, "Ticks a shotgun takes to cool down"),
-		SNIPER_AMMO_BEFORE_COOLDOWN(2, "Maximal sniper ammo"),
-		LASERGUN_NORMAL_DAMAGE(100, "Normal lasergun shot damage"),
-		LASERGUN_MULTIWEAPONS_DAMAGE(9, "lasergun shot damage when playing with multiple weapons"),
-		LASERGUN_PVP_DAMAGE(10, "Lasergun melee damage (only without multiweapons"),
-		SHOTGUN_DAMAGE(11, "Shotgun shot damage"),
-		SNIPER_DAMAGE(100, "Sniper shot damage"),
-		STABBER_DAMAGE(10, "Stabber melee damage");
-		
-		private Object ogValue;
-		private Object currentValue;
-		private String description;
-		private String valueTypeName;
-		Mod(Object value, String description) {
-            this.ogValue = value;
-            this.currentValue = value;
-            this.description = description;
-            modifierValue.put(this, value);
-            if(value instanceof Integer) valueTypeName = "Full-Number";
-            else if(value instanceof Double) valueTypeName = "Number";
-            else valueTypeName = "true/false";
-        }
-		
-
-        public Object get() {
-        	return currentValue;
-        }
-        public int getInt() {
-        	try {
-				return (int) currentValue;
-			} catch (Exception e) {
-				return 0;
-			}
-        }
-        public double getDouble() {
-		    try {
-		    	return (double) currentValue;
-			} catch (Exception e) {
-				return 0;
-			}
-        }
-        public boolean getBoolean() {
-	        try {
-	        	return (boolean) currentValue;
-			} catch (Exception e) {
-				return false;
-			}
-        }
-        
-        public void set(Object value) {
-        	if(value.getClass() == ogValue.getClass()) {
-        		currentValue = value;
-            	modifierValue.put(this, value);
-        	}
-        }
-		
-        public Object getOg() {
-            return ogValue;
-        }
-        public int getOgInt() {
-        	try {
-				return (int) ogValue;
-			} catch (Exception e) {
-				return 0;
-			}
-        }
-        public double getOgDouble() {
-        	try {
-				return (double) ogValue;
-			} catch (Exception e) {
-				return 0;
-			}
-        }
-        public boolean getOgBoolean() {
-        	try {
-				return (boolean) ogValue;
-			} catch (Exception e) {
-				return false;
-			}
-        }
-        
-        
-        public String getDescription() {
-        	return description;
-        }
-        public String getValueTypeName() {
-        	return valueTypeName;
-        }
-        
-        public static boolean withMultiweapons() { return Mod.WITH_MULTIWEAPONS.getBoolean(); }
-        public static boolean multiWeapons() { return Mod.WITH_MULTIWEAPONS.getBoolean(); }
-        
-        public static void resetMods() {
-    		for(Mod m : Mod.values()) {
-    			modifierValue.put(m, m.getOg());
-    		}
-    	}
-	}
-	
 }

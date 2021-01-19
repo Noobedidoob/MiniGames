@@ -8,8 +8,8 @@ import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class RespawnListener implements Listener {
@@ -21,8 +21,10 @@ public class RespawnListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent e) {
-		if(Game.tagging()) {
-			for(Player p : Game.players()) {
+		Session session = Session.getPlayerSession(e.getPlayer());
+		if(session == null) return;
+		if(session.tagging()) {
+			for(Player p : session.getPlayers()) {
 				if(p == e.getPlayer()) {
 					e.setRespawnLocation(PlayerTeleporter.getPlayerSpawnLoc(p));
 					Lasertag.isProtected.put(p, true);
