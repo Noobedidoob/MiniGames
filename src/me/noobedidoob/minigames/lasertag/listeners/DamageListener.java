@@ -22,10 +22,8 @@ public class DamageListener implements Listener {
 	@EventHandler
 	public void onPlayerDamage(EntityDamageEvent e) {
 		if(e.getEntity() instanceof Player) {
-			Session session = Session.getPlayerSession((Player) e.getEntity());
-			if(session == null) return;
 			DamageCause dc = e.getCause();
-			if(session.tagging()) {
+			if(Session.getPlayerSession((Player) e.getEntity()) != null && Session.getPlayerSession((Player) e.getEntity()).tagging()) {
 				if(dc == DamageCause.FALL) e.setCancelled(true);
 			} else {
 				e.setCancelled(true);

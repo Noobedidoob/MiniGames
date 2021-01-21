@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
-import me.noobedidoob.minigames.lasertag.methods.Scoreboard;
 import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;
@@ -47,6 +46,7 @@ public class Session implements Listener{
 		modifiers = new Modifiers();
 		SessionInventorys.openInvitationInv(owner);
 		SessionInventorys.setPlayerInv(owner);
+		sessions.add(this);
 	}
 	
 	
@@ -65,6 +65,7 @@ public class Session implements Listener{
 		if(closeSession) close();
 	}
 	public void close() {
+		if(tagging()) stop(true, false);
 		for(Player p : players) {
 			DeathListener.streakedPlayers.put(p, 0);
 			setPlayerSession(p, null);
@@ -76,6 +77,7 @@ public class Session implements Listener{
 		owner = null;
 		admins = null;
 		System.out.println("Closed the session from "+code);
+		sessions.remove(this);
 	}
 	
 	
@@ -109,9 +111,11 @@ public class Session implements Listener{
 	public void setMap(Map m) {
 		if(m == null) {
 			voteMap = true;
+			System.out.println("Map = null");
 		}
 		else {
 			this.map = m;
+			System.out.println("set map to "+this.map.getName());
 			mapSet = true;
 		}
 	}
@@ -129,7 +133,7 @@ public class Session implements Listener{
 	
 	
 	
-	private long time;
+	private long time = 300;
 	private boolean timeSet = false;
 	public void setTime(int time, TimeFormat format) {
 		setTime((long) time, format);
@@ -148,7 +152,7 @@ public class Session implements Listener{
 		}
 		timeSet = true;
 		scoreboard.refresh();
-		broadcast("§aSession time was set to §d"+MgUtils.getTimeFormatFromLong(this.time, "s")+" §e"+format.name().charAt(0)+format.name().toLowerCase().substring(1));
+		broadcast("§aSession time was set to §d"+MgUtils.getTimeFormatFromLong(this.time, "m")+" §e"+format.name().toLowerCase());
 	}
 	public long getTime(TimeFormat format) {
 		switch (format) {
@@ -206,7 +210,7 @@ public class Session implements Listener{
 	}
 	public void addAdmin(Player p) {
 		admins.add(p);
-		sendMessage(p, "§eYou've been promoted to §bAdmin§e!");
+		if(p != owner) sendMessage(p, "§aYou've been promoted to §bAdmin§e!");
 		SessionInventorys.setPlayerInv(p);
 	}
 	public void removeAdmin(Player p) {
@@ -313,7 +317,10 @@ public class Session implements Listener{
 				setPlayerColor(ap, LtColorNames.values()[pColorIndex]);
 			});
 		}
+		p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		scoreboard.refresh();
+		
+		setPlayerSession(p, null);
 	}
 	
 
@@ -403,7 +410,9 @@ public class Session implements Listener{
 	
 	
 	
-	
+	public Object getModValue(Mod m) {
+		return modifiers.get(m);
+	}
 	
 	public int getIntMod(Mod m) {
 	 	return modifiers.getInt(m);
@@ -444,6 +453,13 @@ public class Session implements Listener{
 	}
 	
 	public static void sendMessage(Player p, String s) {
-		p.sendMessage( "§o§7[§6Session§7] §r§e"+s);
+		p.sendMessage( "§o§7[§6Session§7] §r§a"+s);
+	}
+	
+	private static List<Session> sessions = new ArrayList<Session>();
+	public static void closeAllSessions() {
+		sessions.forEach(s ->{
+			s.close();
+		});
 	}
 }

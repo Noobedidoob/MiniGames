@@ -29,7 +29,6 @@ import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
-import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -88,13 +87,7 @@ public class Lasertag {
 		Weapons.getTestSet();
 	}
 	public void disable() {
-		for(Player p : Bukkit.getOnlinePlayers()) {
-			if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).getOwner() == p) {
-				Session session = Session.getPlayerSession(p);
-				if(!session.tagging()) session.close();
-				else session.stop(true, true);
-			}
-		}
+//		Session.closeAllSessions();
 	}
 	
 	//TODO: wait for players to be ready

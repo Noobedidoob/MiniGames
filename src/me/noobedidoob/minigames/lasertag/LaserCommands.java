@@ -62,7 +62,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 		if(m.worldFound) {
 			if(cmd.getName().equalsIgnoreCase("lasertag")) {
-				if(args[0].equalsIgnoreCase("test") && sender instanceof Player) {
+				if(args.length > 0 && args[0].equalsIgnoreCase("test") && sender instanceof Player) {
 					Player p = (Player) sender;
 					p.getInventory().clear();
 					Inventory inv = Bukkit.createInventory(null, 9, "Test inv");

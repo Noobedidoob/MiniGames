@@ -105,10 +105,11 @@ public class SessionCommands {
 				else if(args[0].equalsIgnoreCase("kick")) {
 					if(s != null) {
 						if (s.isAdmin(p)) {
-							Player kp = Bukkit.getPlayer(args[2]);
+							Player kp = Bukkit.getPlayer(args[1]);
 							if (kp != null) {
 								if(s.isInSession(kp)) {
-									s.kickPlayer(kp, p);
+									if(kp != s.getOwner()) s.kickPlayer(kp, p);
+									else Session.sendMessage(kp, "§cYou can't kick the owner!");
 								} else Session.sendMessage(p, "§d"+args[1]+" §cis not in this session!");
 							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");
 						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
@@ -140,8 +141,10 @@ public class SessionCommands {
 							if(dp != null) {
 								if (s.isInSession(dp)) {
 									if (s.isAdmin(dp)) {
-										s.removeAdmin(dp);
-										Session.sendMessage(p, "§aDemoted §d"+dp.getName()+" §afrom Admin!");
+										if(dp != s.getOwner()) {
+											s.removeAdmin(dp);
+											Session.sendMessage(p, "§aDemoted §d"+dp.getName()+" §afrom Admin!");
+										} else Session.sendMessage(dp, "§cYou can't do this to the owner!");
 									} else Session.sendMessage(p, "§d"+args[1]+" §cis not an admin!");
 								} else Session.sendMessage(p, "§d"+args[1]+" §cis not in this session!");
 							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");

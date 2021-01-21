@@ -3,48 +3,29 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.Tag;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.type.TrapDoor;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.util.Vector;
 
-import com.comphenix.protocol.PacketType.Play;
-
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
-import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Coordinate;
-import me.noobedidoob.minigames.utils.LasertagColor;
-import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.Pair;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 
-@SuppressWarnings("unused")
 public class MoveListener implements Listener {
 	
 	public MoveListener(Minigames minigames) {
@@ -52,26 +33,12 @@ public class MoveListener implements Listener {
 		pluginManeger.registerEvents(this, minigames);
 	}
 	  
-	HashMap<Player, Coordinate> currentPlayersMinigunCoord = new HashMap<Player, Coordinate>();
-	
-	boolean enabled = false;
-
-	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
 		
 		Player p = e.getPlayer();
 		Session session = Session.getPlayerSession(p);
 		
-//		if(p == Bukkit.getPlayer("Noobedidoob")) {
-//			if(!enabled) {
-//				Location l = p.getLocation();
-//				Coordinate coord = new Coordinate(l.getBlockX(), l.getBlockY()+3, l.getBlockZ());
-//				Flag flag = new Flag(coord, new LasertagColor(LtColorNames.Green));
-//				flag.attachPlayer(p);
-//				enabled = true;
-//			}
-//		}
 		if(session != null) {
 			if(session.tagging() && session.isInSession(p)) {
 				if(session.getMap().withBaseSpawn()) {
@@ -94,50 +61,7 @@ public class MoveListener implements Listener {
 					e.getPlayer().damage(100);
 				}
 				if(session.withMultiweapons()) {
-					if (session.getMap().withMiniguns()) {
-						for (Coordinate coord : session.getMap().getMinigunCoords()) {
-							if (currentPlayersMinigunCoord.get(p) == null) {
-								if (coord.getLocation(Minigames.world).distance(p.getLocation()) <= 1) {
-	//								p.getInventory().addItem(Weapons.minigunItem);
-									currentPlayersMinigunCoord.put(p, coord);
-								}
-							} else {
-								if (coord.getLocation(Minigames.world).distance(p.getLocation()) > 1) {
-	//								MyUtils.removeItemFromPlayer(p, Weapons.minigunItem);
-									currentPlayersMinigunCoord.put(p, null);
-								}
-							}
-						}
-					} 
 				}
-	//			if(Modifiers.multiWeapons) {
-	//				if(p.getInventory().getItemInHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
-	//					if(!p.isSprinting() /*&& p.isSilent()*/) {
-	//						for(Entity entity : p.getNearbyEntities(2, 2, 2)) {
-	//							if(entity instanceof Player) {
-	//								Player target = (Player) entity;
-	//								for(Player inGamePlayer : session.players()) {
-	//									if(target.equals(inGamePlayer)) {
-	//										boolean notFromTeam = true;
-	//										if(session.teams()) {
-	//											for(Player teamPlayer : session.getPlayerTeam(p)) {
-	//												if(target.equals(teamPlayer)) notFromTeam = false;
-	//											}
-	//										}
-	//										if(notFromTeam) {
-	//											Vector inverseDirectionVec = target.getEyeLocation().getDirection().normalize().multiply(-1);
-	//											Location locBehindTarget = target.getLocation().add(inverseDirectionVec);
-	//											if(p.getLocation().distance(locBehindTarget) < 1) {
-	//												p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GREEN+""+ChatColor.BOLD+"ATTACK IS READY!"));
-	//											}
-	//										}
-	//									}
-	//								}
-	//							}
-	//						}
-	//					}
-	//				}
-	//			}
 			}
 		} else {
 			if(e.getTo().getY() < 0) {
@@ -160,7 +84,7 @@ public class MoveListener implements Listener {
 		}
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
 		
-		if (!session.isInSession(p)) {
+		if (session != null && !session.isInSession(p)) {
 			if (Lasertag.playerTesting.get(p) == null)
 				Lasertag.playerTesting.put(p, false);
 			if (!Lasertag.playerTesting.get(p)) {

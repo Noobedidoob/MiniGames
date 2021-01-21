@@ -27,7 +27,6 @@ import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Scoreboard;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;

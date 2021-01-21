@@ -1,4 +1,4 @@
-package me.noobedidoob.minigames.lasertag.methods;
+package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,7 +12,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
-import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 
@@ -34,7 +33,7 @@ public class Scoreboard {
 		long time = session.getTime(TimeFormat.SECONDS);
 		if(time < 3600) obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
 		else obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
-		obj.getScore("").setScore(1);
+		obj.getScore(" ").setScore(1);
 		
 		if(session.isSolo()) {
 			int i = 2;

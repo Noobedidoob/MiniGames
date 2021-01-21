@@ -15,8 +15,11 @@ public class Modifiers {
 		}
 	}
 	
-	private HashMap<Mod, Object> modValues = new HashMap<Mod, Object>();
+	public HashMap<Mod, Object> modValues = new HashMap<Mod, Object>();
 	
+	public Object get(Mod m) {
+		return modValues.get(m);
+	}
 	public int getInt(Mod m) {
 	 	try {
 			return (int) modValues.get(m);
@@ -130,5 +133,11 @@ public class Modifiers {
         	return valueTypeName;
         }
         
+        public static Mod getMod(String name) {
+        	for(Mod m : Mod.values()) {
+        		if(m.name().equalsIgnoreCase(name)) return m;
+        	}
+        	return null;
+        }
 	}
 }

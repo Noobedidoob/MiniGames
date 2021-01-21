@@ -52,16 +52,20 @@ public class SessionInventorys implements Listener{
 									else Session.sendMessage(p, "§cThis player was already invited!");
 								}
 							}
+							Session.sendMessage(p, "§aInvited everyone!");
 							session.setInvitationSent(true);
 							openTimeInv(p);
 						} else if(slot > 8 && slot < inv.getSize()-1) {
 							Player ip = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
-							session.sendInvitation(ip);
-							Session.sendMessage(p, "§eInvited §d"+ip.getName());
+							if(!session.invitedPlayers.contains(ip)) {
+								session.sendInvitation(ip);
+							}
+							else Session.sendMessage(p, "§cThis player was already invited!");
+							Session.sendMessage(p, "§aInvited §d"+ip.getName());
 							inv.setItem(slot, new ItemStack(Material.AIR));
 						} else if(slot == inv.getSize()-1) {
 							session.setInvitationSent(true);
-							openTimeInv(p);
+							if(!session.isTimeSet()) openTimeInv(p);
 						}
 					} catch (Exception e1) {}
 				} else if(inv.getItem(4).getType() == Material.CLOCK){
@@ -81,7 +85,7 @@ public class SessionInventorys implements Listener{
 				} else if(inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
 					if(slot == 4) {
 						session.setMap(null);
-						Session.sendMessage(p, "§eMap vote enabled!");
+						Session.sendMessage(p, "§aMap vote enabled!");
 						p.closeInventory();
 						if(session.isTeams()) openTeamsInv(p);
 						for(Player ap : session.getPlayers()) {
@@ -118,10 +122,12 @@ public class SessionInventorys implements Listener{
 					ItemMeta timeMeta = inv.getItem(4).getItemMeta();
 					timeMeta.setDisplayName("§a"+inv.getItem(4).getAmount()+" §dTeams");
 					inv.getItem(4).setItemMeta(timeMeta);
-				} else if(inv.getItem(0) != null && inv.getItem(0).getType() == Material.PLAYER_HEAD) {
+				} else if(inv.getItem(slot) != null && inv.getItem(slot).getType() == Material.PLAYER_HEAD) {
 					Player ap = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
-					session.addAdmin(ap);
-					Session.sendMessage(p, "Promoted §d"+ap.getName()+" §eto Admin!");
+					if(session.isInSession(ap) && !session.isAdmin(ap)) {
+						session.addAdmin(ap);
+						Session.sendMessage(p, "§aMade §d"+ap.getName()+" §aan §badmin");
+					}
 					inv.setItem(slot, new ItemStack(Material.AIR));
 				}
 				e.setCancelled(true);
@@ -280,13 +286,15 @@ public class SessionInventorys implements Listener{
 	public static void openTimeInv(Player p) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
+		
 		Inventory inv = Bukkit.createInventory(null, 9*1, "§1Set session time (in minutes)");
 		
-		ItemStack timeItem = new ItemStack(Material.CLOCK, 5);
-		ItemMeta timeMeta = timeItem.getItemMeta();
 		long time = 5;
 		if(session.isTimeSet()) time = session.getTime(TimeFormat.MINUTES);
 		if(session.getTime(TimeFormat.SECONDS) < 60) time = 1;
+		ItemStack timeItem = new ItemStack(Material.CLOCK, (int) time);
+		ItemMeta timeMeta = timeItem.getItemMeta();
+		
 		timeMeta.setDisplayName("§dTime: §r"+time+" Minutes");
 		timeItem.setItemMeta(timeMeta);
 

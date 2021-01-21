@@ -26,22 +26,28 @@ public class ModifierCommands  {
 	
 	
 	public void perform(CommandSender sender, String[] args) {
-		if(!(sender instanceof Player)) {
-			sender.sendMessage("You have to be a player to perfrom this command!");
-			return;
-		}
-		
 		if(args[0].equalsIgnoreCase("getModifiers") | args[0].equalsIgnoreCase("modifiers")) {
-			sender.sendMessage("\n§7—————————§d§lModifiers§r§7—————————");
-			for(Mod m : Mod.values()) {
-				sender.sendMessage("§7> "+m.getDescription()+": §a"+m.getOg().toString());
+			if (!(sender instanceof Player) | Session.getPlayerSession((Player) sender) == null) {
+				for (Mod m : Mod.values()) {
+					sender.sendMessage("\n§7———————§d§lStanderd Modifiers§r§7———————");
+					sender.sendMessage("§7> " + m.getDescription() + ": §a" + m.getOg().toString());
+					sender.sendMessage("§7——————————————————\n");
+				} 
+			} else {
+				sender.sendMessage("\n§7—————————§d§lModifiers§r§7—————————");
+				Session s = Session.getPlayerSession((Player) sender);
+				s.modifiers.modValues.forEach((m, v) ->{
+					sender.sendMessage("§7> " + m.getDescription() + ": §a" + s.getModValue(m).toString());
+				});
+				sender.sendMessage("§7—————————————————————\n");
 			}
-			sender.sendMessage("§7————————————————————————\n");
 			return;
 		} else if(args[0].equalsIgnoreCase("getModifierTypes")) {
+			sender.sendMessage("\n§7———————§d§lModifier Types§r§7———————");
 			for(Mod m : Mod.values()) {
-				sender.sendMessage("§7"+m.name()+" <§e"+m.getValueTypeName()+"§7>");
+				sender.sendMessage("§7"+m.name()+" <§a"+m.getValueTypeName()+"§7>");
 			}
+			sender.sendMessage("§7———————————————————\n");
 		} else if(args[0].equalsIgnoreCase("setmodifier")) {
 			if(!(sender instanceof Player)) {
 				sender.sendMessage("You can only perform this command as a player!");
@@ -52,7 +58,7 @@ public class ModifierCommands  {
 				sender.sendMessage("§cYou have to be in a session to perform this command!");
 				return;
 			}
-			Mod m = Mod.valueOf(args[1].toUpperCase().replace("-", "_"));
+			Mod m = Mod.getMod(args[1].toUpperCase().replace("-", "_"));
 			String valString = args[2];
 			Object value = valString;
 			
@@ -145,32 +151,26 @@ public class ModifierCommands  {
 	}
 	
 	public List<String> getTabComplete(List<String> list, CommandSender sender, String[] args) {
-		if(!(sender instanceof Player)) {
-			sender.sendMessage("You have to be a player to perfrom this command!");
-			return list;
-		}
-		
 		if(args.length == 1) {
 			list.add("getModifiers");
 			list.add("getModifierTypes");
-			if(sender instanceof Player && Session.getPlayerSession((Player) sender) != null && Session.getPlayerSession((Player) sender).waiting() && sender.isOp()) {
+			if(sender instanceof Player && Session.getPlayerSession((Player) sender) != null && Session.getPlayerSession((Player) sender).waiting() && Session.getPlayerSession((Player) sender).isAdmin((Player) sender)) {
 				list.add("withmultiweapons");
 				list.add("setModifier");
 			}
-		} else if(args.length >= 2 && args[0].equalsIgnoreCase("setmodifier") && sender.isOp()) {
+		} else if(sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("setmodifier") && Session.getPlayerSession((Player) sender).isAdmin((Player) sender)) {
 			if(args.length == 2) {
 				for(Mod m : Mod.values()) list.add(m.name().toLowerCase());
-			} else if(args.length == 3 && Mod.valueOf(args[1].toUpperCase().replace("-", "_")) != null) {
-				if(Mod.valueOf(args[1].toUpperCase().replace("-", "_")).getValueTypeName() == "true/false") {
+			} else if(args.length == 3 && Mod.getMod(args[1].toUpperCase().replace("-", "_")) != null) {
+				if(Mod.getMod(args[1].toUpperCase().replace("-", "_")).getValueTypeName() == "true/false") {
 					list.add("true");
 					list.add("false");
 				}
 			}
 		}
 		
-		try {
-			String prevArg = args[args.length-2];
-			Mod m = Mod.valueOf(prevArg.toUpperCase().replaceAll("-", "_"));
+		if(args.length == 3) {
+			Mod m = Mod.getMod(args[2]);
 			if (m != null) {
 				if (m.getValueTypeName() == "true/false") {
 					if (sender.isOp()) {
@@ -179,8 +179,7 @@ public class ModifierCommands  {
 					}
 				} 
 			}
-		} catch(IllegalArgumentException | ArrayIndexOutOfBoundsException e) {}
-		
+		}
 		return list;
 	}
 }
