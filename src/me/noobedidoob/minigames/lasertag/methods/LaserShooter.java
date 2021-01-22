@@ -31,6 +31,7 @@ import me.noobedidoob.minigames.lasertag.session.Modifiers;
 import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.utils.Team;
 
 public class LaserShooter{
 	public static List<ArmorStand> invisibleStands = new ArrayList<ArmorStand>();
@@ -77,11 +78,11 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(session.isTeams()) {
-									for(Player[] team : session.getTeams()) {
+									for(Team team : session.getTeams()) {
 										boolean pInTeam = false;
-										for(Player tp : team) if(tp == p) pInTeam = true;
+										for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 										if(pInTeam) {
-											for(Player thp : team) if(thp == hitP) fromTeam = true;
+											for(Player thp : team.getPlayers()) if(thp == hitP) fromTeam = true;
 										}
 									}
 								}
@@ -177,11 +178,11 @@ public class LaserShooter{
 								if(isLaserInsideEntity(hitP, loc)) {
 									boolean fromTeam = false;
 									if(session.isTeams()) {
-										for(Player[] team : session.getTeams()) {
+										for(Team team : session.getTeams()) {
 											boolean pInTeam = false;
-											for(Player tp : team) if(tp == p) pInTeam = true;
+											for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 											if(pInTeam) {
-												for(Player thp : team) if(thp == hitP) fromTeam = true;
+												for(Player thp : team.getPlayers()) if(thp == hitP) fromTeam = true;
 											}
 										}
 									}
@@ -267,11 +268,11 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(session.isTeams()) {
-									for(Player[] team : session.getTeams()) {
+									for(Team team : session.getTeams()) {
 										boolean pInTeam = false;
-										for(Player tp : team) if(tp == p) pInTeam = true;
+										for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 										if(pInTeam) {
-											for(Player thp : team) if(thp == hitP) fromTeam = true;
+											for(Player thp : team.getPlayers()) if(thp == hitP) fromTeam = true;
 										}
 									}
 								}

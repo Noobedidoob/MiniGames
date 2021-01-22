@@ -29,12 +29,12 @@ public class ModifierCommands  {
 		if(args[0].equalsIgnoreCase("getModifiers") | args[0].equalsIgnoreCase("modifiers")) {
 			if (!(sender instanceof Player) | Session.getPlayerSession((Player) sender) == null) {
 				for (Mod m : Mod.values()) {
-					sender.sendMessage("\n§7———————§d§lStanderd Modifiers§r§7———————");
+					sender.sendMessage("\n§7———————§b§lStanderd Modifiers§r§7———————");
 					sender.sendMessage("§7> " + m.getDescription() + ": §a" + m.getOg().toString());
 					sender.sendMessage("§7——————————————————\n");
 				} 
 			} else {
-				sender.sendMessage("\n§7—————————§d§lModifiers§r§7—————————");
+				sender.sendMessage("\n§7—————————§b§lModifiers§r§7—————————");
 				Session s = Session.getPlayerSession((Player) sender);
 				s.modifiers.modValues.forEach((m, v) ->{
 					sender.sendMessage("§7> " + m.getDescription() + ": §a" + s.getModValue(m).toString());
@@ -43,7 +43,7 @@ public class ModifierCommands  {
 			}
 			return;
 		} else if(args[0].equalsIgnoreCase("getModifierTypes")) {
-			sender.sendMessage("\n§7———————§d§lModifier Types§r§7———————");
+			sender.sendMessage("\n§7———————§b§lModifier Types§r§7———————");
 			for(Mod m : Mod.values()) {
 				sender.sendMessage("§7"+m.name()+" <§a"+m.getValueTypeName()+"§7>");
 			}
@@ -93,14 +93,14 @@ public class ModifierCommands  {
 					if(m == Mod.WITH_MULTIWEAPONS && (boolean) value) {
 						Bukkit.dispatchCommand(sender, "lt withmultiweapons");
 					}
-					sender.sendMessage("§aSuccessfully set the value of the modifier §d"+m.name().toLowerCase()+" §a to §e"+value.toString());
+					sender.sendMessage("§aSuccessfully set the value of the modifier §b"+m.name().toLowerCase()+" §a to §e"+value.toString());
 					return;
 				} else {
 					sender.sendMessage("§cThe given type of value doesnt match with the modifiers value type! Please use §e"+m.getValueTypeName());
 					return;
 				}
 			} else {
-				sender.sendMessage("§cThe modifier §d"+args[1]+" §cdoesn't exist! Use §e/lt setmodifier §cto get all available modifiers");
+				sender.sendMessage("§cThe modifier §b"+args[1]+" §cdoesn't exist! Use §e/lt setmodifier §cto get all available modifiers");
 				return;
 			}
 		} else if(args[0].equalsIgnoreCase("withmultiweapons")) {

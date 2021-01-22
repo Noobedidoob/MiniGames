@@ -1,11 +1,11 @@
 package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
@@ -22,6 +22,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Team;
 
 public class Session implements Listener{
 	
@@ -35,32 +36,50 @@ public class Session implements Listener{
 	
 	
 	public Session(Player owner, boolean solo) {
+		scoreboard = new Scoreboard(this);
+		round = new Round(this, scoreboard);
+		modifiers = new Modifiers();
+		
 		this.owner = owner;
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
 		codeSession.put(code, this);
 		this.solo = solo;
-		scoreboard = new Scoreboard(this);
-		round = new Round(this, scoreboard);
-		modifiers = new Modifiers();
 		SessionInventorys.openInvitationInv(owner);
-		SessionInventorys.setPlayerInv(owner);
 		sessions.add(this);
 	}
 	
 	
-
-	public void start() {
+	int counter;
+	int timer;
+	public void start(boolean countdown) {
 		if(!round.tagging()) {
-			round.start();
+			round.preparePlayers();
+			if(!countdown) round.start();
+			else {
+				counter = 5;
+				timer = Bukkit.getScheduler().scheduleSyncRepeatingTask(Minigames.minigames, new Runnable() {
+					@Override
+					public void run() {
+						if(counter > 0) {
+							for(Player p : players) {
+								p.sendMessage("§aStarting Lasetag in §d"+counter--);
+							}
+						} else {
+							Bukkit.getScheduler().cancelTask(timer);
+							round.start();
+						}
+					}
+				}, 0, 20);
+			}
 		}
 	}
 	public void stop(boolean external, boolean closeSession) {
 		if(round.tagging()) {
 			round.stop(external);
 		}
-		
+		refreshPlayersLobbyInvs();
 		
 		if(closeSession) close();
 	}
@@ -69,8 +88,10 @@ public class Session implements Listener{
 		for(Player p : players) {
 			DeathListener.streakedPlayers.put(p, 0);
 			setPlayerSession(p, null);
+			playerSession.put(p, null);
 			p.getInventory().clear();
 		}
+		removePlayerSessinos();
 		modifiers.reset();
 		codeSession.put(code, null);
 		players = null;
@@ -82,7 +103,7 @@ public class Session implements Listener{
 	
 	
 	
-	public void refresh() {
+	public void refreshScoreboard() {
 		scoreboard.refresh();
 	}
 	
@@ -111,11 +132,12 @@ public class Session implements Listener{
 	public void setMap(Map m) {
 		if(m == null) {
 			voteMap = true;
-			System.out.println("Map = null");
+			broadcast("§aMap vote enabled! You can vote the map for this round!");
 		}
 		else {
+			voteMap = false;
 			this.map = m;
-			System.out.println("set map to "+this.map.getName());
+			broadcast("§aPlaying on the map §b"+m.getName());
 			mapSet = true;
 		}
 	}
@@ -135,10 +157,10 @@ public class Session implements Listener{
 	
 	private long time = 300;
 	private boolean timeSet = false;
-	public void setTime(int time, TimeFormat format) {
-		setTime((long) time, format);
+	public void setTime(int time, TimeFormat format, boolean announce) {
+		setTime((long) time, format, announce);
 	}
-	public void setTime(long time, TimeFormat format) {
+	public void setTime(long time, TimeFormat format, boolean announce) {
 		switch (format) {
 		case MINUTES:
 			this.time = time*60;
@@ -152,7 +174,7 @@ public class Session implements Listener{
 		}
 		timeSet = true;
 		scoreboard.refresh();
-		broadcast("§aSession time was set to §d"+MgUtils.getTimeFormatFromLong(this.time, "m")+" §e"+format.name().toLowerCase());
+		if(announce) broadcast("§aSession time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "m")+" §e"+format.name().toLowerCase());
 	}
 	public long getTime(TimeFormat format) {
 		switch (format) {
@@ -176,7 +198,7 @@ public class Session implements Listener{
 	public List<Player> invitedPlayers = new ArrayList<Player>();
 	@SuppressWarnings("deprecation")
 	public void sendInvitation(Player p) {
-		sendMessage(p, "§eYou've been invited to the session of §d"+owner.getName());
+		sendMessage(p, "§eYou've been invited to the session of §b"+owner.getName());
 		TextComponent linkMsg = new TextComponent("JOIN");
 		linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		linkMsg.setBold(true);
@@ -210,14 +232,14 @@ public class Session implements Listener{
 	}
 	public void addAdmin(Player p) {
 		admins.add(p);
-		if(p != owner) sendMessage(p, "§aYou've been promoted to §bAdmin§e!");
-		SessionInventorys.setPlayerInv(p);
+		if(p != owner) sendMessage(p, "§aYou've been promoted to §eAdmin§e!");
+		refreshPlayerLobbyInv(p);
 	}
 	public void removeAdmin(Player p) {
 		if(admins.contains(p)) {
 			admins.remove(p);
-			sendMessage(p, "§cYou're not longer an §bAdmin§e!");
-			SessionInventorys.setPlayerInv(p);
+			sendMessage(p, "§cYou're not longer an §eAdmin§e!");
+			refreshPlayerLobbyInv(p);
 		}
 	}
 	public Player[] getAdmins() {
@@ -247,7 +269,7 @@ public class Session implements Listener{
 	}
 	public void addPoints(Player p, int points) {
 		playerPoints.put(p, playerPoints.get(p)+points);
-		if(!solo) teamPoints.put(getPlayerTeam(p), teamPoints.get(getPlayerTeam(p))+points);
+		if(!solo) getPlayerTeam(p).addPoints(points);
 	}
 	private List<Player> players = new ArrayList<Player>();
 	public Player[] getPlayers() {
@@ -257,36 +279,51 @@ public class Session implements Listener{
 		return players.contains(p);
 	}
 	public void addPlayer(Player p) {
-		broadcast("§d"+p.getName()+" §aJoined the session!");
+		broadcast("§b"+p.getName()+" §aJoined the session!");
 		setPlayerSession(p, this);
 		players.add(p);
 		playerPoints.put(p, 0);
 		int pColorIndex = players.indexOf(p);
 		if(pColorIndex > LtColorNames.values().length-1) pColorIndex -= LtColorNames.values().length-1;
 		setPlayerColor(p, LtColorNames.values()[pColorIndex]);
-		sendMessage(p, "§aWelcome to the Game, §d"+p.getName()+"§r§a!");
-		SessionInventorys.setPlayerInv(p);
+		sendMessage(p, "§aWelcome to the Game, §b"+p.getName()+"§r§a!");
+		refreshPlayerLobbyInv(p);
+		
+		if (isTeams() && p != owner) {
+			Team sTeam = teams.get(0);
+			int lowestAmount = teams.get(0).getPlayers().length;
+			for (Team team : teams) {
+				if(team.getPlayers().length < lowestAmount) {
+					lowestAmount = team.getPlayers().length;
+					sTeam = team;
+				}
+			} 
+			sTeam.addPlayer(p);
+		}
+		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 			@Override
 			public void run() {
 				scoreboard.refresh();
 			}
 		}, 20);
+		round.refreshPlayerTeams();
 	}
 	public void kickPlayer(Player p, Player admin) {
 		removePlayer(p);
-		broadcast("§d"+p.getName()+" §cwas kicked from §b"+admin.getName());
-		sendMessage(p, "§d" + admin.getName() + " §ckicked you out of the session!");
+		broadcast("§b"+p.getName()+" §cwas kicked from §e"+admin.getName());
+		sendMessage(p, "§b" + admin.getName() + " §ckicked you out of the session!");
 	}
 	public void leavePlayer(Player p) {
 		removePlayer(p);
-		broadcast("§d"+p.getName()+" §cleft the session");
+		broadcast("§b"+p.getName()+" §cleft the session");
 		sendMessage(p, "§cYou left the session!");
 	}
 	public void removePlayer(Player p) {
 		p.getInventory().clear();
 		players.remove(p);
 		invitedPlayers.remove(p);
+		getPlayerTeam(p).removePlayer(p);
 		if(admins.contains(p)) admins.remove(p);
 		if(p == owner) {
 			if(players.size() == 0) {
@@ -297,84 +334,80 @@ public class Session implements Listener{
 				}
 				codeSession.put(code, null);
 				owner = admins.get(0);
-				sendMessage(owner, "§l§dYou were made the owner of this session!");
+				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
 				codeSession.put(code, this);
 			} else {
 				codeSession.put(code, null);
 				owner = admins.get(0);
-				sendMessage(owner, "§l§dYou were made the owner of this session!");
+				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
 				codeSession.put(code, this);
 			}
-			
-			SessionInventorys.setPlayerInv(owner);
+			refreshPlayerLobbyInv(owner);
 		}
 		if(isSolo() && waiting()) {
-			players.forEach(ap ->{
+			for(Player ap : players) {
 				int pColorIndex = players.indexOf(ap);
 				if(pColorIndex > LtColorNames.values().length-1) pColorIndex -= LtColorNames.values().length-1;
 				setPlayerColor(ap, LtColorNames.values()[pColorIndex]);
-			});
+			}
 		}
 		p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		scoreboard.refresh();
 		
 		setPlayerSession(p, null);
+		round.refreshPlayerTeams();
 	}
 	
+	
+	public void disconnectPlayer(Player p) {
+		removePlayer(p);
+	}
 
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	private List<List<Player>> teams = new ArrayList<List<Player>>();
-	private HashMap<Player, Player[]> playerTeam = new HashMap<Player, Player[]>();
-	private HashMap<Player[], LasertagColor> teamColor = new HashMap<Player[], LasertagColor>();
-	private HashMap<Player[], Integer> teamPoints = new HashMap<Player[], Integer>();
+	private List<Team> teams = new ArrayList<Team>();
 	private int teamsAmount;
 	
-	public void addTeam(Player[] team, LtColorNames colorName) {
-		teams.add(Arrays.asList(team));
-		teamPoints.put(team, 0);
-		teamColor.put(team, new LasertagColor(colorName));
-		for(Player p : team) {
-			playerTeam.put(p, team);
+	public void addTeam(Player[] players, LtColorNames colorName) {
+		Team team = new Team(colorName, players);
+		teams.add(team);
+		for(Player p : players) {
 			playerColor.put(p, new LasertagColor(colorName));
 		}
 	}
-	public List<Player[]> getTeams(){
-		List<Player[]> teams = new ArrayList<Player[]>();
-		for(List<Player> teamList : this.teams) {
-			Player[] team = new Player[teamList.size()];
-			team = teamList.toArray(team);
-			teams.add(team);
-		}
+	public void addPlayerToTeam(Player p, LtColorNames name) {
+		addPlayerToTeam(p, teams.get(name.ordinal()));
+	}
+	public void addPlayerToTeam(Player p, Team team) {
+		team.addPlayer(p);
+		playerColor.put(p, team.getLasertagColor());
+	}
+	public List<Team> getTeams(){
 		return teams;
 	}
-	public LasertagColor getTeamColor(Player[] team) {
-		return teamColor.get(team);
+	public LasertagColor getTeamColor(Team team) {
+		return team.getLasertagColor();
 	}
-	public int getTeamPoints(Player[] team) {
-		return teamPoints.get(team);
+	public int getTeamPoints(Team team) {
+		return team.getPoints();
 	}
-	public Player[] getPlayerTeam(Player p) {
-		return playerTeam.get(p);
+	public Team getPlayerTeam(Player p) {
+		return Team.getPlayerTeam(p);
 	}
 	public int getTeamsAmount() {
 		return teamsAmount;
 	}
 	private boolean teamAmountSet = false;
 	public void setTeamsAmount(int amount) {
-		if(!round.tagging()) {
-			teamsAmount = amount;
-			teamAmountSet = true;
+		if(round.tagging()) return;
+		teamsAmount = amount;
+		teamAmountSet = true;
+		
+		for(int i = 0; i < amount; i++) {
+			if(i == 0) addTeam(new Player[] {owner}, LtColorNames.Red);
+			else addTeam(new Player[] {}, LtColorNames.values()[i]);
 		}
 	}
 	public boolean isTeamsAmountSet() {
@@ -383,20 +416,93 @@ public class Session implements Listener{
 	
 	public boolean inSameTeam(Player p1, Player p2) {
 		if (isTeams()) {
-			for (Player[] team : getTeams()) {
-				boolean pInTeam = false;
-				for (Player tp : team) {
-					if (tp == p1) pInTeam = true;
-					if (pInTeam) {
-						for (Player thp : team) {
-							if (thp == p2) return true;
-						}
-					}
-				}
+			for (Team team : getTeams()) {
+				return (team.isInTeam(p1) && team.isInTeam(p2));
 			}
 		}
 		return false;
 	}
+	
+	
+	
+	
+	
+	
+//	private List<List<Player>> teams = new ArrayList<List<Player>>();
+//	private HashMap<Player, Player[]> playerTeam = new HashMap<Player, Player[]>();
+//	private HashMap<Player[], LasertagColor> teamColor = new HashMap<Player[], LasertagColor>();
+//	private HashMap<Player[], Integer> teamPoints = new HashMap<Player[], Integer>();
+//	private int teamsAmount;
+//	
+//	public void addTeam(Player[] team, LtColorNames colorName) {
+//		teams.add(Arrays.asList(team));
+//		teamPoints.put(team, 0);
+//		teamColor.put(team, new LasertagColor(colorName));
+//		for(Player p : team) {
+//			playerTeam.put(p, team);
+//			playerColor.put(p, new LasertagColor(colorName));
+//		}
+//	}
+//	public void addPlayerToTeam(Player p, LtColorNames name) {
+//		addPlayerToTeam(p, getTeams().get(name.ordinal()));
+//	}
+//	public void addPlayerToTeam(Player p, Player[] team) {
+//		playerTeam.put(p, team);
+//		playerColor.put(p, getTeamColor(team));
+//		
+//	}
+//	public List<Player[]> getTeams(){
+//		List<Player[]> teams = new ArrayList<Player[]>();
+//		for(List<Player> teamList : this.teams) {
+//			Player[] team = new Player[teamList.size()];
+//			team = teamList.toArray(team);
+//			teams.add(team);
+//		}
+//		return teams;
+//	}
+//	public LasertagColor getTeamColor(Player[] team) {
+//		return teamColor.get(team);
+//	}
+//	public int getTeamPoints(Player[] team) {
+//		return teamPoints.get(team);
+//	}
+//	public Player[] getPlayerTeam(Player p) {
+//		return playerTeam.get(p);
+//	}
+//	public int getTeamsAmount() {
+//		return teamsAmount;
+//	}
+//	private boolean teamAmountSet = false;
+//	public void setTeamsAmount(int amount) {
+//		if(round.tagging()) return;
+//		teamsAmount = amount;
+//		teamAmountSet = true;
+//		
+//		for(int i = 0; i < amount; i++) {
+//			if(i == 0) addTeam(new Player[] {owner}, LtColorNames.Red);
+//			else addTeam(new Player[] {}, LtColorNames.values()[i]);
+//		}
+//	}
+//	public boolean isTeamsAmountSet() {
+//		return teamAmountSet;
+//	}
+//	
+//	public boolean inSameTeam(Player p1, Player p2) {
+//		if (isTeams()) {
+//			for (Player[] team : getTeams()) {
+//				boolean pInTeam = false;
+//				for (Player tp : team) {
+//					if (tp == p1) pInTeam = true;
+//					if (pInTeam) {
+//						for (Player thp : team) {
+//							if (thp == p2) return true;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		return false;
+//	}
 	
 	public Inventory teamChooseInv = Bukkit.createInventory(null,  9, "§1Choose Team:");
 	
@@ -406,7 +512,14 @@ public class Session implements Listener{
 			sendMessage(p, s);
 		}
 	}
-	
+	public void refreshPlayerLobbyInv(Player p) {
+		if(!tagging()) SessionInventorys.setPlayerLobbyInv(p);
+	}
+	public void refreshPlayersLobbyInvs() {
+		for(Player p : players) {
+			if(waiting()) refreshPlayerLobbyInv(p);
+		}
+	}
 	
 	
 	
@@ -436,13 +549,17 @@ public class Session implements Listener{
 	
 	
 	
-	
+	public void removePlayerSessinos() {
+		playerSession.forEach((p, s) ->{
+			if(s == this) playerSession.put(p, null);
+		});
+	}
 
-	private static HashMap<Player, Session> playerSession = new HashMap<Player, Session>();
-	public static Session getPlayerSession(Player p) {
+	private static HashMap<OfflinePlayer, Session> playerSession = new HashMap<OfflinePlayer, Session>();
+	public static Session getPlayerSession(OfflinePlayer p) {
 		return playerSession.get(p);
 	}
-	public static void setPlayerSession(Player p, Session s) {
+	public static void setPlayerSession(OfflinePlayer p, Session s) {
 		playerSession.put(p, s);
 	}
 	

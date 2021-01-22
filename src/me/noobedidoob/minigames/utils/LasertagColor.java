@@ -51,6 +51,9 @@ public class LasertagColor {
 	public String getName() {
 		return colorName.name();
 	}
+	public LtColorNames getColorName() {
+		return colorName;
+	}
 	public Color getColor() {
 		return color;
 	}

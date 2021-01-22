@@ -36,20 +36,19 @@ public class JoinQuitListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
 		Session session = Session.getPlayerSession(p);
-		if(session == null) return; 
+		if(session == null) return;
+		session.disconnectPlayer(p);
 		try {PlayerZoomer.zoomPlayerOut(p);} catch (Exception e2) {}
-		if(session.tagging()) {
-			for(Player ap : session.getPlayers()) {
-				if(ap == p) {
-					Lasertag.disconnectedPlayers.add(p.getUniqueId());
-				}
-			}
-		}
 	}
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
-//		Player p = e.getPlayer();
+		Player p = e.getPlayer();
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		
+		session.addPlayer(p);
+		
 //		Session session = Session.getPlayerSession(p);
 //		if(session == null) return; 
 //		p.setGameMode(GameMode.ADVENTURE);

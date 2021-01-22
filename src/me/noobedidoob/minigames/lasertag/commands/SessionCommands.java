@@ -12,6 +12,7 @@ import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Team;
 
 public class SessionCommands {
 	
@@ -22,8 +23,8 @@ public class SessionCommands {
 		this.minigames = minigames;
 	}
 	
-	public static List<String> commandArgs = Arrays.asList(new String[] {"start","stop","leave","setTime","addAdmin","setAdmin",  "new","join","removeAdmin","demoteAdmin","kick"});
-	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick"});
+	public static List<String> commandArgs = Arrays.asList(new String[] {"leave","new","join"});
+	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick", "end"});
 
 	public void perform(CommandSender sender, String[] args) {
 		if(sender instanceof Player){
@@ -36,17 +37,36 @@ public class SessionCommands {
 					
 					if (args[0].equalsIgnoreCase("start")) {
 						if (s.isAdmin(p)) {
-							s.start();
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+							if(s.getPlayers().length > 0) {
+								boolean enoughTeams = true;
+								if(s.isTeams()) {
+									int teamsWithPlayers = 0;
+									for(Team team : s.getTeams()) {
+										if(team.getPlayers().length > 0) teamsWithPlayers++;
+									}
+									if(teamsWithPlayers < 2) enoughTeams = false;
+								}
+								if(enoughTeams) s.start(false);
+								else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
+							} else Session.sendMessage(p, "§cNot enough players!");
+						} else Session.sendMessage(p, "§aYou need to be an admin of this session to perform this command!");
 						return;
 					} 
 					
 					else if (args[0].equalsIgnoreCase("stop") | args[0].equalsIgnoreCase("cancel")) {
 						if (s.isAdmin(p)) {
 							s.stop(true, false);
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					} 
+					
+					else if(args[0].equalsIgnoreCase("end")) {
+						if(s.getOwner() == p) {
+							if(s.tagging()) s.stop(true, true);
+							else s.close();
+						} else Session.sendMessage(p, "§cYou have to be the owner of this session to perform this command");
+						return;
+					}
 					
 					else if(args[0].equalsIgnoreCase("leave")) {
 						s.removePlayer(p);
@@ -56,21 +76,21 @@ public class SessionCommands {
 					else if(args[0].equalsIgnoreCase("setTime")) {
 						if(s.isAdmin(p)) {
 							SessionInventorys.openTimeInv(p);
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					} 
 					
 					else if(args[0].equalsIgnoreCase("addAdmin") | args[0].equalsIgnoreCase("setAdmin")) {
 						if(s.isAdmin(p)) {
 							SessionInventorys.openAddAdminInv(p);
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					}
 					
 					else if(args[0].equalsIgnoreCase("invite")) {
 						if(s.isAdmin(p)) {
 							SessionInventorys.openInvitationInv(p);
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					}
 					
 				} else Session.sendMessage(p, "§cYou're not in a session!");
@@ -109,10 +129,10 @@ public class SessionCommands {
 							if (kp != null) {
 								if(s.isInSession(kp)) {
 									if(kp != s.getOwner()) s.kickPlayer(kp, p);
-									else Session.sendMessage(kp, "§cYou can't kick the owner!");
-								} else Session.sendMessage(p, "§d"+args[1]+" §cis not in this session!");
-							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+									else Session.sendMessage(p, "§cYou can't kick the owner!");
+								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
+							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return;
 				} 
@@ -125,11 +145,11 @@ public class SessionCommands {
 								if (s.isInSession(ap)) {
 									if (!s.isAdmin(ap)) {
 										s.addAdmin(ap);
-										Session.sendMessage(p, "§aPromoted §d"+ap.getName()+" §ato Admin!");
-									} else Session.sendMessage(p, "§d"+args[1]+" §cis already an admin!");
-								} else Session.sendMessage(p, "§d"+args[1]+" §cis not in this session!");
-							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+										Session.sendMessage(p, "§aPromoted §b"+ap.getName()+" §ato Admin!");
+									} else Session.sendMessage(p, "§b"+args[1]+" §cis already an admin of this session!");
+								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
+							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return;
 				}
@@ -143,12 +163,12 @@ public class SessionCommands {
 									if (s.isAdmin(dp)) {
 										if(dp != s.getOwner()) {
 											s.removeAdmin(dp);
-											Session.sendMessage(p, "§aDemoted §d"+dp.getName()+" §afrom Admin!");
-										} else Session.sendMessage(dp, "§cYou can't do this to the owner!");
-									} else Session.sendMessage(p, "§d"+args[1]+" §cis not an admin!");
-								} else Session.sendMessage(p, "§d"+args[1]+" §cis not in this session!");
-							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+											Session.sendMessage(p, "§aDemoted §b"+dp.getName()+" §afrom Admin!");
+										} else Session.sendMessage(p, "§cYou can't do this to the owner!");
+									} else Session.sendMessage(p, "§b"+args[1]+" §cis not an admin of this session!");
+								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
+							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return;
 				}
@@ -161,9 +181,9 @@ public class SessionCommands {
 								if (Session.getPlayerSession(ip) == null) {
 									s.sendInvitation(ip);
 									Session.sendMessage(p, "§aInvitation sent!");
-								} else Session.sendMessage(p, "§d"+args[1]+" §cis already in a session!");
-							} else Session.sendMessage(p, "§cPlayer §d"+args[1]+" §cnot found!");
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+								} else Session.sendMessage(p, "§b"+args[1]+" §cis already in a session!");
+							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return;
 				}
@@ -175,9 +195,8 @@ public class SessionCommands {
 								String timeName = args[1];
 								String format = "m";
 								if(args.length > 2) format = args[2];
-								if(!format.contains("m") && !format.contains("s") && !format.contains("h")) s.setTime(MgUtils.getTimeFromArgs(timeName, "m"), TimeFormat.SECONDS);
-								else s.setTime(MgUtils.getTimeFromArgs(timeName, format), TimeFormat.SECONDS);
-								Bukkit.broadcastMessage("§a§lChanged the sessions time to "+MgUtils.getTimeFormatFromLong(MgUtils.getTimeFromArgs(timeName, format), format.substring(0, 1))+format);
+								if(!format.contains("m") && !format.contains("s") && !format.contains("h")) s.setTime(MgUtils.getTimeFromArgs(timeName, "m"), TimeFormat.SECONDS, true);
+								else s.setTime(MgUtils.getTimeFromArgs(timeName, format), TimeFormat.SECONDS, true);
 							} catch (NumberFormatException e) {
 								sender.sendMessage("§cThe given argument §e"+e.getMessage().replace("For input string: ","")+" §cis not a Number!");
 								return;
@@ -185,7 +204,7 @@ public class SessionCommands {
 								sender.sendMessage("§cSyntax error: "+e.getMessage());
 								return;
 							}
-						} else Session.sendMessage(p, "§aYou nedd to be an admin to perform this command!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return;
 				}
@@ -217,6 +236,7 @@ public class SessionCommands {
 					list.add("addAdmin");
 					list.add("removeAdmin");
 					list.add("kick");
+					list.add("leave");
 				}
 			}
 		} else if(args.length == 2) {

@@ -3,8 +3,6 @@ package me.noobedidoob.minigames.lasertag;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -12,10 +10,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
@@ -56,35 +56,59 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 	
 
 	int counter = 1;
+	List<String> lore = new ArrayList<String>();
 	public HashMap<Player, Flag> playerFlag = new HashMap<Player, Flag>();
 	public HashMap<Player, Boolean> flagIsFollowing = new HashMap<Player, Boolean>();
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 		if(m.worldFound) {
 			if(cmd.getName().equalsIgnoreCase("lasertag")) {
-				if(args.length > 0 && args[0].equalsIgnoreCase("test") && sender instanceof Player) {
+				if(args.length == 1 && args[0].equalsIgnoreCase("test") && sender instanceof Player) {
 					Player p = (Player) sender;
+					p.sendMessage("§aTESTING...");
 					p.getInventory().clear();
 					Inventory inv = Bukkit.createInventory(null, 9, "Test inv");
 					ItemStack item = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
 					ItemMeta meta = item.getItemMeta();
 					meta.setDisplayName("§a§lTest");
-					meta.getLore().add("Test 0");
+					lore.add("§aTest 0");
+					meta.setLore(lore);
 					item.setItemMeta(meta);
 					inv.setItem(0, item);
 					p.openInventory(inv);
 					
-					counter = 1;
-					new Timer().schedule(new TimerTask() {
-						@Override
-						public void run() {
-							if(counter != 10) {
-								inv.getItem(0).getItemMeta().getLore().add("Test "+counter);
-								p.updateInventory();
-								counter++;
-							} else cancel();
-						}
-					}, 1000, 1000);
+					new BukkitRunnable(){
+			            @Override
+			            public void run(){
+			                Inventory inv = ((HumanEntity) p).getOpenInventory().getTopInventory();
+			               
+			                ItemStack item = inv.getItem(0);
+			                ItemMeta meta = item.getItemMeta();
+			                lore.add("Test "+counter++);
+		                    meta.setLore(lore);
+			               
+		                    item.setItemMeta(meta);
+			                inv.setItem(0, item);
+			                
+			                if(counter == 10) cancel();
+			            }  
+			        }.runTaskTimer(Minigames.minigames, 20L, 20L);
+					
+					
+//					counter = 1;
+//					new Timer().schedule(new TimerTask() {
+//						@Override
+//						public void run() {
+//							if(counter != 10) {
+//
+//								lore.add("Test "+counter);
+//								p.getOpenInventory().getTopInventory().getItem(0).getItemMeta().setLore(lore);
+//								p.updateInventory();
+//								
+//								p.sendMessage("Added lore nr. "+counter++);
+//							} else cancel();
+//						}
+//					}, 1000, 1000);
 					return true;
 				}
 				
@@ -94,7 +118,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 						return true;
 					}
 					
-					if(SessionCommands.commandArgs.contains(args[0])) {
+					if(SessionCommands.commandArgs.contains(args[0]) | SessionCommands.adminCommandArgs.contains(args[0])) {
 						sessionCommands.perform(sender, args);
 						return true;
 					}

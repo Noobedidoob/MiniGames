@@ -14,6 +14,7 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Team;
 
 public class Scoreboard {
 	
@@ -33,7 +34,7 @@ public class Scoreboard {
 		long time = session.getTime(TimeFormat.SECONDS);
 		if(time < 3600) obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
 		else obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
-		obj.getScore(" ").setScore(1);
+		obj.getScore("").setScore(1);
 		
 		if(session.isSolo()) {
 			int i = 2;
@@ -70,7 +71,7 @@ public class Scoreboard {
 				obj.getScore(underline+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i);
 				i++;
 			}
-			obj.getScore("").setScore(i+1);
+			obj.getScore(" ").setScore(i+1);
 			
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
@@ -85,10 +86,10 @@ public class Scoreboard {
 		} else {
 			int i = 2;
 			
-			HashMap<Integer, List<Player[]>> teamsInSorted = new HashMap<Integer, List<Player[]>>();
+			HashMap<Integer, List<Team>> teamsInSorted = new HashMap<Integer, List<Team>>();
 			int maxTeamScore = 0;
-			for(Player[] team : session.getTeams()) {
-				List<Player[]> newList = new ArrayList<Player[]>();
+			for(Team team : session.getTeams()) {
+				List<Team> newList = new ArrayList<Team>();
 				if(teamsInSorted.get(session.getTeamPoints(team)) == null) {
 					newList.add(team);
 					teamsInSorted.put(session.getTeamPoints(team), newList);
@@ -99,19 +100,49 @@ public class Scoreboard {
 				}
 				if(session.getTeamPoints(team) > maxTeamScore) maxTeamScore = session.getTeamPoints(team);
 			}
-			List<Player[]> teamsSortedInRanks = new ArrayList<Player[]>();
+			List<Team> teamsSortedInRanks = new ArrayList<Team>();
 			for(int c = 0; c <= maxTeamScore; c++) {
 				if(teamsInSorted.get(c) != null) {
-					List<Player[]> rankTeamsList = teamsInSorted.get(c);
-					for(Player [] team : rankTeamsList) {
+					List<Team> rankTeamsList = teamsInSorted.get(c);
+					for(Team team : rankTeamsList) {
 						teamsSortedInRanks.add(team);
 					}
 				}
 			}
 			
-			for(Player[] team : teamsSortedInRanks) {
-				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).getName()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i);
-				i++;
+			for(Team team : teamsSortedInRanks) {
+				String spaces = "  ";
+				for(int j = 0; j < i; j++) spaces += " ";
+				obj.getScore(spaces).setScore(i++);
+				
+				HashMap<Integer, List<Player>> playersInSorted = new HashMap<Integer, List<Player>>();
+				int maxScore = 0;
+				for(Player p : team.getPlayers()) {
+					List<Player> newList = new ArrayList<Player>();
+					if(playersInSorted.get(session.getPlayerPoints(p)) == null) {
+						newList.add(p);
+						playersInSorted.put(session.getPlayerPoints(p), newList);
+					} else {
+						newList = playersInSorted.get(session.getPlayerPoints(p));
+						newList.add(p);
+						playersInSorted.put(session.getPlayerPoints(p), newList);
+					}
+					if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
+				}
+				List<Player> sortedInRanks = new ArrayList<Player>();
+				for(int c = 0; c <= maxScore; c++) {
+					if(playersInSorted.get(c) != null) {
+						List<Player> rankList = playersInSorted.get(c);
+						for(Player p : rankList) {
+							sortedInRanks.add(p);
+						}
+					}
+				}
+				
+				for(Player p : sortedInRanks) {
+					obj.getScore("   "+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
+				}
+				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).getName()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
 			}
 			obj.getScore("").setScore(i+1);
 			for(Player p : session.getPlayers()) {

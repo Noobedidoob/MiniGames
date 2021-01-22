@@ -20,7 +20,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.bukkit.scoreboard.Team;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
@@ -32,6 +31,7 @@ import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;
 import me.noobedidoob.minigames.utils.LasertagColor.LtColorNames;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Team;
 
 public class Round {
 	
@@ -55,6 +55,8 @@ public class Round {
 	
 	public void start() {
 		tagging = true;
+		refreshPlayerTeams();
+		preparePlayers();
 		for(Player p : session.getPlayers()) {
 			p.sendTitle("§a§lGo!", "Kill the players of the other teams", 20, 20*4, 20);
 			p.setGameMode(GameMode.ADVENTURE);
@@ -68,50 +70,21 @@ public class Round {
 		Lasertag.timeCountdownTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(Lasertag.minigames, new Runnable() {
 			@Override
 			public void run() {
-				if(session.getTime(TimeFormat.SECONDS) >= 0) {
-					scoreboard.refresh();
+				if(session.getTime(TimeFormat.SECONDS) > 0) {
 					if(session.getTime(TimeFormat.SECONDS) <= 5 && session.getTime(TimeFormat.SECONDS) > 0) {
 						for(Player p : session.getPlayers()) {
 							p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 2, 0.529732f);
 							p.sendTitle("§c"+session.getTime(TimeFormat.SECONDS), "", 5, 20, 5);
 						}
 					}
-					session.setTime(session.getTime(TimeFormat.SECONDS)-1, TimeFormat.SECONDS);
+					session.setTime(session.getTime(TimeFormat.SECONDS)-1, TimeFormat.SECONDS, false);
+					scoreboard.refresh();
 				} else {
 					Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
 					stop(false);
 				}
 			}
 		}, 0, 20);
-	}
-	public void stop(boolean externalStop) {
-		tagging = false;
-		Weapons.registerWeapons();
-		if(externalStop) {
-			Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
-			for(Player p : session.getPlayers()) { 
-				p.sendTitle("§cStopped the game!","",20, 20*4, 20);
-				p.teleport(Minigames.spawn);
-			}
-		} else {
-			if(session.isSolo()) evaluateSolo();
-			else evaluateTeams();
-		}
-		
-
-		try {
-			for(Player p : session.getPlayers()) {
-				p.setDisplayName(p.getName());
-				p.getInventory().clear();
-				PlayerZoomer.zoomPlayerOut(p);
-				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
-				p.teleport(Minigames.spawn);
-			}
-		} catch (NullPointerException npe) { }
-		for(Team t : scoreboard.board.getTeams()) {
-			t.unregister();
-		}
-		
 	}
 	
 	
@@ -121,20 +94,20 @@ public class Round {
 			int c = 0;
 			for (Player p : session.getPlayers()) {
 				session.setPlayerColor(p, LtColorNames.values()[c]);
-				Team t = session.scoreboard.board.registerNewTeam(p.getName());
+				org.bukkit.scoreboard.Team t = session.scoreboard.board.registerNewTeam(p.getName());
 				t.setColor(session.getPlayerColor(p).getChatColor());
 				t.addPlayer(p);
 				if (c < 7) c++;
 				else c = 0;
 			} 
 		} else {
-			for(Team ut : scoreboard.board.getTeams()) ut.unregister();
+			for(org.bukkit.scoreboard.Team ut : scoreboard.board.getTeams()) ut.unregister();
 			int c = 0;
-			for(Player[] team : session.getTeams()) {
+			for(Team team : session.getTeams()) {
 				LtColorNames teamColor = LtColorNames.values()[c];
-				Team t = scoreboard.board.registerNewTeam(teamColor.name());
+				org.bukkit.scoreboard.Team t = scoreboard.board.registerNewTeam(teamColor.name());
 				t.setColor(session.getTeamColor(team).getChatColor());
-				for(Player p : team) {
+				for(Player p : team.getPlayers()) {
 					t.addPlayer(p);
 					session.setPlayerColor(p, teamColor);
 				}
@@ -158,9 +131,9 @@ public class Round {
 				else c = 0;
 			}
 		} else {
-			for(Team ut : scoreboard.board.getTeams()) ut.unregister();
+			for(org.bukkit.scoreboard.Team ut : scoreboard.board.getTeams()) ut.unregister();
 			int c = 0;
-			for(Player[] team : session.getTeams()) {
+			for(Team team : session.getTeams()) {
 				LtColorNames teamColor = LtColorNames.values()[c];
 				ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
 				ItemStack leggins = new ItemStack(Material.LEATHER_LEGGINGS);
@@ -175,7 +148,7 @@ public class Round {
 				ItemMeta teamLasergunMeta = teamLasergun.getItemMeta();
 				teamLasergunMeta.setDisplayName(session.getTeamColor(team).getChatColor()+"§lLasergun #"+(teamColor.ordinal()+1));
 				teamLasergun.setItemMeta(teamLasergunMeta);
-				for(Player p : team) {
+				for(Player p : team.getPlayers()) {
 					p.getInventory().clear();
 					p.getInventory().setItem(0,teamLasergun);
 					p.getInventory().setChestplate(chestplate);
@@ -191,9 +164,44 @@ public class Round {
 		for(Player p : session.getPlayers()) {
 			Weapons.hasChoosenWeapon.put(p, false);
 			LaserShooter.playersSnipershots.put(p, 0);
-			p.sendTitle("§aStarting Lasertag!", "Prepare yourself!", 20, 20*4, 20);
 		}
 	}
+	
+	
+	
+	public void stop(boolean externalStop) {
+		tagging = false;
+		Weapons.registerWeapons();
+		if(externalStop) {
+			Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
+			for(Player p : session.getPlayers()) { 
+				p.sendTitle("§cStopped the game!","",20, 20*4, 20);
+				p.teleport(Minigames.spawn);
+				session.refreshPlayersLobbyInvs();
+			}
+		} else {
+			if(session.isSolo()) evaluateSolo();
+			else evaluateTeams();
+		}
+		
+
+		try {
+			for(Player p : session.getPlayers()) {
+				p.setDisplayName(p.getName());
+				p.getInventory().clear();
+				PlayerZoomer.zoomPlayerOut(p);
+				p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+				p.teleport(Minigames.spawn);
+			}
+		} catch (NullPointerException npe) { }
+		for(org.bukkit.scoreboard.Team t : scoreboard.board.getTeams()) {
+			t.unregister();
+		}
+		
+	}
+	
+	
+	
 	
 	
 //	@SuppressWarnings("deprecation")
@@ -201,7 +209,7 @@ public class Round {
 //		int c = 0;
 //		for(Player p : session.getPlayers()) {
 //			sessionsetPlayerColor(p, LtColorNames.values()[c]);
-//			Team t = scoreboard.board.registerNewTeam(scoreboard.randomName());
+//			org.bukkit.scoreboard.Team t = scoreboard.board.registerNewTeam(scoreboard.randomName());
 //			t.setColor(session.getPlayerColor(p).getChatColor());
 //			t.addPlayer(p);
 //			p.getInventory().clear();
@@ -237,7 +245,7 @@ public class Round {
 //			ItemMeta teamLasergunMeta = teamLasergun.getItemMeta();
 //			teamLasergunMeta.setDisplayName(session.getTeamColor(team).getChatColor()+"§lLasergun #"+(teamColor.ordinal()+1));
 //			teamLasergun.setItemMeta(teamLasergunMeta);
-//			Team t = scoreboard.board.registerNewTeam(scoreboard.randomName());
+//			org.bukkit.scoreboard.Team t = scoreboard.board.registerNewTeam(scoreboard.randomName());
 //			t.setColor(session.getTeamColor(team).getChatColor());
 //			for(Player p : team) {
 //				t.addPlayer(p);
@@ -329,7 +337,7 @@ public class Round {
 //				p.teleport(Minigames.spawn);
 //			}
 //		} catch (NullPointerException npe) { }
-//		for(Team t : scoreboard.board.getTeams()) {
+//		for(org.bukkit.scoreboard.Team t : scoreboard.board.getTeams()) {
 //			t.unregister();
 //		}
 //		
@@ -362,11 +370,11 @@ public class Round {
 		for(Player p : winners) {
 			if(winners.size() > 2) {
 				if(i == 0) winnerTeamsString = p.getName();
-				else if(i < winners.size()) winnerTeamsString += ", "+p.getName();
-				else winnerTeamsString += " and "+p.getName();
+				else if(i < winners.size()) winnerTeamsString += "§a, §d"+p.getName();
+				else winnerTeamsString += " §aand §d"+p.getName();
 			} else if(winners.size() == 2) {
 				if(i == 0) winnerTeamsString = p.getName();
-				else if(i == 1) winnerTeamsString += " and "+p.getName();
+				else if(i == 1) winnerTeamsString += " §aand §d"+p.getName();
 			} else {
 				winnerTeamsString = p.getName();
 			}
@@ -437,26 +445,26 @@ public class Round {
 				}
 			}
 			
-			p.sendTitle("§a"+winnerTeamsString+" §awon", "§aScore: "+amount, 20, 20*5, 20);
+			p.sendTitle("§b"+winnerTeamsString+" §awon", "§aScore: §d"+amount, 20, 20*5, 20);
 		}
 	
 	}
 	
 	private void evaluateTeams() {
-		List<Player[]> winnerTeams = new ArrayList<Player[]>();
+		List<Team> winnerTeams = new ArrayList<Team>();
 		int amount = 0;
-		for(Player[] team : session.getTeams()) {
-			if(session.getTeamPoints(team) > amount) {
+		for(Team team : session.getTeams()) {
+			if(team.getPoints() > amount) {
 				amount = session.getTeamPoints(team);
-				winnerTeams = new ArrayList<Player[]>();
+				winnerTeams = new ArrayList<Team>();
 				winnerTeams.add(team);
-			} else if(session.getTeamPoints(team) == amount) {
+			} else if(team.getPoints() == amount) {
 				winnerTeams.add(team);
 			}
 		}
 		String winnerTeamsString = "";
 		int i = 0;
-		for(Player[] team : winnerTeams) {
+		for(Team team : winnerTeams) {
 			if(winnerTeams.size() > 2) {
 				if(i == 0) winnerTeamsString = session.getTeamColor(team).getChatColor()+"Team "+session.getTeamColor(team).getName();
 				else if(i < winnerTeams.size()) winnerTeamsString += "§r, "+session.getTeamColor(team).getChatColor()+"Team "+session.getTeamColor(team).getName();
@@ -510,34 +518,34 @@ public class Round {
 		}
 		
 		
-		HashMap<Integer, List<Player[]>> teamsInSorted = new HashMap<Integer, List<Player[]>>();
+		HashMap<Integer, List<Team>> teamsInSorted = new HashMap<Integer, List<Team>>();
 		
 		int maxTeamScore = 0;
-		for(Player[] team : session.getTeams()) {
-			List<Player[]> newList = new ArrayList<Player[]>();
-			if(teamsInSorted.get(session.getTeamPoints(team)) == null) {
+		for(Team team : session.getTeams()) {
+			List<Team> newList = new ArrayList<Team>();
+			if(teamsInSorted.get(team.getPoints()) == null) {
 				newList.add(team);
-				teamsInSorted.put(session.getTeamPoints(team), newList);
+				teamsInSorted.put(team.getPoints(), newList);
 			} else {
-				newList = teamsInSorted.get(session.getTeamPoints(team));
+				newList = teamsInSorted.get(team.getPoints());
 				newList.add(team);
-				teamsInSorted.put(session.getTeamPoints(team), newList);
+				teamsInSorted.put(team.getPoints(), newList);
 			}
 			if(session.getTeamPoints(team) > maxTeamScore) maxTeamScore = session.getTeamPoints(team);
 		}
-		List<List<Player[]>> teamsSortedInRanks = new ArrayList<List<Player[]>>();
+		List<List<Team>> teamsSortedInRanks = new ArrayList<List<Team>>();
 		for(int c = maxTeamScore; c >= 0; c--) {
 			if(teamsInSorted.get(c) != null) {
-				List<Player[]> rankList = teamsInSorted.get(c);
+				List<Team> rankList = teamsInSorted.get(c);
 				teamsSortedInRanks.add(rankList);
 			}
 		}
 		
 		String teamscoreboardString = "";
 		int tr = 1;
-		for(List<Player[]> rankTeamList : teamsSortedInRanks) {
+		for(List<Team> rankTeamList : teamsSortedInRanks) {
 			teamscoreboardString += "§7"+tr+". ";
-			for(Player[] team : rankTeamList) {
+			for(Team team : rankTeamList) {
 				String teamName = session.getTeamColor(team).getName();
 				String teamNameColor = session.getTeamColor(team).getName().toUpperCase().replace("ORANGE", "GOLD");
 				if(tr < rankTeamList.size()-1) teamscoreboardString += ChatColor.valueOf(teamNameColor)+teamName+" Team, ";
@@ -547,8 +555,8 @@ public class Round {
 		}
 		
 		List<Player> winners = new ArrayList<Player>();
-		for(Player[] winnerteam : winnerTeams) {
-			for(Player winner : winnerteam) {
+		for(Team winnerteam : winnerTeams) {
+			for(Player winner : winnerteam.getPlayers()) {
 				winners.add(winner);
 			}
 		}
@@ -557,8 +565,8 @@ public class Round {
 			p.setWalkSpeed(0.2f);
 			p.getInventory().setHelmet(new ItemStack(Material.AIR));
 			PlayerTeleporter.gatherPlayers(winners);
-			for(Player[] team : winnerTeams) {
-				for(Player w : team) {
+			for(Team team : winnerTeams) {
+				for(Player w : team.getPlayers()) {
 					if(p.hasPotionEffect(Lasertag.glowingEffect)) p.removePotionEffect(Lasertag.glowingEffect);
 					for(int t = 0; t < 4; t++) {
 						Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
