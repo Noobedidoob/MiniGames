@@ -55,6 +55,7 @@ public class Session implements Listener{
 	int timer;
 	public void start(boolean countdown) {
 		if(!round.tagging()) {
+			setSessionMap();
 			round.preparePlayers();
 			if(!countdown) round.start();
 			else {
@@ -125,14 +126,18 @@ public class Session implements Listener{
 
 	
 	private Map map;
-	public boolean voteMap = true;
-	@SuppressWarnings("unused")
-	private HashMap<Map, Integer> mapVotes = new HashMap<Map, Integer>();
+	private boolean voteMap = true;
 	private boolean mapSet = false;
 	public void setMap(Map m) {
 		if(m == null) {
 			voteMap = true;
 			broadcast("§aMap vote enabled! You can vote the map for this round!");
+			for(Map am : Map.maps) {
+				mapVotes.put(am, 0);
+			}
+			for(Player p : players) {
+				hasPlayerVoted.put(p, false);
+			}
 		}
 		else {
 			voteMap = false;
@@ -150,7 +155,30 @@ public class Session implements Listener{
 	public boolean votingMaps() {
 		return voteMap;
 	}
-	
+
+	private HashMap<Map, Integer> mapVotes = new HashMap<Map, Integer>();
+	public HashMap<Player, Boolean> hasPlayerVoted = new HashMap<Player, Boolean>();
+	public void playerVoteMap(Player p, Map m) {
+		if(!hasPlayerVoted.get(p)) {
+			hasPlayerVoted.put(p, true);
+			mapVotes.put(m, mapVotes.get(m)+1);
+			broadcast("§d"+p.getName()+" §avoted for the map §b"+m.getName(), p);
+			sendMessage(p, "§aVoted for §b"+map.getName());
+		}
+	}
+	private void setSessionMap() {
+		if(votingMaps()) {
+			Map m = Map.maps.get(0);
+			int maxVote = mapVotes.get(Map.maps.get(0));
+			for(Map am : Map.maps) {
+				if(maxVote < mapVotes.get(am)) {
+					maxVote = mapVotes.get(am);
+					m = am;
+				}
+			}
+			this.map = m;
+		}
+	}
 	
 	
 	
@@ -283,6 +311,7 @@ public class Session implements Listener{
 		setPlayerSession(p, this);
 		players.add(p);
 		playerPoints.put(p, 0);
+		hasPlayerVoted.put(p, false);
 		int pColorIndex = players.indexOf(p);
 		if(pColorIndex > LtColorNames.values().length-1) pColorIndex -= LtColorNames.values().length-1;
 		setPlayerColor(p, LtColorNames.values()[pColorIndex]);
@@ -352,6 +381,18 @@ public class Session implements Listener{
 				if(pColorIndex > LtColorNames.values().length-1) pColorIndex -= LtColorNames.values().length-1;
 				setPlayerColor(ap, LtColorNames.values()[pColorIndex]);
 			}
+		} else {
+			for(Team t : teams) {
+				if(t.getPlayers().length == 1 && teams.indexOf(t) > 0) {
+					for(int i = teams.indexOf(t)-1; i > 0; i--) {
+						if(teams.get(i).getPlayers().length == 0) {
+							Player tp = t.getPlayers()[0];
+							t.removePlayer(tp);
+							addPlayerToTeam(tp, teams.get(i));
+						}
+					}
+				}
+			}
 		}
 		p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
 		scoreboard.refresh();
@@ -368,10 +409,11 @@ public class Session implements Listener{
 	
 	
 	private List<Team> teams = new ArrayList<Team>();
+	public List<Player> hasTeamChooseInvOpen = new ArrayList<Player>();
 	private int teamsAmount;
 	
 	public void addTeam(Player[] players, LtColorNames colorName) {
-		Team team = new Team(colorName, players);
+		Team team = new Team(this, colorName, players);
 		teams.add(team);
 		for(Player p : players) {
 			playerColor.put(p, new LasertagColor(colorName));
@@ -381,11 +423,15 @@ public class Session implements Listener{
 		addPlayerToTeam(p, teams.get(name.ordinal()));
 	}
 	public void addPlayerToTeam(Player p, Team team) {
-		team.addPlayer(p);
-		playerColor.put(p, team.getLasertagColor());
+		if (getPlayerTeam(p) != team) {
+			if(getPlayerTeam(p) != null) getPlayerTeam(p).removePlayer(p);
+			team.addPlayer(p);
+			playerColor.put(p, team.getLasertagColor());
+			refreshScoreboard();
+		}
 	}
-	public List<Team> getTeams(){
-		return teams;
+	public Team[] getTeams(){
+		return teams.toArray(new Team[teams.size()]);
 	}
 	public LasertagColor getTeamColor(Team team) {
 		return team.getLasertagColor();
@@ -510,6 +556,13 @@ public class Session implements Listener{
 	public void broadcast(String s) {
 		for(Player p : players) {
 			sendMessage(p, s);
+		}
+	}
+	public void broadcast(String s, Player... excludedPlayers) {
+		for(Player p : players) {
+			boolean notExcluded = true;
+			for(Player ep : excludedPlayers) if(ep == p) notExcluded = false;
+			if(notExcluded) sendMessage(p, s);
 		}
 	}
 	public void refreshPlayerLobbyInv(Player p) {

@@ -11,7 +11,6 @@ public class LasertagColor {
 	private int ordinal = 0;
 	
 	public LasertagColor(LtColorNames colorName) {
-		super();
 		this.colorName = colorName;
 		ordinal = colorName.ordinal();
 		if(colorName == LtColorNames.Red) {
@@ -74,6 +73,13 @@ public class LasertagColor {
 		Gray,
 		Orange,
 		White;
+		
+		public static LtColorNames getFromString(String s) {
+			for(LtColorNames name : LtColorNames.values()) {
+				if(name.name().equalsIgnoreCase(s)) return name;
+			}
+			return null;
+		}
 		
 		public ChatColor getChatColor() {
 			return new LasertagColor(this).getChatColor();

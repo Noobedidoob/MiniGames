@@ -61,9 +61,11 @@ public class Minigames extends JavaPlugin implements Listener{
 //	HashMap<String, Location> pLastLocation = new HashMap<String, Location>();
 //	HashMap<Player, Boolean> wasMoving = new HashMap<Player, Boolean>();
 	
+
+	public static Minigames minigames;
 	public void onEnable() {
+		minigames = this;
 		reloadConfig();
-		setStaticMain();
 		
 //		new GUI(Bukkit.getServer().getName());
 		
@@ -117,10 +119,6 @@ public class Minigames extends JavaPlugin implements Listener{
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
 	}
 	
-	public static Minigames minigames;
-	public void setStaticMain() {
-		minigames = this;
-	}
 	
 	@SuppressWarnings("deprecation")
 	public void setWorld() {
@@ -136,7 +134,7 @@ public class Minigames extends JavaPlugin implements Listener{
 				else inform("Created world successfully!");
 			} else {
 				this.getServer().createWorld(new WorldCreator(worldName));
-				inform("Sucessfully loaded minigame world. Use the command 'mg replaceworld' to replace the existing world with the original from the plugin");
+				inform("Sucessfully loaded minigame world");
 			}
 			if(getConfig().getBoolean("disable-other-worlds")) disableServerWorlds();
 			else {
@@ -185,10 +183,6 @@ public class Minigames extends JavaPlugin implements Listener{
 			warn("Error: "+e.getLocalizedMessage());
 		}
 
-	}
-	
-	public void replaceWorld() {
-		
 	}
 	
 	public void askForWorld() {

@@ -22,6 +22,7 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.LasertagColor;
 import me.noobedidoob.minigames.utils.LasertagColor.LtColorNames;
+import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 import me.noobedidoob.minigames.utils.Team;
 
@@ -36,12 +37,14 @@ public class SessionInventorys implements Listener{
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerClickInventory(InventoryClickEvent e) {
 		Player p = (Player) e.getWhoClicked();
+		Inventory inv = e.getClickedInventory();
+		int slot = e.getSlot();
+		if(inv.getItem(slot) == null) return;
+
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
 		if(session.tagging()) return;
 		if(session.getOwner() == p) {
-			Inventory inv = e.getInventory();
-			int slot = e.getSlot();
 			try {
 				if(inv.getItem(4).getType() == Material.LIME_STAINED_GLASS_PANE) {
 					try {
@@ -92,7 +95,7 @@ public class SessionInventorys implements Listener{
 						session.refreshPlayersLobbyInvs();
 					} else if(slot > 8 && slot-8 < Lasertag.maps.size()-1 && inv.getItem(slot).getType() == Material.FILLED_MAP) {
 						mapInvCounter = 0;
-						Lasertag.maps.forEach((n,m) ->{
+						for(Map m : Map.maps) {
 							if(slot == mapInvCounter+9) {
 								session.setMap(m);
 								p.closeInventory();
@@ -102,7 +105,7 @@ public class SessionInventorys implements Listener{
 								if(session.isTeams()) openTeamsInv(p);
 							}
 							mapInvCounter++;
-						});
+						}
 						session.refreshPlayersLobbyInvs();
 					}
 				} else if(inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
@@ -121,27 +124,72 @@ public class SessionInventorys implements Listener{
 					timeMeta.setDisplayName("§a"+inv.getItem(4).getAmount()+" §bTeams");
 					inv.getItem(4).setItemMeta(timeMeta);
 				} else if(inv.getItem(4).getType() == Material.BLUE_STAINED_GLASS_PANE) {
-					Player ap = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
-					if(session.isInSession(ap) && !session.isAdmin(ap)) {
-						session.addAdmin(ap);
-						Session.sendMessage(p, "§aMade §b"+ap.getName()+" §aan §eadmin");
+					if(slot == 4) {
+						boolean doNonAdminsExist = true;
+						for(Player ap : session.getPlayers()) {
+							if(!session.isAdmin(ap)) {
+								doNonAdminsExist = false;
+								session.addAdmin(ap);
+							}
+						}
+						if(doNonAdminsExist) {
+							p.closeInventory();
+							Session.sendMessage(p, "§aEverybody is an §badmin §anow!");
+							session.broadcast("§d" + p.getName() + " §amade everybody an §badmin§a!", p);
+						}
+					} else if(slot > 8) {
+						Player ap = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
+						if(session.isInSession(ap) && !session.isAdmin(ap)) {
+							session.addAdmin(ap);
+							Session.sendMessage(p, "§aMade §b"+ap.getName()+" §aan §eadmin");
+						}
+						inv.setItem(slot, new ItemStack(Material.AIR));
 					}
-					inv.setItem(slot, new ItemStack(Material.AIR));
+					
 				}
 				e.setCancelled(true);
 			} catch (NullPointerException e1) {
 				System.out.println("NPE CATCHED!");
 			}
 		}
+		
+		if(session.hasTeamChooseInvOpen.contains(p)) {
+			if(inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
+				Team chosenTeam = Team.getTeamByCooserSlot.get(slot);
+				Team currentTeam = session.getPlayerTeam(p);
+				
+				if(chosenTeam == currentTeam) {
+					Session.sendMessage(p, "§cYou're already in this team!");
+				} else {
+					session.addPlayerToTeam(p, chosenTeam);
+					for(Player ip : session.hasTeamChooseInvOpen) {
+						ip.getOpenInventory().getTopInventory().setItem(currentTeam.getTeamChooserSlot(), currentTeam.getTeamChooser());
+						ip.getOpenInventory().getTopInventory().setItem(chosenTeam.getTeamChooserSlot(), chosenTeam.getTeamChooser());
+					}
+					Session.sendMessage(p, "§aYou're now in "+chosenTeam.getChatColor()+"team "+chosenTeam.getColorName());
+				}
+			}
+		}
+		
+		if(session.votingMaps() && inv.getItem(0) != null && inv.getItem(0).getType() == Material.FILLED_MAP) {
+			session.playerVoteMap(p, Map.maps.get(slot));
+		}
+		e.setCancelled(true);
+		
+		
 	}
+	
+	
+	
+	
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerCloseInventory(InventoryCloseEvent e) {
 		Player p = (Player) e.getPlayer();
+		Inventory inv = e.getInventory();
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
 		if(session.tagging()) return;
 		if(session.getOwner() == p) {
-			Inventory inv = e.getInventory();
 			
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 				@Override
@@ -155,7 +203,7 @@ public class SessionInventorys implements Listener{
 								if (!session.isTimeSet())
 									openTimeInv(p);
 							} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-								if (!session.isMapSet() && !session.voteMap)
+								if (!session.isMapSet() && !session.votingMaps())
 									openMapInv(p);
 							} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
 								if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
@@ -165,6 +213,10 @@ public class SessionInventorys implements Listener{
 					}
 				}
 			}, 5);
+		}
+		
+		if(inv.contains(Material.LEATHER_CHESTPLATE) && inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
+			session.hasTeamChooseInvOpen.remove(p);
 		}
 	}
 	
@@ -191,7 +243,7 @@ public class SessionInventorys implements Listener{
 						else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
 					} else Session.sendMessage(p, "§cNot enough players!");
 				} else if(item.getType() == Material.PAPER) {
-					if(session.voteMap) openMapVoteInv(p);
+					if(session.votingMaps() && !session.hasPlayerVoted.get(p)) openMapVoteInv(p);
 				} else if(item.getType() == Material.LEATHER_CHESTPLATE) {
 					openTeamChooseInv(p);
 				} else if(item.getType() == Material.PLAYER_HEAD) {
@@ -232,24 +284,6 @@ public class SessionInventorys implements Listener{
 		less.setItemMeta(lessMeta);
 		return less;
 	}
-	public static void openTeamsInv(Player p) {
-		Inventory inv = Bukkit.createInventory(null, 9*1, "§5Set amount of teams");
-		
-		ItemStack amount = new ItemStack(Material.LEATHER_CHESTPLATE, 2);
-		LeatherArmorMeta aMeta = (LeatherArmorMeta) amount.getItemMeta();
-		aMeta.setColor(new LasertagColor(LtColorNames.Red).getColor());
-		aMeta.setDisplayName("§aTeams: §b2");
-		aMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-		amount.setItemMeta(aMeta);
-		
-		inv.setItem(2, getSubstractionItem("§c§l-1 §r§bTeam"));
-		inv.setItem(4, amount);
-		inv.setItem(6, getAdditionItem("§a§l+1 §r§bTeam"));
-		inv.setItem(8, getNextItem());
-		
-		p.closeInventory();
-		p.openInventory(inv);
-	}
 	
 	public static void openInvitationInv(Player p) {
 		Session session = Session.getPlayerSession(p);
@@ -287,12 +321,6 @@ public class SessionInventorys implements Listener{
 		
 		p.closeInventory();
 		p.openInventory(inv);
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-			@Override
-			public void run() {
-				p.updateInventory();
-			}
-		}, 1);
 	}
 	
 	public static void openTimeInv(Player p) {
@@ -319,7 +347,6 @@ public class SessionInventorys implements Listener{
 		p.openInventory(inv);
 	}
 
-	private static int i = 9;
 	public static void openMapInv(Player p) {
 		int rows = 2;
 		if(Lasertag.maps.size() > 9) rows = 3;
@@ -334,16 +361,34 @@ public class SessionInventorys implements Listener{
 		vote.setItemMeta(meta);
 		inv.setItem(4, vote);
 		
-		i = 9;
-		Lasertag.maps.forEach((n,m) ->{
+		int i = 9;
+		for(Map m : Map.maps) {
 			ItemStack item = new ItemStack(Material.FILLED_MAP);
 			ItemMeta itemMeta = item.getItemMeta();
 			itemMeta.setDisplayName("§r§b"+m.getName());
 			itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			item.setItemMeta(itemMeta);
-			inv.setItem(i, item);
-			i++;
-		});
+			inv.setItem(i++, item);
+		}
+		
+		p.closeInventory();
+		p.openInventory(inv);
+	}
+
+	public static void openTeamsInv(Player p) {
+		Inventory inv = Bukkit.createInventory(null, 9*1, "§5Set amount of teams");
+		
+		ItemStack amount = new ItemStack(Material.LEATHER_CHESTPLATE, 2);
+		LeatherArmorMeta aMeta = (LeatherArmorMeta) amount.getItemMeta();
+		aMeta.setColor(new LasertagColor(LtColorNames.Red).getColor());
+		aMeta.setDisplayName("§aTeams: §b2");
+		aMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		amount.setItemMeta(aMeta);
+		
+		inv.setItem(2, getSubstractionItem("§c§l-1 §r§bTeam"));
+		inv.setItem(4, amount);
+		inv.setItem(6, getAdditionItem("§a§l+1 §r§bTeam"));
+		inv.setItem(8, getNextItem());
 		
 		p.closeInventory();
 		p.openInventory(inv);
@@ -358,7 +403,7 @@ public class SessionInventorys implements Listener{
 		ItemStack map = new ItemStack(Material.PAPER);
 		ItemMeta mapMeta = map.getItemMeta();
 		String mapTitle = "§eVote map";
-		if(!session.voteMap && session.getMap() != null) mapTitle = "§eMap: §b"+session.getMap().getName();
+		if(!session.votingMaps() && session.getMap() != null) mapTitle = "§eMap: §b"+session.getMap().getName();
 		mapMeta.setDisplayName(mapTitle);
 		map.setItemMeta(mapMeta);
 		
@@ -389,6 +434,7 @@ public class SessionInventorys implements Listener{
 			ItemStack go = new ItemStack(Material.DIAMOND_HOE);
 			ItemMeta goMeta = go.getItemMeta();
 			goMeta.setDisplayName("§a§lSTART");
+			goMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			go.setItemMeta(goMeta);
 			p.getInventory().setItem(0, go);
 			
@@ -402,6 +448,7 @@ public class SessionInventorys implements Listener{
 			ItemStack addAdminItem = new ItemStack(Material.DIAMOND_HELMET);
 			ItemMeta addAdminMeta = addAdminItem.getItemMeta();
 			addAdminMeta.setDisplayName("§ePromote player to admin");
+			addAdminMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			addAdminItem.setItemMeta(addAdminMeta);
 			p.getInventory().setItem(5, addAdminItem);
 			
@@ -429,21 +476,27 @@ public class SessionInventorys implements Listener{
 		if(Lasertag.maps.size() > 36) rows = 5; 
 		Inventory inv = Bukkit.createInventory(null, 9*rows, "§1Vote for a Map");
 		
-		i = 0;
-		Lasertag.maps.forEach((n,m) ->{
+		int i = 0;
+		for(Map m : Map.maps) {
 			ItemStack item = new ItemStack(Material.FILLED_MAP);
 			ItemMeta itemMeta = item.getItemMeta();
 			itemMeta.setDisplayName("§r"+m.getName());
 			itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			item.setItemMeta(itemMeta);
-			inv.setItem(i, item);
-			i++;
-		});
+			inv.setItem(i++, item);
+		}
 		
 		p.openInventory(inv);
 	}
 	public static void openTeamChooseInv(Player p) {
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		session.hasTeamChooseInvOpen.add(p);
+		
 		Inventory inv = Bukkit.createInventory(null, 9, "§1Choose your team!");
+		for(Team t : session.getTeams()) {
+			inv.setItem(t.getTeamChooserSlot(), t.getTeamChooser());
+		}
 		
 		p.openInventory(inv);
 	}
@@ -481,4 +534,5 @@ public class SessionInventorys implements Listener{
 		
 		p.openInventory(inv);
 	}
+	
 }

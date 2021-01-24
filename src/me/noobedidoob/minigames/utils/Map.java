@@ -10,6 +10,8 @@ import org.bukkit.World;
 
 public class Map {
 	
+	public static List<Map> maps = new ArrayList<Map>(); 
+	
 	//———————————————in constructor—————————————————//
 	private String name;
 	
@@ -38,7 +40,7 @@ public class Map {
 	//——————————————————————————————————————————————//
 	
 	public Map(String name, Coordinate centerCoordinate, Area area, /*Area gatherArea, */ World world) {
-		super();
+		maps.add(this);
 		this.name = name;
 		this.centerCoord = centerCoordinate;
 		this.area = area;
