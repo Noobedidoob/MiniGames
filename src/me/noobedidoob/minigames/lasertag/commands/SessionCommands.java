@@ -9,10 +9,9 @@ import org.bukkit.entity.Player;
 
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
+import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
-import me.noobedidoob.minigames.utils.Team;
 
 public class SessionCommands {
 	
@@ -24,7 +23,7 @@ public class SessionCommands {
 	}
 	
 	public static List<String> commandArgs = Arrays.asList(new String[] {"leave","new","join"});
-	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick", "end"});
+	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","close","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick", "end"});
 
 	public void perform(CommandSender sender, String[] args) {
 		if(sender instanceof Player){
@@ -33,15 +32,19 @@ public class SessionCommands {
 			
 			
 			if (args.length == 1) {
-				if(s != null) {
-					
+				if(s == null) {
+					if (args[0].equalsIgnoreCase("new")) {
+						SessionInventorys.openNewSessionInv(p);
+						return;
+					}
+				} else {
 					if (args[0].equalsIgnoreCase("start")) {
 						if (s.isAdmin(p)) {
 							if(s.getPlayers().length > 0) {
 								boolean enoughTeams = true;
 								if(s.isTeams()) {
 									int teamsWithPlayers = 0;
-									for(Team team : s.getTeams()) {
+									for(SessionTeam team : s.getTeams()) {
 										if(team.getPlayers().length > 0) teamsWithPlayers++;
 									}
 									if(teamsWithPlayers < 2) enoughTeams = false;
@@ -53,14 +56,14 @@ public class SessionCommands {
 						return;
 					} 
 					
-					else if (args[0].equalsIgnoreCase("stop") | args[0].equalsIgnoreCase("cancel")) {
+					else if (args[0].equalsIgnoreCase("stop")) {
 						if (s.isAdmin(p)) {
 							s.stop(true, false);
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					} 
 					
-					else if(args[0].equalsIgnoreCase("end")) {
+					else if(args[0].equalsIgnoreCase("close")) {
 						if(s.getOwner() == p) {
 							if(s.tagging()) s.stop(true, true);
 							else s.close();
@@ -82,18 +85,22 @@ public class SessionCommands {
 					
 					else if(args[0].equalsIgnoreCase("addAdmin") | args[0].equalsIgnoreCase("setAdmin")) {
 						if(s.isAdmin(p)) {
-							SessionInventorys.openAddAdminInv(p);
+							if (!s.tagging()) {
+								SessionInventorys.openAddAdminInv(p);
+							} else Session.sendMessage(p, "§cYou can't promote players while the game is running!");
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					}
 					
 					else if(args[0].equalsIgnoreCase("invite")) {
 						if(s.isAdmin(p)) {
-							SessionInventorys.openInvitationInv(p);
+							if (!s.tagging()) {
+								SessionInventorys.openInvitationInv(p);
+							} else Session.sendMessage(p, "§cYou can't invite players while the game is running!");
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 					}
 					
-				} else Session.sendMessage(p, "§cYou're not in a session!");
+				}
 				
 			} else if(args.length == 2) {
 				if(args[0].equalsIgnoreCase("new")) {
@@ -116,7 +123,9 @@ public class SessionCommands {
 					Session invS = Session.getSessionFromCode(args[1]);
 					if(invS != null) {
 						if(invS.isPlayerInvited(p)) {
-							invS.addPlayer(p);
+							if (!invS.tagging()) {
+								invS.addPlayer(p);
+							} else Session.sendMessage(p, "§cThe players are currently in-game. Please wait!");
 						} else Session.sendMessage(p, "§cYou were not invited to this session!");
 					} else Session.sendMessage(p, "§cThis invitation expired!");
 					return;
@@ -144,8 +153,10 @@ public class SessionCommands {
 							if(ap != null) {
 								if (s.isInSession(ap)) {
 									if (!s.isAdmin(ap)) {
-										s.addAdmin(ap);
-										Session.sendMessage(p, "§aPromoted §b"+ap.getName()+" §ato Admin!");
+										if (!s.tagging()) {
+											s.addAdmin(ap);
+											Session.sendMessage(p, "§aPromoted §b"+ap.getName()+" §ato Admin!");
+										} else Session.sendMessage(p, "§cYou can't demote players while the game is running!");
 									} else Session.sendMessage(p, "§b"+args[1]+" §cis already an admin of this session!");
 								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
 							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
@@ -162,8 +173,10 @@ public class SessionCommands {
 								if (s.isInSession(dp)) {
 									if (s.isAdmin(dp)) {
 										if(dp != s.getOwner()) {
-											s.removeAdmin(dp);
-											Session.sendMessage(p, "§aDemoted §b"+dp.getName()+" §afrom Admin!");
+											if (!s.tagging()) {
+												s.removeAdmin(dp);
+												Session.sendMessage(p, "§aDemoted §b"+dp.getName()+" §afrom Admin!");
+											} else Session.sendMessage(p, "§cYou can't demote players while the game is running!");
 										} else Session.sendMessage(p, "§cYou can't do this to the owner!");
 									} else Session.sendMessage(p, "§b"+args[1]+" §cis not an admin of this session!");
 								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
@@ -192,11 +205,10 @@ public class SessionCommands {
 					if(s != null) {
 						if(s.isAdmin(p)) {
 							try {
-								String timeName = args[1];
-								String format = "m";
-								if(args.length > 2) format = args[2];
-								if(!format.contains("m") && !format.contains("s") && !format.contains("h")) s.setTime(MgUtils.getTimeFromArgs(timeName, "m"), TimeFormat.SECONDS, true);
-								else s.setTime(MgUtils.getTimeFromArgs(timeName, format), TimeFormat.SECONDS, true);
+								int time = Integer.parseInt(args[1]);
+								TimeFormat format = TimeFormat.MINUTES;
+								if(args.length == 3) format = TimeFormat.getFromString(args[2]);
+								s.setTime(time, format, true);
 							} catch (NumberFormatException e) {
 								sender.sendMessage("§cThe given argument §e"+e.getMessage().replace("For input string: ","")+" §cis not a Number!");
 								return;
@@ -228,13 +240,15 @@ public class SessionCommands {
 				list.add("join");
 			} else {
 				if(s.isAdmin(p)) {
-					if(!s.tagging()) list.add("start");
-					list.add("invite");
+					if(!s.tagging()) {
+						list.add("start");
+						list.add("invite");
+						list.add("addAdmin");
+						list.add("removeAdmin");
+					}
 					list.add("stop");
-					list.add("cancel");
+					list.add("close");
 					list.add("setTime");
-					list.add("addAdmin");
-					list.add("removeAdmin");
 					list.add("kick");
 					list.add("leave");
 				}

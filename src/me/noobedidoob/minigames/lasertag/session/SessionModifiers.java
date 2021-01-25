@@ -2,9 +2,9 @@ package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.HashMap;
 
-public class Modifiers {
+public class SessionModifiers {
 	
-	public Modifiers() {
+	public SessionModifiers() {
 		for(Mod m : Mod.values()) {
 			modValues.put(m, m.getOg());
 		}

@@ -27,11 +27,11 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
 import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
-import me.noobedidoob.minigames.lasertag.session.Modifiers;
-import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.Team;
 
 public class LaserShooter{
 	public static List<ArmorStand> invisibleStands = new ArrayList<ArmorStand>();
@@ -41,7 +41,7 @@ public class LaserShooter{
 	public static void fire(Player p, Weapon w) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
-		Modifiers modifiers = session.modifiers;
+		SessionModifiers modifiers = session.modifiers;
 		
 		List<Player> alreadyKilledPlayers = new ArrayList<Player>();
 		
@@ -78,7 +78,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(session.isTeams()) {
-									for(Team team : session.getTeams()) {
+									for(SessionTeam team : session.getTeams()) {
 										boolean pInTeam = false;
 										for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 										if(pInTeam) {
@@ -178,7 +178,7 @@ public class LaserShooter{
 								if(isLaserInsideEntity(hitP, loc)) {
 									boolean fromTeam = false;
 									if(session.isTeams()) {
-										for(Team team : session.getTeams()) {
+										for(SessionTeam team : session.getTeams()) {
 											boolean pInTeam = false;
 											for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 											if(pInTeam) {
@@ -268,7 +268,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								boolean fromTeam = false;
 								if(session.isTeams()) {
-									for(Team team : session.getTeams()) {
+									for(SessionTeam team : session.getTeams()) {
 										boolean pInTeam = false;
 										for(Player tp : team.getPlayers()) if(tp == p) pInTeam = true;
 										if(pInTeam) {

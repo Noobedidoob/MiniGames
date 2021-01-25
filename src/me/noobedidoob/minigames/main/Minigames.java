@@ -117,6 +117,11 @@ public class Minigames extends JavaPlugin implements Listener{
 //		hideAndSeek.disable();
 		
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
+		
+		Bukkit.getOnlinePlayers().forEach(p ->{
+			p.getInventory().clear();
+			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		});
 	}
 	
 	

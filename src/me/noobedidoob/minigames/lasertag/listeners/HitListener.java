@@ -9,7 +9,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
-import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 

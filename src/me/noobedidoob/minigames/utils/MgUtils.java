@@ -45,17 +45,17 @@ public class MgUtils {
 		
 	}
 	
-	public static long getTimeFromArgs(String timeString, String format) throws NumberFormatException, Exception{
-		long time = 0;
+	public static int getTimeFromArgs(String timeString, String format) throws NumberFormatException, Exception{
+		int time = 0;
 		int dpamount = 0; for(int i = 0; i < timeString.length(); i++) {if(timeString.charAt(i) == ':') dpamount++;}
 		
 		if(dpamount == 0) {
 			float f = Float.parseFloat(timeString.trim());
 			if(format != null) {
-				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = (long) f;
-				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (long) ((f*60)*60);
-				else time = (long) (f*60);
-			} else time = (long) (f*60);
+				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = (int) f;
+				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (int) ((f*60)*60);
+				else time = (int) (f*60);
+			} else time = (int) (f*60);
 		} else if(dpamount == 1) {
 			String n1s = "";
 			String n2s = "";
@@ -68,11 +68,11 @@ public class MgUtils {
 				}
 			}
 			if(format != null) {
-				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = Long.parseLong(n1s);
-				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (Long.parseLong(n1s)*60)*60+Long.parseLong(n2s.trim())*60;
-				else time = Long.parseLong(n1s)*60+Long.parseLong(n2s.trim());
+				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = Integer.parseInt(n1s);
+				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (Integer.parseInt(n1s)*60)*60+Integer.parseInt(n2s.trim())*60;
+				else time = Integer.parseInt(n1s)*60+Integer.parseInt(n2s.trim());
 			} else {
-				time = Long.parseLong(n1s.trim())*60+Long.parseLong(n2s.trim());
+				time = Integer.parseInt(n1s.trim())*60+Integer.parseInt(n2s.trim());
 			}
 		} else if(dpamount == 2){
 			String n1s = "";
@@ -88,11 +88,11 @@ public class MgUtils {
 				}
 			}
 			if(format != null) {
-				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = Long.parseLong(n1s);
-				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (Long.parseLong(n1s)*60)*60+Long.parseLong(n2s.trim())*60+Long.parseLong(n3s);
-				else time = Long.parseLong(n1s)*60+Long.parseLong(n2s.trim());
+				if(format.equalsIgnoreCase("s") | format.toLowerCase().contains("second")) time = Integer.parseInt(n1s);
+				else if(format.equalsIgnoreCase("h") | format.toLowerCase().contains("hour")) time = (Integer.parseInt(n1s)*60)*60+Integer.parseInt(n2s.trim())*60+Integer.parseInt(n3s);
+				else time = Integer.parseInt(n1s)*60+Integer.parseInt(n2s.trim());
 			} else {
-				time = (Long.parseLong(n1s)*60)*60+Long.parseLong(n2s.trim())*60+Long.parseLong(n3s);
+				time = (Integer.parseInt(n1s)*60)*60+Integer.parseInt(n2s.trim())*60+Integer.parseInt(n3s);
 			}
 		} else throw new Exception("TimeFormatException: Maximal allowed separators ar 2, given are "+dpamount);
 		
@@ -103,6 +103,15 @@ public class MgUtils {
 		SECONDS,
 		MINUTES,
 		HOURS;
+		
+		public static TimeFormat getFromString(String s) {
+			String format = s.substring(0, 1);
+			for(TimeFormat tf : TimeFormat.values()) {
+				if(tf.name().substring(0, 1) == format) return tf;
+			}
+			
+			return TimeFormat.MINUTES;
+		}
 	}
 	
 	

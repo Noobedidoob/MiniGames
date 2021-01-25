@@ -7,7 +7,8 @@ import org.bukkit.entity.Player;
 
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.MgUtils;
+import me.noobedidoob.minigames.utils.Area;
+import me.noobedidoob.minigames.utils.Coordinate;
 
 public class PlayerTeleporter {
 	
@@ -35,11 +36,10 @@ public class PlayerTeleporter {
 		Session session = Session.getPlayerSession(winners.get(0));
 		if(session == null) return;
 		for(Player p : session.getPlayers()) {
-			boolean isWinner = false;
-			for(Player winner : winners) if(winner == p) isWinner = true;
-			
-			if(isWinner) p.teleport(Minigames.winnerPodium);
-			else p.teleport(Minigames.spawn.subtract(5, 0, 5).add(MgUtils.randomDouble(0, 10), 0, MgUtils.randomDouble(0, 10)));
+			if(winners.contains(p)) {
+				p.teleport(Minigames.spawn);
+			}
+			else p.teleport(new Area(new Coordinate(Minigames.spawn.subtract(5, 0, 5)), new Coordinate(Minigames.spawn.add(5, 0, 5))).getRandomCoordinate().getLoc());
 		}
 	}
 	

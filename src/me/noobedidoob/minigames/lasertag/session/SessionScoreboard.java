@@ -10,20 +10,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.session.Modifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
-import me.noobedidoob.minigames.utils.Team;
 
-public class Scoreboard {
+public class SessionScoreboard {
 	
 	private Session session;
-	public Scoreboard(Session session) {
+	public SessionScoreboard(Session session) {
 		this.session = session;
 	}
 	
-	public org.bukkit.scoreboard.Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
+	public Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
 	private Objective obj;
 	
 	public void refresh() {
@@ -32,12 +33,29 @@ public class Scoreboard {
 		obj.setDisplayName("§b§lScoreboard");
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		long time = session.getTime(TimeFormat.SECONDS);
-		if(time < 3600) obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
-		else obj.getScore("§c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
-		obj.getScore("").setScore(1);
+		if(time < 3600) obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
+		else obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
+		obj.getScore(" ").setScore(1);
+		
+		
+		
+		int i = 2;
+		
+		
+		if(!session.isMapNull()){
+			if(session.votingMap()) {
+				obj.getScore("§eMap:  §o§7Voting...").setScore(2);
+				obj.getScore("  ").setScore(3);
+				i = 4;
+			} else {
+				
+				obj.getScore("§eMap:  §r§b"+session.getMap().getName()).setScore(2);
+				obj.getScore("  ").setScore(3);
+				i = 4;
+			}
+		}
 		
 		if(session.isSolo()) {
-			int i = 2;
 			
 			HashMap<Integer, List<Player>> playersInSorted = new HashMap<Integer, List<Player>>();
 			
@@ -68,10 +86,9 @@ public class Scoreboard {
 			for(Player p : sortedInRanks) {
 				String underline = "";
 				if(playersInSorted.get(maxScore).contains(p)) underline = "§n";
-				obj.getScore(underline+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i);
-				i++;
+				obj.getScore(underline+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
 			}
-			obj.getScore(" ").setScore(i+1);
+			obj.getScore("   ").setScore(i);
 			
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
@@ -84,12 +101,11 @@ public class Scoreboard {
 				}
 			}
 		} else {
-			int i = 2;
 			
-			HashMap<Integer, List<Team>> teamsInSorted = new HashMap<Integer, List<Team>>();
+			HashMap<Integer, List<SessionTeam>> teamsInSorted = new HashMap<Integer, List<SessionTeam>>();
 			int maxTeamScore = 0;
-			for(Team team : session.getTeams()) {
-				List<Team> newList = new ArrayList<Team>();
+			for(SessionTeam team : session.getTeams()) {
+				List<SessionTeam> newList = new ArrayList<SessionTeam>();
 				if(teamsInSorted.get(session.getTeamPoints(team)) == null) {
 					newList.add(team);
 					teamsInSorted.put(session.getTeamPoints(team), newList);
@@ -100,18 +116,18 @@ public class Scoreboard {
 				}
 				if(session.getTeamPoints(team) > maxTeamScore) maxTeamScore = session.getTeamPoints(team);
 			}
-			List<Team> teamsSortedInRanks = new ArrayList<Team>();
+			List<SessionTeam> teamsSortedInRanks = new ArrayList<SessionTeam>();
 			for(int c = 0; c <= maxTeamScore; c++) {
 				if(teamsInSorted.get(c) != null) {
-					List<Team> rankTeamsList = teamsInSorted.get(c);
-					for(Team team : rankTeamsList) {
+					List<SessionTeam> rankTeamsList = teamsInSorted.get(c);
+					for(SessionTeam team : rankTeamsList) {
 						teamsSortedInRanks.add(team);
 					}
 				}
 			}
 			
-			for(Team team : teamsSortedInRanks) {
-				String spaces = "  ";
+			for(SessionTeam team : teamsSortedInRanks) {
+				String spaces = "    ";
 				for(int j = 0; j < i; j++) spaces += " ";
 				obj.getScore(spaces).setScore(i++);
 				
@@ -144,7 +160,7 @@ public class Scoreboard {
 				}
 				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).getName()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
 			}
-			obj.getScore("").setScore(i+1);
+			obj.getScore("   ").setScore(i);
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
 				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS)) {

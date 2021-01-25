@@ -1,4 +1,4 @@
-package me.noobedidoob.minigames.utils;
+package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,20 +12,21 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.utils.LasertagColor;
 import me.noobedidoob.minigames.utils.LasertagColor.LtColorNames;
 
-public class Team {
+public class SessionTeam {
 	
 	private LtColorNames colorName;
 	private List<Player> players = new ArrayList<Player>();
 	private int points;
+	private org.bukkit.scoreboard.Team scoreboardTeam;
 	
 	private Session session;
-	public Team(Session session, LtColorNames colorName) {
-		new Team(session, colorName, new Player[] {});
+	public SessionTeam(Session session, LtColorNames colorName) {
+		new SessionTeam(session, colorName, new Player[] {});
 	}
-	public Team(Session session, LtColorNames colorName, Player[] players) {
+	public SessionTeam(Session session, LtColorNames colorName, Player[] players) {
 		this.session = session;
 		this.colorName = colorName;
 		for(Player p : players) {
@@ -36,6 +37,8 @@ public class Team {
 			playerTeam.put(p, this);
 		}
 		getTeamByCooserSlot.put(getTeamChooserSlot(), this);
+		scoreboardTeam = session.scoreboard.board.registerNewTeam(colorName.name());
+		scoreboardTeam.setColor(colorName.getChatColor());
 	}
 	
 	public Player[] getPlayers() {
@@ -46,6 +49,7 @@ public class Team {
 		if (!players.contains(p)) {
 			players.add(p);
 			playerTeam.put(p, this);
+			scoreboardTeam.addEntry(p.getName());
 		}
 		
 	}
@@ -53,6 +57,7 @@ public class Team {
 		if (players.contains(p)) {
 			players.remove(p);
 			playerTeam.put(p, null);
+			scoreboardTeam.removeEntry(p.getName());
 		}
 	}
 	
@@ -89,18 +94,22 @@ public class Team {
 		return (players.contains(p));
 	}
 	
+	public org.bukkit.scoreboard.Team getScoreboardTeam(){
+		return scoreboardTeam;
+	}
 	
-	public static HashMap<Integer, Team> getTeamByCooserSlot = new HashMap<>();
+	
+	public static HashMap<Integer, SessionTeam> getTeamByCooserSlot = new HashMap<>();
 	public int getTeamChooserSlot() {
 		if(session.getTeamsAmount() > 4) return colorName.ordinal();
 		else {
-			return ((colorName.ordinal()*2)+1)+18;
+			return (colorName.ordinal()*2)+1;
 		}
 	}
 	public ItemStack getTeamChooser() {
 		ItemStack item = new ItemStack(Material.LEATHER_CHESTPLATE);
 		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE);
 		meta.setColor(getColor());
 		meta.setDisplayName(getChatColor()+""+getColorName()+" Team");
 		List<String> lore = new ArrayList<String>();
@@ -113,8 +122,8 @@ public class Team {
 	}
 	
 	
-	private static HashMap<Player, Team> playerTeam = new HashMap<Player, Team>();
-	public static Team getPlayerTeam(Player p) {
+	private static HashMap<Player, SessionTeam> playerTeam = new HashMap<Player, SessionTeam>();
+	public static SessionTeam getPlayerTeam(Player p) {
 		return playerTeam.get(p);
 	}
 }
