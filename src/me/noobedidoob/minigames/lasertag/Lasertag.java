@@ -11,9 +11,19 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffectType;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
@@ -29,12 +39,14 @@ import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
 import me.noobedidoob.minigames.utils.Map;
 
-public class Lasertag {
+public class Lasertag implements Listener{
 	public static Minigames minigames;
 	public static Lasertag lasertag;
 	public static LaserCommands laserCommands;
@@ -58,6 +70,8 @@ public class Lasertag {
 		new DropSwitchItemListener(minigames);
 		new RespawnListener(minigames);
 		new UndefinedListener(minigames);
+		
+		
 	}
 	
 	
@@ -65,21 +79,13 @@ public class Lasertag {
 		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new SessionCommands(minigames));
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
-//		modifierCommands = new ModifierCommands(minigames);
-//		minigames.getCommand("lasertag").setExecutor(modifierCommands);
-//		minigames.getCommand("lasertag").setTabCompleter(modifierCommands);
-//		sessionCommands = new SessionCommands(minigames);
-//		minigames.getCommand("lasertag").setExecutor(sessionCommands);
-//		minigames.getCommand("lasertag").setTabCompleter(sessionCommands);
+		Bukkit.getPluginManager().registerEvents(this, minigames);
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
-//			Weapons.playerCoolingdown.put(p, false);
-//			Weapons.playerAmmo.put(p, Modifiers.bulletsInMagazine);
-//			Weapons.playerMinigunAmmo.put(p, Modifiers.minigunAmmo);
-//			Weapons.playerMinigunCooldown.put(p, false);
-//			Weapons.playerReloading.put(p, false);
 			laserCommands.flagIsFollowing.put(p, false);
 			p.setExp(1f);
+			p.setLevel(0);
+			setPlayersLobbyInv(p);
 		}
 		
 		registerMaps();
@@ -87,6 +93,9 @@ public class Lasertag {
 		Weapons.getTestSet();
 	}
 	public void disable() {
+		for(Player p : Bukkit.getOnlinePlayers()) {
+			p.setWalkSpeed(0.2f);
+		}
 //		Session.closeAllSessions();
 	}
 	
@@ -211,6 +220,113 @@ public class Lasertag {
 			}
 		}, 0, 1);
 	}
+	
+	public static void setPlayersLobbyInv(Player p) {
+		ItemStack find = new ItemStack(Material.COMPASS);
+		ItemMeta findMeta = find.getItemMeta();
+		findMeta.setDisplayName("§aFind Sessions");
+		find.setItemMeta(findMeta);
+		p.getInventory().setItem(0, find);
+		
+		ItemStack create = new ItemStack(Material.NETHER_STAR);
+		ItemMeta cMeta = create.getItemMeta();
+		cMeta.setDisplayName("§eStart new session");
+		create.setItemMeta(cMeta);
+		p.getInventory().setItem(1, create);
+	}
+	public static void openPlayerFindSessionInv(Player p) {
+		Inventory inv = Bukkit.createInventory(null, (((Session.getAllSessions().length-1)/9)+1)*9, "§0Join a session:");
+		
+		int i = 0;
+		for(Session session : Session.getAllSessions()) {
+			if(!session.tagging()) {
+				ItemStack s = new ItemStack(Material.PLAYER_HEAD);
+				SkullMeta meta = (SkullMeta) s.getItemMeta();
+				meta.setDisplayName("§d"+session.getOwner().getName()+"§a's session");
+				meta.setOwningPlayer(session.getOwner());
+				List<String> lore = new ArrayList<String> ();
+				for(Player a : session.getAdmins()) {
+					if(a != session.getOwner()) lore.add("§b"+a.getName());
+				}
+				for(Player ap : session.getPlayers()) {
+					if(!session.isAdmin(ap)) lore.add("§a"+ap.getName());
+				}
+				meta.setLore(lore);
+				s.setItemMeta(meta);
+				inv.setItem(i++, s);
+			}
+		}
+		
+		p.openInventory(inv);
+	}
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent e) {
+		if(e.getItem() == null) return;
+		if(e.getItem().getType() == Material.COMPASS) {
+			openPlayerFindSessionInv(e.getPlayer());
+		} else if(e.getItem().getType() == Material.NETHER_STAR) {
+			SessionInventorys.openNewSessionInv(e.getPlayer());
+		}
+	}
+	@EventHandler
+	public void onPlayerClickInventory(InventoryClickEvent e) {
+		try {
+			Player p = (Player) e.getWhoClicked();
+			if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
+				String code = e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", "");
+				Session s = Session.getSessionFromCode(code);
+				if(s != null) {
+					if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
+						if(!s.tagging()) {
+							s.addPlayer((Player) e.getWhoClicked());
+							p.closeInventory();
+						} else Session.sendMessage(p, "§cThe session is already running! Please wait!");
+					} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
+				} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
+			}
+		} catch (NullPointerException e1) {
+		}
+	}
+	
+	
+	
+	public enum LasertagColor {
+		Red(ChatColor.RED, 255, 0, 0),
+		Blue(ChatColor.BLUE, 0, 160, 255),
+		Green(ChatColor.GREEN, 100, 255, 0),
+		Yellow(ChatColor.YELLOW, 255, 255, 0),
+		Purple(ChatColor.LIGHT_PURPLE, 150, 0, 255),
+		Gray(ChatColor.GRAY, 150, 150, 150),
+		Orange(ChatColor.GOLD, 255, 150, 0),
+		White(ChatColor.WHITE, 255, 255, 255);
+		
+		private Color color;
+		private ChatColor chatColor;
+		
+		LasertagColor(ChatColor chatColor, int r, int g, int b) {
+			this.chatColor = chatColor;
+			this.color = Color.fromRGB(r, g, b);
+		}
+
+		public ChatColor getChatColor() {
+			return chatColor;
+		}
+		public Color getColor() {
+			return color;
+		}
+		
+		public String getName() {
+			return this.name();
+		}
+		
+		public static LasertagColor getFromString(String s) {
+			for(LasertagColor name : LasertagColor.values()) {
+				if(name.name().equalsIgnoreCase(s)) return name;
+			}
+			return null;
+		}
+	}
+	
 	
 	
 	public static Logger logger = Bukkit.getLogger();

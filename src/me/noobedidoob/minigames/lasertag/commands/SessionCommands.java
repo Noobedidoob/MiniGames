@@ -91,15 +91,6 @@ public class SessionCommands {
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return;
 					}
-					
-					else if(args[0].equalsIgnoreCase("invite")) {
-						if(s.isAdmin(p)) {
-							if (!s.tagging()) {
-								SessionInventorys.openInvitationInv(p);
-							} else Session.sendMessage(p, "§cYou can't invite players while the game is running!");
-						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
-					}
-					
 				}
 				
 			} else if(args.length == 2) {
@@ -122,22 +113,22 @@ public class SessionCommands {
 					}
 					Session invS = Session.getSessionFromCode(args[1]);
 					if(invS != null) {
-						if(invS.isPlayerInvited(p)) {
+						if(!invS.isPlayerBanned(p)) {
 							if (!invS.tagging()) {
 								invS.addPlayer(p);
 							} else Session.sendMessage(p, "§cThe players are currently in-game. Please wait!");
-						} else Session.sendMessage(p, "§cYou were not invited to this session!");
+						} else Session.sendMessage(p, "§cYou are banned from this session!");
 					} else Session.sendMessage(p, "§cThis invitation expired!");
 					return;
 				} 
 				
-				else if(args[0].equalsIgnoreCase("kick")) {
+				else if(args[0].equalsIgnoreCase("kick") | args[0].equalsIgnoreCase("ban")) {
 					if(s != null) {
 						if (s.isAdmin(p)) {
 							Player kp = Bukkit.getPlayer(args[1]);
 							if (kp != null) {
 								if(s.isInSession(kp)) {
-									if(kp != s.getOwner()) s.kickPlayer(kp, p);
+									if(kp != s.getOwner()) s.banPlayer(kp, p);
 									else Session.sendMessage(p, "§cYou can't kick the owner!");
 								} else Session.sendMessage(p, "§b"+args[1]+" §cis not in this session!");
 							} else Session.sendMessage(p, "§cPlayer §b"+args[1]+" §cnot found!");
@@ -281,7 +272,7 @@ public class SessionCommands {
 					}
 				} else if(args[0].equalsIgnoreCase("invite")) {
 					for(Player op : Bukkit.getOnlinePlayers()) {
-						if(Session.getPlayerSession(op) == null && !s.isPlayerInvited(op)) list.add(op.getName());
+						if(Session.getPlayerSession(op) == null) list.add(op.getName());
 					}
 				}
 			}

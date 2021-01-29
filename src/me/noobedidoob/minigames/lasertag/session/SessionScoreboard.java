@@ -13,7 +13,9 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 
@@ -44,14 +46,14 @@ public class SessionScoreboard {
 		
 		if(!session.isMapNull()){
 			if(session.votingMap()) {
-				obj.getScore("§eMap:  §o§7Voting...").setScore(2);
-				obj.getScore("  ").setScore(3);
-				i = 4;
+				for(Map m : Map.maps) {
+					if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+				}
+				obj.getScore("§eMap:  §o§aVoting...").setScore(i++);
+				obj.getScore("  ").setScore(i++);
 			} else {
-				
-				obj.getScore("§eMap:  §r§b"+session.getMap().getName()).setScore(2);
-				obj.getScore("  ").setScore(3);
-				i = 4;
+				obj.getScore("§eMap:  §r§b"+session.getMap().getName()).setScore(i++);
+				obj.getScore("  ").setScore(i++);
 			}
 		}
 		
@@ -86,7 +88,10 @@ public class SessionScoreboard {
 			for(Player p : sortedInRanks) {
 				String underline = "";
 				if(playersInSorted.get(maxScore).contains(p)) underline = "§n";
-				obj.getScore(underline+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
+				LasertagColor color = session.getPlayerColor(p);
+				org.bukkit.ChatColor chatColor = color.getChatColor();
+				Integer pp = session.getPlayerPoints(p);
+				obj.getScore(underline+chatColor+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
 			}
 			obj.getScore("   ").setScore(i);
 			
@@ -158,7 +163,7 @@ public class SessionScoreboard {
 				for(Player p : sortedInRanks) {
 					obj.getScore("   "+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
 				}
-				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).getName()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
+				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).name()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
 			}
 			obj.getScore("   ").setScore(i);
 			for(Player p : session.getPlayers()) {
@@ -174,5 +179,26 @@ public class SessionScoreboard {
 				}
 			}
 		}
+	}
+	
+	public String[] getMapNamesSorted() {
+		Map longest = Map.maps.get(0);
+		
+		for(Map m : Map.maps) {
+			if(m.getName().length() > longest.getName().length()) longest = m;
+		}
+		
+		List<String> list = new ArrayList<>();
+		for(Map m : Map.maps) {
+			int difference = longest.getName().length() - m.getName().length();
+			
+			String name = "§6"+m.getName()+":";
+			while(difference > 0) {
+				name+=" ";
+				difference--;
+			}
+			list.add("  §6"+name+" §a"+session.mapVotes.get(m));
+		}
+		return list.toArray(new String[list.size()]);
 	}
 }

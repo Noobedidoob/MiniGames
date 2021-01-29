@@ -36,61 +36,23 @@ public class JoinQuitListener implements Listener {
 	public void onPlayerQuit(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
 		Session session = Session.getPlayerSession(p);
-		if(session == null) return;
-		session.disconnectPlayer(p);
+		if(session != null) {
+			session.disconnectPlayer(p);
+		}
 		try {PlayerZoomer.zoomPlayerOut(p);} catch (Exception e2) {}
 	}
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		Session session = Session.getPlayerSession(p);
-		if(session == null) return;
+
+		p.setExp(1f);
+		p.setLevel(0);
+		Lasertag.setPlayersLobbyInv(p);
 		
-		session.addPlayer(p);
+		for(Session session : Session.getAllSessions()) {
+			if(session.disconnectedPlayers.get(p.getUniqueId()) != null) session.reconnectPlayer(p);
+		}
 		
-//		Session session = Session.getPlayerSession(p);
-//		if(session == null) return; 
-//		p.setGameMode(GameMode.ADVENTURE);
-//		p.setExp(1f);
-//		p.getInventory().clear();
-//		Lasertag.laserCommands.flagIsFollowing.put(p, false);
-////		Weapons.playerCoolingdown.put(p, false);
-//		Weapons.lasergunCoolingdown.put(p, false);
-//		Weapons.shotgunCoolingdown.put(p, false);
-//		Weapons.sniperCoolingdown.put(p, false);
-//		if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
-//		p.setResourcePack("https://www.dropbox.com/s/e3m6grsz7q7e5wi/Lasertag%20texturepack.zip?dl=1");
-//		p.sendMessage("§bThis server uses a customized texturepack for lasertag minigame. \n§bClick on §6LOAD §bto load the texturepack or on §aDOWNLOAD §bto download and install the texturepack manually.");
-//		
-//		TextComponent loadMsg = new TextComponent("LOAD");
-//		loadMsg.setColor(ChatColor.GREEN);
-//		loadMsg.setBold(true);
-//		loadMsg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lt loadtexturepack"));
-//		loadMsg.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to load the texturepack").create() ) );
-//		TextComponent seperator = new TextComponent(" | ");
-//		seperator.setColor(ChatColor.WHITE);
-//		TextComponent urlMsg = new TextComponent("DOWNLOAD");
-//		urlMsg.setColor(ChatColor.GOLD);
-//		urlMsg.setBold(true);
-//		urlMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.texturepackURL));
-//		urlMsg.setHoverEvent( new HoverEvent( HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click here to download the texturepack").create() ) );
-//		loadMsg.addExtra(seperator);
-//		loadMsg.addExtra(urlMsg);
-//		p.spigot().sendMessage(loadMsg);
-//		/*if(l.personalRecord.get(p.getUniqueId()) == null) {
-//			l.personalRecord.put(p.getUniqueId(), 0);
-//			l.uuidName.put(p.getUniqueId(), p.getName());
-//		}*/
-//		if(session.tagging()) {
-//			for(UUID id : Lasertag.disconnectedPlayers) {
-//				if(id.equals(p.getUniqueId())) {
-//					p.sendMessage("§aWelcome Back, "+p.getName()+"! The game is still in Progress!");
-//					Game.addDisconnectedPlayer();
-//				}
-//			}
-//		} else {
-//			p.teleport(Minigames.spawn);
-//		}
 	}
 }

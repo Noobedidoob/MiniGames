@@ -12,21 +12,20 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
-import me.noobedidoob.minigames.utils.LasertagColor;
-import me.noobedidoob.minigames.utils.LasertagColor.LtColorNames;
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 
 public class SessionTeam {
 	
-	private LtColorNames colorName;
+	private LasertagColor colorName;
 	private List<Player> players = new ArrayList<Player>();
 	private int points;
 	private org.bukkit.scoreboard.Team scoreboardTeam;
 	
 	private Session session;
-	public SessionTeam(Session session, LtColorNames colorName) {
+	public SessionTeam(Session session, LasertagColor colorName) {
 		new SessionTeam(session, colorName, new Player[] {});
 	}
-	public SessionTeam(Session session, LtColorNames colorName, Player[] players) {
+	public SessionTeam(Session session, LasertagColor colorName, Player[] players) {
 		this.session = session;
 		this.colorName = colorName;
 		for(Player p : players) {
@@ -50,6 +49,19 @@ public class SessionTeam {
 			players.add(p);
 			playerTeam.put(p, this);
 			scoreboardTeam.addEntry(p.getName());
+			
+			ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
+			ItemStack leggins = new ItemStack(Material.LEATHER_LEGGINGS);
+			ItemStack boots = new ItemStack(Material.LEATHER_BOOTS);
+			LeatherArmorMeta armourItemMeta = (LeatherArmorMeta) chestplate.getItemMeta();
+			armourItemMeta.setUnbreakable(true);
+			armourItemMeta.setColor(colorName.getColor());
+			chestplate.setItemMeta(armourItemMeta);
+			leggins.setItemMeta(armourItemMeta);
+			boots.setItemMeta(armourItemMeta);
+			p.getInventory().setChestplate(chestplate);
+			p.getInventory().setLeggings(leggins);
+			p.getInventory().setBoots(boots);
 		}
 		
 	}
@@ -58,14 +70,14 @@ public class SessionTeam {
 			players.remove(p);
 			playerTeam.put(p, null);
 			scoreboardTeam.removeEntry(p.getName());
+			p.getInventory().setChestplate(new ItemStack(Material.AIR));
+			p.getInventory().setLeggings(new ItemStack(Material.AIR));
+			p.getInventory().setBoots(new ItemStack(Material.AIR));
 		}
 	}
 	
-	public LtColorNames getColorName() {
+	public LasertagColor getColorName() {
 		return colorName;
-	}
-	public LasertagColor getLasertagColor() {
-		return new LasertagColor(colorName);
 	}
 	public Color getColor() {
 		return colorName.getColor();
@@ -73,7 +85,7 @@ public class SessionTeam {
 	public ChatColor getChatColor() {
 		return colorName.getChatColor();
 	}
-	public void setColor(LtColorNames colorName) {
+	public void setColor(LasertagColor colorName) {
 		this.colorName = colorName;
 	}
 	

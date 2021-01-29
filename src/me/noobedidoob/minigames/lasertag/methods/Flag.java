@@ -16,9 +16,9 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Coordinate;
-import me.noobedidoob.minigames.utils.LasertagColor;
 
 public class Flag implements Listener{
 	
@@ -48,7 +48,7 @@ public class Flag implements Listener{
 		block = world.getBlockAt(coord.getLocation(world));
 		oldLoc = coord.getLocation(world);
 		oldMat = block.getType();
-		flagType = Material.getMaterial(color.getChatColor().name().toUpperCase().replace("GOLD", "ORANGE")+"_BANNER");
+		flagType = Material.getMaterial(color.getChatColor().name()+"_BANNER");
 		block.setType(flagType);
 	}
 	

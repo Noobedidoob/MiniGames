@@ -131,11 +131,11 @@ public class Weapons {
 		ItemMeta newSnipernMeta = newSniper.getItemMeta();
 		if (session.isTeams()) {
 			newShotgunMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
-					+ "§lShotgun #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
+					+ "§lShotgun #" + (session.getTeamColor(session.getPlayerTeam(p)).ordinal()+1));
 			newSnipernMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(p)).getChatColor()
-					+ "§lSniper #" + (session.getTeamColor(session.getPlayerTeam(p)).getOrdinal()+1));
+					+ "§lSniper #" + (session.getTeamColor(session.getPlayerTeam(p)).ordinal()+1));
 		} else {
-			int ordinal = session.getPlayerColor(p).getOrdinal();
+			int ordinal = session.getPlayerColor(p).ordinal();
 			newShotgunMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lShotgun #" + (ordinal + 1));
 			newSnipernMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§lSniper #" + (ordinal + 1));
 		}

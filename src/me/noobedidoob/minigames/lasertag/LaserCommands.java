@@ -17,12 +17,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.LasertagColor;
-import me.noobedidoob.minigames.utils.LasertagColor.LtColorNames;
 
 public class LaserCommands implements CommandExecutor, TabCompleter {
 
@@ -145,7 +144,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 							}
 						} else if(!flagIsFollowing.get(p)){
 							try {
-								Flag f = new Flag(p.getLocation(), new LasertagColor(LtColorNames.valueOf(c.substring(0,1).toUpperCase()+c.substring(1).toLowerCase())));
+								Flag f = new Flag(p.getLocation(), LasertagColor.valueOf(c.substring(0,1).toUpperCase()+c.substring(1).toLowerCase()));
 								f.attachPlayer(p);
 								playerFlag.put(p, f);
 								flagIsFollowing.put(p, true);

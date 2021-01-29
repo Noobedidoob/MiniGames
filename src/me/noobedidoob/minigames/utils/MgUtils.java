@@ -105,11 +105,12 @@ public class MgUtils {
 		HOURS;
 		
 		public static TimeFormat getFromString(String s) {
-			String format = s.substring(0, 1);
+			String format = s.substring(0, 1).toUpperCase();
 			for(TimeFormat tf : TimeFormat.values()) {
-				if(tf.name().substring(0, 1) == format) return tf;
+				if(tf.name().substring(0, 1).equalsIgnoreCase(format)) {
+					return tf;
+				}
 			}
-			
 			return TimeFormat.MINUTES;
 		}
 	}

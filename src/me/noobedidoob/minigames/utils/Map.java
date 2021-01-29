@@ -17,7 +17,6 @@ public class Map {
 	
 	private Coordinate centerCoord;
 	private Area area;
-//	private Area gatherArea;
 	
 	private World world;
 	//——————————————————————————————————————————————//
@@ -41,10 +40,9 @@ public class Map {
 	
 	public Map(String name, Coordinate centerCoordinate, Area area, /*Area gatherArea, */ World world) {
 		maps.add(this);
-		this.name = name;
+		this.name = name.substring(0, 1).toUpperCase()+name.substring(1);
 		this.centerCoord = centerCoordinate;
 		this.area = area;
-//		this.gatherArea = gatherArea;
 		this.world = world;
 		
 		for(ChatColor color : ChatColor.values()) hasColor.put(color, false);
@@ -59,9 +57,6 @@ public class Map {
 	public Area getArea() {
 		return area;
 	}
-//	public Area getGatherArea() {
-//		return gatherArea;
-//	}
 
 	
 	

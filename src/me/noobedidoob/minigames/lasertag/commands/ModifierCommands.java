@@ -48,7 +48,7 @@ public class ModifierCommands  {
 				sender.sendMessage("§7"+m.name()+" <§a"+m.getValueTypeName()+"§7>");
 			}
 			sender.sendMessage("§7———————————————————\n");
-		} else if(args[0].equalsIgnoreCase("setmodifier")) {
+		} else if(args[0].equalsIgnoreCase("setmodifier") && args.length == 3) {
 			if(!(sender instanceof Player)) {
 				sender.sendMessage("You can only perform this command as a player!");
 				return;
@@ -123,11 +123,11 @@ public class ModifierCommands  {
 				for (Player ap : session.getPlayers()) {
 					if (session.isTeams()) {
 						newLasergunMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(ap)).getChatColor()
-								+ "§lLasergun #" + (session.getTeamColor(session.getPlayerTeam(ap)).getOrdinal()+1));
+								+ "§lLasergun #" + (session.getTeamColor(session.getPlayerTeam(ap)).ordinal()+1));
 						newDaggerMeta.setDisplayName(session.getTeamColor(session.getPlayerTeam(ap)).getChatColor()
-								+ "§lDagger #" + (session.getTeamColor(session.getPlayerTeam(ap)).getOrdinal()+1));
+								+ "§lDagger #" + (session.getTeamColor(session.getPlayerTeam(ap)).ordinal()+1));
 					} else {
-						int ordinal = session.getPlayerColor(ap).getOrdinal();
+						int ordinal = session.getPlayerColor(ap).ordinal();
 						newLasergunMeta.setDisplayName(session.getPlayerColor(ap).getChatColor() + "§lLasergun #" + (ordinal + 1));
 						newDaggerMeta.setDisplayName(session.getPlayerColor(ap).getChatColor() + "§lDagger #" + (ordinal + 1));
 					}
