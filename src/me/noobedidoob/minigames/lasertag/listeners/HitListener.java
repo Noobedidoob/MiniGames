@@ -39,7 +39,7 @@ public class HitListener implements Listener {
 							damager.sendMessage("§cHe still has spawnprotection! You can't hit him!");
 							e.setCancelled(true);
 						} else {
-							if (!session.multiWeapons()) {
+							if (!session.withMultiweapons()) {
 								double damage = e.getDamage();
 								if (p.getInventory().getItemInMainHand() != null) {
 									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = session.getIntMod(Mod.LASERGUN_PVP_DAMAGE);

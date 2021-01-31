@@ -112,7 +112,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 				}
 				
 				if(args.length >= 1) {
-					if(args[0].toLowerCase().contains("modifier") | args[0].equalsIgnoreCase("withmultiweapons")) {
+					if(args[0].toLowerCase().contains("modifier")/* | args[0].equalsIgnoreCase("withmultiweapons")*/) {
 						modifierCommands.perform(sender, args);
 						return true;
 					}

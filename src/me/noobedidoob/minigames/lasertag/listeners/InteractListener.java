@@ -15,7 +15,7 @@ import org.bukkit.plugin.PluginManager;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
@@ -34,7 +34,7 @@ public class InteractListener implements Listener {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {
-					LaserShooter.fireTest(p, Weapons.getFireWeapon(e.getItem()));
+					LaserShooter.fireTest(p, Weapon.getWeaponFromItem(e.getItem()));
 				} catch (Exception e2) {
 					return;
 				}
@@ -54,7 +54,7 @@ public class InteractListener implements Listener {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {
-					LaserShooter.fire(p, Weapons.getFireWeapon(e.getItem()));
+					LaserShooter.fire(p, Weapon.getWeaponFromItem(e.getItem()));
 				} catch (Exception e2) {
 					return;
 				}

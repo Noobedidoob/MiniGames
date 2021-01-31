@@ -22,7 +22,7 @@ public class PlayerTeleporter {
 				return session.getMap().getRandomSpawnLocation();
 			}
 		} else {
-			if(session.getMap().withBaseSpawn()) {
+			if(!session.getMap().withRandomSpawn()) {
 				return session.getMap().getTeamSpawnLoc(session.getPlayerColor(p).getChatColor());
 			} else {
 				return session.getMap().getRandomSpawnLocation();

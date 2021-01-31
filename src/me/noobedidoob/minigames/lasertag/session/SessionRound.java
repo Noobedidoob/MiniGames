@@ -16,6 +16,7 @@ import org.bukkit.FireworkEffect.Type;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -28,6 +29,7 @@ import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 
@@ -53,8 +55,6 @@ public class SessionRound {
 	
 	public void start() {
 		tagging = true;
-//		refreshPlayerTeams();
-		preparePlayers();
 		for(Player p : session.getPlayers()) {
 			p.sendTitle("§a§lGo!", "Kill the players of the other teams", 20, 20*4, 20);
 			p.setGameMode(GameMode.ADVENTURE);
@@ -85,14 +85,39 @@ public class SessionRound {
 		}, 0, 20);
 	}
 	
+	public void preparePlayers() {
+		for(Player p : session.getPlayers()) {
+			LaserShooter.playersSnipershots.put(p, 0);
+			setPlayerGameInv(p);
+		}
+	}
+	
 	public void setPlayerGameInv(Player p) {
+		
 		if (session.isSolo()) {
-			ItemStack lasergun = Weapons.lasergunItem;
+			ItemStack lasergun = Weapon.LASERGUN.getItem();
 			ItemMeta lasergunMeta = lasergun.getItemMeta();
 			lasergunMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lLasergun #"+(session.getPlayerColor(p).ordinal()+1));
 			lasergun.setItemMeta(lasergunMeta);
+			
 			p.getInventory().clear();
 			p.getInventory().addItem(lasergun);
+			
+			if(session.withMultiweapons()){
+				ItemStack dagger = Weapon.DAGGER.getItem();
+				ItemMeta daggerMeta = dagger.getItemMeta();
+				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lDagger #"+(session.getPlayerColor(p).ordinal()+1));
+				daggerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
+				dagger.setItemMeta(daggerMeta);
+				p.getInventory().setItem(1, dagger);
+				
+				ItemStack second = session.getPlayerSecondaryWeapon(p).getItem();
+				ItemMeta sMeta = second.getItemMeta();
+				String name = session.getPlayerSecondaryWeapon(p).name().substring(0, 1)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
+				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§l"+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
+				second.setItemMeta(sMeta);
+				p.getInventory().setItem(2, second);
+			}
 		} else {
 			LasertagColor teamColor = session.getPlayerTeam(p).getColorName();
 			ItemStack chestplate = new ItemStack(Material.LEATHER_CHESTPLATE);
@@ -104,27 +129,35 @@ public class SessionRound {
 			chestplate.setItemMeta(armourItemMeta);
 			leggins.setItemMeta(armourItemMeta);
 			boots.setItemMeta(armourItemMeta);
-			ItemStack teamLasergun = Weapons.lasergunItem;
+			ItemStack teamLasergun = Weapon.LASERGUN.getItem();
 			ItemMeta teamLasergunMeta = teamLasergun.getItemMeta();
 			teamLasergunMeta.setDisplayName(teamColor.getChatColor()+"§lLasergun #"+(teamColor.ordinal()+1));
+			teamLasergunMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
 			teamLasergun.setItemMeta(teamLasergunMeta);
+			
 			p.getInventory().clear();
 			p.getInventory().setItem(0,teamLasergun);
 			p.getInventory().setChestplate(chestplate);
 			p.getInventory().setLeggings(leggins);
 			p.getInventory().setBoots(boots);
+			
+			if(session.withMultiweapons()) {
+				ItemStack dagger = Weapon.DAGGER.getItem();
+				ItemMeta daggerMeta = dagger.getItemMeta();
+				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lDagger #"+(session.getPlayerColor(p).ordinal()+1));
+				daggerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
+				dagger.setItemMeta(daggerMeta);
+				p.getInventory().setItem(1, dagger);
+				
+				ItemStack second = session.getPlayerSecondaryWeapon(p).getItem();
+				ItemMeta sMeta = second.getItemMeta();
+				String name = session.getPlayerSecondaryWeapon(p).name().substring(0, 1)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
+				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§l"+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
+				second.setItemMeta(sMeta);
+				p.getInventory().setItem(2, second);
+			}
 		}
 	}
-	
-	public void preparePlayers() {
-		Lasertag.everybodyReady = false;
-		for(Player p : session.getPlayers()) {
-			setPlayerGameInv(p);
-			Weapons.hasChoosenWeapon.put(p, false);
-			LaserShooter.playersSnipershots.put(p, 0);
-		}
-	}
-	
 	
 	
 	public void stop(boolean externalStop) {

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -89,7 +90,8 @@ public class SessionScoreboard {
 				String underline = "";
 				if(playersInSorted.get(maxScore).contains(p)) underline = "§n";
 				LasertagColor color = session.getPlayerColor(p);
-				org.bukkit.ChatColor chatColor = color.getChatColor();
+				if(color == null) System.out.println("Color = null");
+				ChatColor chatColor = color.getChatColor();
 				Integer pp = session.getPlayerPoints(p);
 				obj.getScore(underline+chatColor+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
 			}

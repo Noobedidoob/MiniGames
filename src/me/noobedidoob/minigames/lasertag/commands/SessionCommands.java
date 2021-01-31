@@ -6,7 +6,6 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
 import me.noobedidoob.minigames.lasertag.session.SessionTeam;
@@ -23,7 +22,7 @@ public class SessionCommands {
 	}
 	
 	public static List<String> commandArgs = Arrays.asList(new String[] {"leave","new","join"});
-	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","close","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick", "end"});
+	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","close","setTime","addAdmin","setAdmin","removeAdmin","demoteAdmin","kick", "end", "withmultiweapons"});
 
 	public void perform(CommandSender sender, String[] args) {
 		if(sender instanceof Player){
@@ -89,6 +88,14 @@ public class SessionCommands {
 								SessionInventorys.openAddAdminInv(p);
 							} else Session.sendMessage(p, "§cYou can't promote players while the game is running!");
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
+						return;
+					}
+					
+					else if(args[0].equalsIgnoreCase("withmultiweapons")) {
+						if (s.waiting()) {
+							Session.sendMessage(p, "§aEnabled §bmultiweapons!");
+							s.setWithMultiWeapons(true);
+						} else Session.sendMessage(p, "§cYou can't perform this command in a running round!");
 						return;
 					}
 				}

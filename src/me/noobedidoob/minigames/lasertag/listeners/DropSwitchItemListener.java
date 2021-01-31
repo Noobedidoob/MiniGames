@@ -33,7 +33,7 @@ public class DropSwitchItemListener implements Listener {
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
 		if(((session.tagging() | session.waiting()) && session.isInSession(p)) | Lasertag.playerTesting.get(p)) {
 			if (session.isInSession(p)) {
-				if (!session.multiWeapons()) PlayerZoomer.toggleZoom(p);
+				if (!session.withMultiweapons()) PlayerZoomer.toggleZoom(p);
 			} else if(item != null) {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) {
 					PlayerZoomer.toggleZoom(p);
@@ -54,7 +54,7 @@ public class DropSwitchItemListener implements Listener {
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
 		if(((session.tagging() | session.waiting()) && session.isInSession(p)) | Lasertag.playerTesting.get(p)) {
 			if (session.isInSession(p)) {
-				if (!session.multiWeapons()) PlayerZoomer.toggleZoom(p);
+				if (!session.withMultiweapons()) PlayerZoomer.toggleZoom(p);
 				else if(item != null && item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) PlayerZoomer.toggleZoom(p); 
 			} else if(item != null && (item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER") | item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN"))) {
 				PlayerZoomer.toggleZoom(p);

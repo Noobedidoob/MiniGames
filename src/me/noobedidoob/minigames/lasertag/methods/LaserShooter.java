@@ -388,8 +388,7 @@ public class LaserShooter{
 			}, 20*5);
 			return true;
 		}
-		boolean shooThroughEnabled = Mod.SHOOT_THROUGH_BLOCKS.getOgBoolean();
-		if(s != null) s.modifiers.getBoolean(Mod.SHOOT_THROUGH_BLOCKS);
+		boolean shooThroughEnabled = s.getBooleanMod(Mod.SHOOT_THROUGH_BLOCKS);
 		if(!shooThroughEnabled) {
 			Material m = Minigames.world.getBlockAt(loc).getType();
 			if(!m.isAir() && !m.name().contains("Fence")) {

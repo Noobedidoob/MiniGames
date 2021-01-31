@@ -107,7 +107,6 @@ public class Lasertag implements Listener{
 	public static int timeCountdownTask;
 	public static List<UUID> disconnectedPlayers = new ArrayList<UUID>();
 	public static HashMap<Player, Boolean> isProtected = new HashMap<Player, Boolean>();
-	public static boolean everybodyReady = false;
 	public static Area testArea = new Area(194, 4, -98, 246, 22, -67);
 	public static HashMap<Player, Boolean> playerTesting = new HashMap<Player, Boolean>();
 
@@ -278,13 +277,13 @@ public class Lasertag implements Listener{
 				if(s != null) {
 					if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
 						if(!s.tagging()) {
-							s.addPlayer((Player) e.getWhoClicked());
 							p.closeInventory();
+							s.addPlayer((Player) e.getWhoClicked());
 						} else Session.sendMessage(p, "§cThe session is already running! Please wait!");
 					} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
 				} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
 			}
-		} catch (NullPointerException e1) {
+		} catch (NullPointerException | ArrayIndexOutOfBoundsException e1) {
 		}
 	}
 	

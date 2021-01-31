@@ -1,6 +1,7 @@
 package me.noobedidoob.minigames.lasertag.session;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,6 +22,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
@@ -81,9 +83,9 @@ public class SessionInventorys implements Listener{
 						}
 					}
 				} else if(slot == 8 && inv.getItem(8).getType() == Material.DIAMOND_HOE) {
-					session = new Session(p, inv.getItem(4).getAmount());
 					if(inv.getItem(4).getAmount() < 2) Session.sendMessage(p, "§aCreated a new solo session!");
 					else Session.sendMessage(p, "§aCreated a new teams session with §d"+inv.getItem(4).getAmount()+" §ateams!");
+					session = new Session(p, inv.getItem(4).getAmount());
 					p.closeInventory();
 				}
 			}
@@ -117,7 +119,10 @@ public class SessionInventorys implements Listener{
 								if(!session.isTimeSet()) openTimeInv(p);
 							}
 						} catch (Exception e1) {}
-					} else */if(inv.getItem(4).getType() == Material.CLOCK){
+					} else */
+					
+					
+					if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.CLOCK){
 						if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
 							if(inv.getItem(4).getAmount() > 1) inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
 						} else if(slot == 6 && inv.getItem(6).getType() == Material.LIME_STAINED_GLASS_PANE) {
@@ -132,7 +137,10 @@ public class SessionInventorys implements Listener{
 						ItemMeta timeMeta = inv.getItem(4).getItemMeta();
 						timeMeta.setDisplayName("§bTime: §r"+inv.getItem(4).getAmount()+" Minutes");
 						inv.getItem(4).setItemMeta(timeMeta);
-					} else if(inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
+					} 
+					
+					
+					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
 						if(slot == 4 && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
 							session.setMap(null);
 							Session.sendMessage(p, "§aMap vote enabled!");
@@ -154,7 +162,10 @@ public class SessionInventorys implements Listener{
 							}
 							session.setAllPlayersInv();
 						}
-					} else if(inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
+					} 
+					
+					
+					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
 						if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
 							if(inv.getItem(4).getAmount() > 1) {
 								inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
@@ -174,7 +185,10 @@ public class SessionInventorys implements Listener{
 						ItemMeta timeMeta = inv.getItem(4).getItemMeta();
 						timeMeta.setDisplayName("§a"+inv.getItem(4).getAmount()+" §bTeams");
 						inv.getItem(4).setItemMeta(timeMeta);
-					} else if(inv.getItem(4).getType() == Material.BLUE_STAINED_GLASS_PANE) {
+					} 
+					
+					
+					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.BLUE_STAINED_GLASS_PANE) {
 						if(slot == 4) {
 							boolean doNonAdminsExist = true;
 							for(Player ap : session.getPlayers()) {
@@ -204,6 +218,7 @@ public class SessionInventorys implements Listener{
 				}
 			}
 			
+			
 			if(session.hasTeamChooseInvOpen.contains(p)) {
 				if(inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
 					SessionTeam chosenTeam = SessionTeam.getTeamByCooserSlot.get(slot);
@@ -228,6 +243,30 @@ public class SessionInventorys implements Listener{
 				p.closeInventory();
 				p.getInventory().getItem(p.getInventory().first(Material.PAPER)).getItemMeta().setDisplayName("§eVoted for: §d"+Map.maps.get(slot).getName());
 			}
+			
+			if(e.getInventory().getItem(1) != null && e.getInventory().getItem(1).getType() == Weapon.SHOTGUN.getType()){
+				if(slot == 1) {
+					session.setPlayerSecondaryWeapon(p, Weapon.SHOTGUN);
+					Session.sendMessage(p, "§eYou chose the §dShotgun §eas secondary weapon");
+					int i = 1;
+					if(session.isAdmin(p)) i = 2;
+					if(session.isTeams()) {
+						if(session.isAdmin(p)) i = 3;
+					}
+					p.getInventory().getItem(i).setType(Weapon.SHOTGUN.getType());
+					p.closeInventory();
+				} else if(slot == 7){
+					session.setPlayerSecondaryWeapon(p, Weapon.SNIPER);
+					Session.sendMessage(p, "§eYou chose the §dSniper §eas secondary weapon");
+					int i = 1;
+					if(session.isAdmin(p)) i = 2;
+					if(session.isTeams()) {
+						if(session.isAdmin(p)) i = 3;
+					}
+					p.getInventory().getItem(i).setType(Weapon.SNIPER.getType());
+					p.closeInventory();
+				}
+			}
 		}
 		e.setCancelled(true);
 		
@@ -251,13 +290,13 @@ public class SessionInventorys implements Listener{
 					if (p.getOpenInventory() != null) {
 						try {
 							if (inv.getItem(4).getType() == Material.CLOCK) {
-								if (!session.isTimeSet())
-									openTimeInv(p);
+								if (!session.isTimeSet()) openTimeInv(p);
 							} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-								if (session.isMapNull())
-									openMapInv(p);
+								if (session.isMapNull()) openMapInv(p);
 							} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
 								if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
+							} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
+								if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
 							}
 						} catch (NullPointerException e) {
 						} 
@@ -281,18 +320,25 @@ public class SessionInventorys implements Listener{
 			if((e.getAction().equals(Action.RIGHT_CLICK_BLOCK) | e.getAction().equals(Action.RIGHT_CLICK_AIR)) && e.getItem() != null) {
 				ItemStack item = e.getItem();
 				if(item.getType() == Material.DIAMOND_HOE) {
-					if(session.getPlayers().length > 0) {
-						boolean enoughTeams = true;
-						if(session.isTeams()) {
-							int teamsWithPlayers = 0;
-							for(SessionTeam team : session.getTeams()) {
-								if(team.getPlayers().length > 0) teamsWithPlayers++;
-							}
-							if(teamsWithPlayers < 2) enoughTeams = false;
+					if(session.withMultiweapons() && !session.isEveryBodyReady()) {
+						Session.sendMessage(p, "§cNot everybody is ready!");
+						for(Player up : session.getNotReadyPlayers()) {
+							openSecondaryWeaponChooserInv(up);
 						}
-						if(enoughTeams) session.start(true);
-						else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
-					} else Session.sendMessage(p, "§cNot enough players!");
+					} else {
+						if(session.getPlayers().length > 1) {
+							boolean enoughTeams = true;
+							if(session.isTeams()) {
+								int teamsWithPlayers = 0;
+								for(SessionTeam team : session.getTeams()) {
+									if(team.getPlayers().length > 0) teamsWithPlayers++;
+								}
+								if(teamsWithPlayers < 2) enoughTeams = false;
+							} 
+							if(enoughTeams) session.start(true);
+							else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
+						} else Session.sendMessage(p, "§cNot enough players!");
+					}
 				} else if(item.getType() == Material.PAPER) {
 					if(session.votingMap()) {
 						if(!session.hasPlayerVoted.get(p)) openMapVoteInv(p);
@@ -311,7 +357,9 @@ public class SessionInventorys implements Listener{
 							session.leavePlayer(p);
 						}
 					}, 1);
-				} 
+				} else if(item.getType() == Material.DIAMOND_SWORD || item.getType() == Material.DIAMOND_SHOVEL || item.getType() == Material.DIAMOND_PICKAXE) {
+					openSecondaryWeaponChooserInv(p);
+				}
 			}
 		}
 		e.setCancelled(true);
@@ -431,6 +479,7 @@ public class SessionInventorys implements Listener{
 		p.openInventory(inv);
 	}
 	
+	
 	public static void setPlayerSessionWaitingInv(Player p) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
@@ -468,6 +517,33 @@ public class SessionInventorys implements Listener{
 			}
 		}
 		
+		if(session.withMultiweapons()) {
+			Material m = Material.DIAMOND_SWORD;
+			if(session.getPlayerSecondaryWeapon(p) != null) {
+				if(session.getPlayerSecondaryWeapon(p) == Weapon.SHOTGUN) m = Material.DIAMOND_SHOVEL;
+				else m = Material.DIAMOND_PICKAXE;
+			}
+			ItemStack weapon = new ItemStack(m);
+			ItemMeta wMeta = weapon.getItemMeta();
+			wMeta.setDisplayName("§eChoose secondary weapon");
+			wMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+			weapon.setItemMeta(wMeta);
+			
+			if(session.isTeams()) {
+				if(session.isAdmin(p)) {
+					p.getInventory().setItem(3, weapon);
+				} else {
+					p.getInventory().setItem(2, weapon);
+				}
+			} else {
+				if(session.isAdmin(p)) {
+					p.getInventory().setItem(2, weapon);
+				} else {
+					p.getInventory().setItem(1, weapon);
+				}
+			}
+		}
+		
 		if(session.isAdmin(p)) {
 			ItemStack go = new ItemStack(Material.DIAMOND_HOE);
 			ItemMeta goMeta = go.getItemMeta();
@@ -480,14 +556,14 @@ public class SessionInventorys implements Listener{
 			ItemMeta setTimeMeta = setTimeItem.getItemMeta();
 			setTimeMeta.setDisplayName("§bChange time");
 			setTimeItem.setItemMeta(setTimeMeta);
-			p.getInventory().setItem(4, setTimeItem);
+			p.getInventory().setItem(5, setTimeItem);
 			
 			ItemStack addAdminItem = new ItemStack(Material.DIAMOND_HELMET);
 			ItemMeta addAdminMeta = addAdminItem.getItemMeta();
 			addAdminMeta.setDisplayName("§ePromote player to admin");
 			addAdminMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			addAdminItem.setItemMeta(addAdminMeta);
-			p.getInventory().setItem(5, addAdminItem);
+			p.getInventory().setItem(6, addAdminItem);
 		}
 		
 		ItemStack exit = new ItemStack(Material.BARRIER);
@@ -567,6 +643,35 @@ public class SessionInventorys implements Listener{
 		}
 		
 		p.openInventory(inv);
+	}
+	
+	public static void openSecondaryWeaponChooserInv(Player p) {
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		
+		Inventory weaponsInv = Bukkit.createInventory(null, 9, "§0Choose your secondary weapon!");
+		
+		ItemStack newShotgun = Weapon.SHOTGUN.getItem();
+		ItemMeta newShotgunMeta = newShotgun.getItemMeta();
+		ItemStack newSniper = Weapon.SNIPER.getItem();
+		ItemMeta newSnipernMeta = newSniper.getItemMeta();
+		if (session.isTeams()) {
+			ChatColor chatColor = session.getTeamColor(session.getPlayerTeam(p)).getChatColor();
+			int nr = session.getTeamColor(session.getPlayerTeam(p)).ordinal()+1;
+			newShotgunMeta.setDisplayName(chatColor + "§lShotgun #" + nr);
+			newSnipernMeta.setDisplayName(chatColor + "§lSniper #" + nr);
+		} else {
+			ChatColor chatColor = session.getPlayerColor(p).getChatColor();
+			int nr = session.getPlayerColor(p).ordinal()+1;
+			newShotgunMeta.setDisplayName(chatColor + "§lShotgun #" + nr);
+			newSnipernMeta.setDisplayName(chatColor + "§lSniper #" +nr);
+		}
+		newShotgun.setItemMeta(newShotgunMeta);
+		newSniper.setItemMeta(newSnipernMeta);
+		
+		weaponsInv.setContents(new ItemStack[] {null, newShotgun, null, null, null, null, null, newSniper, null});
+		p.closeInventory();
+		p.openInventory(weaponsInv);
 	}
 	
 }

@@ -15,15 +15,16 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.utils.Map;
+import me.noobedidoob.minigames.utils.MgUtils;
+import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import me.noobedidoob.minigames.utils.Map;
-import me.noobedidoob.minigames.utils.MgUtils;
-import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 
 public class Session implements Listener{
 	
@@ -87,21 +88,24 @@ public class Session implements Listener{
 		if(!round.tagging()) {
 			setSessionMap();
 			round.preparePlayers();
-			if(!countdown) round.start();
-			else new BukkitRunnable() {
-				@Override
-				public void run() {
-					if(counter > 0) {
-						for(Player p : players) {
-							p.sendTitle("§aStarting Lasetag in §d"+counter,"§eMap: §b"+map.getName(),5,30,5);
+			/*if(!countdown)*/ round.start();
+			/*else {
+				counter = 5;
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						if(counter > 0) {
+							for(Player p : players) {
+								p.sendTitle("§aStarting Lasetag in §d"+counter,"§eMap: §b"+map.getName(),5,30,5);
+							}
+							counter--;
+						} else {
+							cancel();
+							round.start();
 						}
-						counter--;
-					} else {
-						cancel();
-						round.start();
 					}
-				}
-			}.runTaskTimer(Minigames.minigames, 0, 20);
+				}.runTaskTimer(Minigames.minigames, 0, 20);
+			}*/
 		}
 	}
 	
@@ -126,7 +130,7 @@ public class Session implements Listener{
 			mapVotes.put(m, 0);
 		}
 		
-		System.out.println("Setting time to: "+ogTime);
+		this.time = 5*60;
 		setTime(ogTime, TimeFormat.SECONDS, false);
 		
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
@@ -170,11 +174,6 @@ public class Session implements Listener{
 	
 	
 	
-	public void refreshScoreboard() {
-		scoreboard.refresh();
-	}
-	
-
 	private boolean solo;
 	public boolean isSolo() {
 		return solo;
@@ -278,13 +277,13 @@ public class Session implements Listener{
 			break;
 		}
 		if(this.time > 3600) this.time = 36000;
-		this.ogTime = this.time;
+		if(waiting()) this.ogTime = this.time;
 		timeSet = true;
 		scoreboard.refresh();
 		if(announce) {
 			if(format == TimeFormat.HOURS) broadcast("§aSession time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "h")+" §ehours");
 			else if(format == TimeFormat.MINUTES) broadcast("§aRound time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "m")+" §eminutes");
-			else broadcast("§aRound time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "s")+" §eseconds");
+			else broadcast("§aRound time was set to §b"+this.time+" §eseconds");
 		}
 	}
 	public int getTime(TimeFormat format) {
@@ -361,8 +360,8 @@ public class Session implements Listener{
 
 	private HashMap<Player, Integer> playerPoints = new HashMap<Player, Integer>();
 	private HashMap<Player, LasertagColor> playerColor = new HashMap<Player, LasertagColor>();
-	public void setPlayerColor(Player p, LasertagColor colorName) {
-		playerColor.put(p, colorName);
+	public void setPlayerColor(Player p, LasertagColor color) {
+		playerColor.put(p, color);
 		refreshScoreboard();
 	}
 	public LasertagColor getPlayerColor(Player p) {
@@ -371,22 +370,16 @@ public class Session implements Listener{
 	public void refreshSoloPlayerColors() {
 		try {
 			if (isSolo()) {
-				System.out.println("Is solo!");
 				for (Player p : players) {
-					System.out.println("Stage 1");
 					int ordinal = players.indexOf(p);
-					System.out.println("Stage 2 Ordinal = " + ordinal);
-					if (ordinal > LasertagColor.values().length - 1)
-						ordinal -= LasertagColor.values().length;
-					System.out.println("Stage 3 Ordianl = " + ordinal);
-					setPlayerColor(p, LasertagColor.values()[ordinal]);
-					System.out.println("Stage 4");
+					if (ordinal > LasertagColor.values().length - 1) ordinal -= LasertagColor.values().length;
+					playerColor.put(p, LasertagColor.values()[ordinal]);
 				}
-				System.out.println("Stage 5");
 			} 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		refreshScoreboard();
 	}
 	public int getPlayerPoints(Player p) {
 		return playerPoints.get(p);
@@ -420,7 +413,8 @@ public class Session implements Listener{
 		setPlayerInv(p);
 		
 		refreshScoreboard();
-//		round.refreshPlayerTeams();
+		
+		if(withMultiWeapons) SessionInventorys.openSecondaryWeaponChooserInv(p);
 	}
 	public void banPlayer(Player p, Player admin) {
 		bannedPlayers.add(p);
@@ -504,7 +498,7 @@ public class Session implements Listener{
 	
 	public void reconnectPlayer(Player p) {
 		if(disconnectedPlayers.get(p.getUniqueId()) != null) {
-			LasertagColor colorName = disconnectedPlayers.get(p.getUniqueId()); 
+			LasertagColor color = disconnectedPlayers.get(p.getUniqueId()); 
 			disconnectedPlayers.put(p.getUniqueId(), null);
 			
 			broadcast("§b"+p.getName()+" §aReturned to the session!");
@@ -513,7 +507,7 @@ public class Session implements Listener{
 			hasPlayerVoted.put(p, false);
 			
 			if(isTeams()) {
-				addPlayerToTeam(p, colorName);
+				addPlayerToTeam(p, color);
 			} else {
 				refreshSoloPlayerColors();
 			}
@@ -539,11 +533,11 @@ public class Session implements Listener{
 	public List<Player> hasTeamChooseInvOpen = new ArrayList<Player>();
 	private int teamsAmount;
 	
-	public void addTeam(Player[] players, LasertagColor colorName) {
-		SessionTeam team = new SessionTeam(this, colorName, players);
+	public void addTeam(Player[] players, LasertagColor color) {
+		SessionTeam team = new SessionTeam(this, color, players);
 		teams.add(team);
 		for(Player p : players) {
-			playerColor.put(p, colorName);
+			playerColor.put(p, color);
 		}
 	}
 	public void addPlayerToTeam(Player p, LasertagColor name) {
@@ -610,6 +604,9 @@ public class Session implements Listener{
 	
 	
 	
+	public void refreshScoreboard() {
+		scoreboard.refresh();
+	}
 	
 	
 	
@@ -667,10 +664,78 @@ public class Session implements Listener{
     
     public void setMod(Mod m, Object value) {
     	modifiers.set(m, value);
+    	broadcast("§aThe modifier +§b"+m.name().toLowerCase()+" §a was set to §e"+value.toString());
     }
-
-    public boolean withMultiweapons() { return modifiers.withMultiweapons(); }
-    public boolean multiWeapons() { return modifiers.multiWeapons(); }
+    
+    
+    
+    private boolean withMultiWeapons = false;
+    public boolean withMultiweapons() {
+    	return withMultiWeapons;
+    }
+    
+    private HashMap<Player, Boolean> isPlayerReady = new HashMap<Player, Boolean>();
+    public boolean isPlayerReady(Player p) {
+    	if(withMultiWeapons) {
+    		if(isPlayerReady.get(p) == null) isPlayerReady.put(p, false);
+    		return isPlayerReady.get(p);
+    	} else return true;
+    }
+    public void setPlayerReady(Player p, boolean ready) {
+    	isPlayerReady.put(p, ready);
+    }
+    public List<Player> getNotReadyPlayers(){
+    	List<Player> list = new ArrayList<Player>();
+    	for(Player p : players) {
+    		if(!isPlayerReady(p)) list.add(p);
+    	}
+    	return list;
+    }
+    public boolean isEveryBodyReady() {
+		for (Player p : players) {
+			if (!isPlayerReady(p))
+				return false;
+		} 
+		return true;
+    }
+    
+    
+    private HashMap<UUID, Weapon> playersSecondaryWeapon = new HashMap<UUID, Weapon>();
+    public Weapon getPlayerSecondaryWeapon(Player p) {
+    	return playersSecondaryWeapon.get(p.getUniqueId());
+    }
+    public void setPlayerSecondaryWeapon(Player p, Weapon w) {
+    	playersSecondaryWeapon.put(p.getUniqueId(), w);
+    	setPlayerReady(p, true);
+    	
+    	boolean allReady = true;
+		for(Player ap : getPlayers()) {
+			if(!isPlayerReady(ap)) allReady = false;
+		}
+		
+		if(allReady) {
+			for(Player a : getAdmins()) {
+				Session.sendMessage(a, "§aEverybody has chosen their secondary weapon!");
+			}
+		}
+    }
+    public void setWithMultiWeapons(boolean withMultiWeapons) {
+    	if (waiting()) {
+    		if(withMultiWeapons) {
+        		if(!this.withMultiWeapons) {
+        			this.withMultiWeapons = true;
+        			for(Player p : players) {
+        				setPlayerReady(p, false);
+        				SessionInventorys.openSecondaryWeaponChooserInv(p);
+        				setPlayerInv(p);
+        			}
+				}
+        			
+        	} else {
+        		this.withMultiWeapons = false;
+        	}
+    	}
+    }
 	
 	
 	

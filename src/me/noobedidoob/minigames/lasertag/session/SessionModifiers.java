@@ -45,15 +45,17 @@ public class SessionModifiers {
     public void set(Mod m, Object value) {
     	if(value.getClass() == m.getOg().getClass()) {
         	modValues.put(m, value);
+    	} else {
+    		System.out.println("Error at setting mod! Value types are not the same!");
     	}
     }
 
-    public boolean withMultiweapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
-    public boolean multiWeapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
+//    public boolean withMultiweapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
+//    public boolean multiWeapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
     
 	public enum Mod{
 		POINTS(1, "Normal amount of points a player gets"),
-		WITH_MULTIWEAPONS(false, "Playing with multiple weapons"),
+//		WITH_MULTIWEAPONS(false, "Playing with multiple weapons"),
 		SNIPER_SHOT_EXTRA(1, "Extra points when killing with snipe-shot"),
 		MINIMAL_SNIPE_DISTANCE(35, "Minimal distance of a shot to be a sniper shot"),
 		NORMAL_SHOT_EXTRA(0, "Extra points when a player shot normal"),
@@ -135,7 +137,7 @@ public class SessionModifiers {
         
         public static Mod getMod(String name) {
         	for(Mod m : Mod.values()) {
-        		if(m.name().equalsIgnoreCase(name)) return m;
+        		if(m.name().equalsIgnoreCase(name.replace(" ", ""))) return m;
         	}
         	return null;
         }

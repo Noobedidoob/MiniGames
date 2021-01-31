@@ -50,9 +50,9 @@ public class JoinQuitListener implements Listener {
 		p.setLevel(0);
 		Lasertag.setPlayersLobbyInv(p);
 		
-		for(Session session : Session.getAllSessions()) {
-			if(session.disconnectedPlayers.get(p.getUniqueId()) != null) session.reconnectPlayer(p);
-		}
+//		for(Session session : Session.getAllSessions()) {
+//			if(session.disconnectedPlayers.get(p.getUniqueId()) != null) session.reconnectPlayer(p);
+//		}
 		
 	}
 }

@@ -91,8 +91,8 @@ public class MoveListener implements Listener {
 				if(Lasertag.testArea.isInside(e.getTo())) {
 					Lasertag.playerTesting.put(p, true);
 					p.getInventory().clear();
-					for (int i = 0; i < Weapons.testWeapons.size(); i++) {
-						p.getInventory().setItem(i, Weapons.testWeapons.get(i));
+					for (int i = 0; i < Weapons.getTestSet().length; i++) {
+						p.getInventory().setItem(i, Weapons.getTestSet()[i]);
 					}
 					p.getInventory().getItem(3).setAmount(2);
 				}

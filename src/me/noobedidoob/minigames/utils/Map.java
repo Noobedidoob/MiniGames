@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 
 public class Map {
@@ -137,7 +138,8 @@ public class Map {
 	public Location getRandomSpawnLocation() {
 		int x = (int) (Math.random()*((area.getMaxX()-area.getMinX())+1))+area.getMinX();
 		int z = (int) (Math.random()*((area.getMaxZ()-area.getMinZ())+1))+area.getMinZ();
-		int y = world.getHighestBlockYAt(x, z);
+		int y = world.getHighestBlockYAt(x, z)+1;
+		if(world.getBlockAt(x, y, z).getType() != Material.AIR | world.getBlockAt(x, y+1, z).getType() != Material.AIR) return getRandomGatherLocation();
 		if(y > area.getMaxY()-2) {
 //			for(int i = y; i > area.getMinY(); i++) {
 //				if(!world.getBlockAt(x, y, z).getType().isAir()) {
