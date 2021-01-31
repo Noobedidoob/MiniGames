@@ -147,19 +147,14 @@ public class SessionInventorys implements Listener{
 							p.closeInventory();
 							if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
 							session.setAllPlayersInv();
-						} else if(slot > 8 && slot-8 < Lasertag.maps.size()-1 && inv.getItem(slot).getType() == Material.FILLED_MAP) {
-							mapInvCounter = 0;
-							for(Map m : Map.maps) {
-								if(slot == mapInvCounter+9) {
-									session.setMap(m);
-									p.closeInventory();
-									for(Player ap : session.getPlayers()) {
-										setPlayerSessionWaitingInv(ap);
-									}
-									if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
-								}
-								mapInvCounter++;
+						} else if(slot > 8 && slot-9 < Map.maps.size() && inv.getItem(slot).getType() == Material.FILLED_MAP) {
+							Map m = Lasertag.getMapByName.get(inv.getItem(slot).getItemMeta().getDisplayName().toLowerCase().substring(2));
+							session.setMap(m);
+							p.closeInventory();
+							for(Player ap : session.getPlayers()) {
+								setPlayerSessionWaitingInv(ap);
 							}
+							if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
 							session.setAllPlayersInv();
 						}
 					} 
@@ -239,7 +234,7 @@ public class SessionInventorys implements Listener{
 			}
 			
 			if(session.votingMap() && inv.getItem(0) != null && inv.getItem(0).getType() == Material.FILLED_MAP) {
-				session.playerVoteMap(p, Map.maps.get(slot));
+				session.playerVoteMap(p, Lasertag.getMapByName.get(inv.getItem(slot).getItemMeta().getDisplayName().toLowerCase().substring(0, inv.getItem(slot).getItemMeta().getDisplayName().length()-10)));
 				p.closeInventory();
 				p.getInventory().getItem(p.getInventory().first(Material.PAPER)).getItemMeta().setDisplayName("§eVoted for: §d"+Map.maps.get(slot).getName());
 			}
@@ -433,11 +428,14 @@ public class SessionInventorys implements Listener{
 	}
 
 	public static void openMapInv(Player p) {
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		
 		int rows = 2;
-		if(Lasertag.maps.size() > 9) rows = 3;
-		if(Lasertag.maps.size() > 18) rows = 4;
-		if(Lasertag.maps.size() > 27) rows = 5;
-		if(Lasertag.maps.size() > 36) rows = 6; 
+		if(Map.maps.size() > 9) rows = 3;
+		if(Map.maps.size() > 18) rows = 4;
+		if(Map.maps.size() > 27) rows = 5;
+		if(Map.maps.size() > 36) rows = 6; 
 		Inventory inv = Bukkit.createInventory(null, 9*rows, "§1Choose Map");
 		
 		ItemStack vote = new ItemStack(Material.PURPLE_STAINED_GLASS_PANE);
@@ -448,12 +446,14 @@ public class SessionInventorys implements Listener{
 		
 		int i = 9;
 		for(Map m : Map.maps) {
-			ItemStack item = new ItemStack(Material.FILLED_MAP);
-			ItemMeta itemMeta = item.getItemMeta();
-			itemMeta.setDisplayName("§r§b"+m.getName());
-			itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-			item.setItemMeta(itemMeta);
-			inv.setItem(i++, item);
+			if(session.isMapPlayable(m)) {
+				ItemStack item = new ItemStack(Material.FILLED_MAP);
+				ItemMeta itemMeta = item.getItemMeta();
+				itemMeta.setDisplayName("§r§b"+m.getName());
+				itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+				item.setItemMeta(itemMeta);
+				inv.setItem(i++, item);
+			}
 		}
 		
 		p.closeInventory();
@@ -483,7 +483,9 @@ public class SessionInventorys implements Listener{
 	public static void setPlayerSessionWaitingInv(Player p) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
-		p.getInventory().clear();
+		for(int i = 0; i < 9; i++) {
+			p.getInventory().setItem(i, new ItemStack(Material.AIR));
+		}
 		
 		
 		ItemStack map = new ItemStack(Material.PAPER);
@@ -586,14 +588,16 @@ public class SessionInventorys implements Listener{
 		
 		int i = 0;
 		for(Map m : Map.maps) {
-			ItemStack item = new ItemStack(Material.FILLED_MAP);
-			ItemMeta itemMeta = item.getItemMeta();
-			Integer votes = session.mapVotes.get(m);
-			if(votes == null) votes = 0;
-			itemMeta.setDisplayName("§r"+m.getName()+" §7(§a"+votes+"§7)");
-			itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-			item.setItemMeta(itemMeta);
-			inv.setItem(i++, item);
+			if(session.isMapPlayable(m)) {
+				ItemStack item = new ItemStack(Material.FILLED_MAP);
+				ItemMeta itemMeta = item.getItemMeta();
+				Integer votes = session.mapVotes.get(m);
+				if(votes == null) votes = 0;
+				itemMeta.setDisplayName(m.getName()+" §7(§a"+votes+"§7)");
+				itemMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+				item.setItemMeta(itemMeta);
+				inv.setItem(i++, item);
+			}
 		}
 		
 		p.openInventory(inv);

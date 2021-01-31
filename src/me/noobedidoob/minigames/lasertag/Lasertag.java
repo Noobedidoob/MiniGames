@@ -122,7 +122,7 @@ public class Lasertag implements Listener{
 	
 	//---------------Maps------------------//
 	
-	public static HashMap<String, Map> maps = new HashMap<String, Map>();
+	public static HashMap<String, Map> getMapByName = new HashMap<String, Map>();
 	public static List<String> mapNames = new ArrayList<String>();
 	
 	//-------------------------------------//
@@ -138,7 +138,7 @@ public class Lasertag implements Listener{
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
 			
 			Map map = new Map(name, centerCoord, new Area(coord1, coord2), /*new Area(gatherCoord1, gatherCoord2), */world);
-			maps.put(name, map);
+			getMapByName.put(name, map);
 			
 			boolean withRandomSpawn = cs.getBoolean(name+".area.randomspawn");
 			map.withRandomSpawn(withRandomSpawn);

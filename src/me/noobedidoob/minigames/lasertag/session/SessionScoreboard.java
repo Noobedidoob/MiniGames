@@ -36,6 +36,7 @@ public class SessionScoreboard {
 		obj.setDisplayName("§b§lScoreboard");
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		long time = session.getTime(TimeFormat.SECONDS);
+		if(session.tagging()) time++;
 		if(time < 3600) obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
 		else obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
 		obj.getScore(" ").setScore(1);
@@ -47,8 +48,10 @@ public class SessionScoreboard {
 		
 		if(!session.isMapNull()){
 			if(session.votingMap()) {
-				for(Map m : Map.maps) {
-					if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+				for(int j = Map.maps.size(); j-- > 0;) {
+					Map m = Map.maps.get(j);
+					if(session.mapVotes.get(m) > 0 && j == Map.maps.size()-1) obj.getScore("  §n§6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+					else if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
 				}
 				obj.getScore("§eMap:  §o§aVoting...").setScore(i++);
 				obj.getScore("  ").setScore(i++);
@@ -99,7 +102,7 @@ public class SessionScoreboard {
 			
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
-				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS)) {
+				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
 					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
 				if(Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
@@ -170,7 +173,7 @@ public class SessionScoreboard {
 			obj.getScore("   ").setScore(i);
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
-				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS)) {
+				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
 					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
 				//if(isProtected.get(p) == null) isProtected.put(p, false);

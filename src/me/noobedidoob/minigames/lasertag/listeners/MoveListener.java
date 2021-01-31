@@ -40,13 +40,15 @@ public class MoveListener implements Listener {
 		Session session = Session.getPlayerSession(p);
 		
 		if(session != null) {
-			if(session.tagging() && session.isInSession(p)) {
+			if(session.tagging()) {
 				if(session.getMap().withBaseSpawn()) {
-					for(Coordinate coord : session.getMap().baseCoords) {
-						if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p).getChatColor()) {
-							if(coord.getLocation(Minigames.world).distance(p.getLocation()) < session.getMap().getProtectionRaduis()) {
-								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You aren't allowed to be here!"));
-								damagePlayer(p);
+					if(!session.getMap().withRandomSpawn()) {
+						for(Coordinate coord : session.getMap().baseCoords) { 
+							if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p).getChatColor()) {
+								if(coord.getLocation(Minigames.world).distance(p.getLocation()) < session.getMap().getProtectionRaduis()) {
+									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You aren't allowed to be here!"));
+									damagePlayer(p);
+								}
 							}
 						}
 					}

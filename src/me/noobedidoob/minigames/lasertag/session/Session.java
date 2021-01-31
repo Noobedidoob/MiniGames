@@ -10,7 +10,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
@@ -83,29 +82,45 @@ public class Session implements Listener{
 	}
 	
 	
-	int counter;
 	public void start(boolean countdown) {
 		if(!round.tagging()) {
-			setSessionMap();
-			round.preparePlayers();
-			/*if(!countdown)*/ round.start();
-			/*else {
-				counter = 5;
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						if(counter > 0) {
-							for(Player p : players) {
-								p.sendTitle("§aStarting Lasetag in §d"+counter,"§eMap: §b"+map.getName(),5,30,5);
-							}
-							counter--;
-						} else {
-							cancel();
-							round.start();
+			if(setSessionMap()){
+				round.preparePlayers();
+				if(!countdown) round.start();
+				else {
+					for(Player p : players) p.sendTitle("§aStarting Lasetag in §d5","§eMap: §b"+map.getName(),5,30,5);
+					Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+						@Override
+						public void run() {
+							for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(),5,30,5);
+							Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+								@Override
+								public void run() {
+									for(Player p : players) p.sendTitle("§aStarting Lasetag in §d3","§eMap: §b"+map.getName(),5,30,5);
+									Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+										@Override
+										public void run() {
+											for(Player p : players) p.sendTitle("§aStarting Lasetag in §d2","§eMap: §b"+map.getName(),5,30,5);
+											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+												@Override
+												public void run() {
+													for(Player p : players) p.sendTitle("§aStarting Lasetag in §d1","§eMap: §b"+map.getName(),5,30,5);
+													Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+														@Override
+														public void run() {
+															round.start();
+														}
+													}, 20);
+												}
+											}, 20);
+										}
+									}, 20);
+								}
+							}, 20);
 						}
-					}
-				}.runTaskTimer(Minigames.minigames, 0, 20);
-			}*/
+					}, 20);
+				}
+			}
 		}
 	}
 	
@@ -238,7 +253,7 @@ public class Session implements Listener{
 	}
 	
 	boolean votedBefore = false;
-	private void setSessionMap() {
+	private boolean setSessionMap() {
 		if(mapState == MapState.VOTING) {
 			votedBefore = true;
 			Map m = Map.maps.get(0);
@@ -251,13 +266,43 @@ public class Session implements Listener{
 				}
 			}
 			this.map = m;
+			
+			if(!isMapPlayable(map)) {
+				broadcast("§cThe map §6"+map.getName()+" §cis not playable. Please set the map again!");
+				for(Map am : Map.maps) {
+					mapVotes.put(am, 0);
+					refreshScoreboard();
+				}
+				return false;
+			}
+			
 			broadcast("§ePlaying with in the map §b"+map.getName());
 			mapState = MapState.SET;
 			refreshScoreboard();
 		}
-		if(map == null) setMap(Map.maps.get(0));
+		if(map == null) {
+			if(mapState == MapState.VOTING) broadcast("§cAn error occured while setting the map! Please try again or choose another map!");
+			else {
+				for(Player a : admins) {
+					sendMessage(a, "§cAn error occured while setting the map! Please try again or choose another map!");
+				}
+			}
+			for(Map am : Map.maps) {
+				mapVotes.put(am, 0);
+				refreshScoreboard();
+			}
+			mapState = MapState.NULL;
+			refreshScoreboard();
+			SessionInventorys.openMapInv(owner);
+			return false;
+		}
+		return true;
 	}
-	
+	public boolean isMapPlayable(Map m) {
+		if(solo && !m.withRandomSpawn() && players.size() > m.getBaseAmount()) return false;
+		if(!solo && !m.withRandomSpawn() && teamsAmount > m.getBaseAmount()) return false;
+		return true;
+	}
 	
 	
 	
@@ -405,7 +450,7 @@ public class Session implements Listener{
 		
 		if (isTeams()) {
 			if (p != owner) {
-				generadtePlayerTeam(p);
+				generatePlayerTeam(p);
 			}
 		} else {
 			refreshSoloPlayerColors();
@@ -487,6 +532,10 @@ public class Session implements Listener{
 		setPlayerSession(p, null);
 		Lasertag.setPlayersLobbyInv(p);
 //		round.refreshPlayerTeams();
+		
+		if(tagging()) {
+			if(players.size() < 2) stop(true, false);
+		}
 	}
 	
 	public HashMap<UUID, LasertagColor> disconnectedPlayers = new HashMap<UUID, LasertagColor>();
@@ -552,7 +601,7 @@ public class Session implements Listener{
 //			round.refreshPlayerTeams();
 		}
 	}
-	public void generadtePlayerTeam(Player p) {
+	public void generatePlayerTeam(Player p) {
 		SessionTeam sTeam = teams.get(0);
 		int lowestAmount = teams.get(0).getPlayers().length;
 		for (SessionTeam team : teams) {

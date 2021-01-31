@@ -271,20 +271,20 @@ public class SessionRound {
 			p.sendMessage(leaderboardString);
 			p.sendMessage("\n§7——————————————\n");
 			for(Player w : winners) {
-				for(int t = 0; t < 5; t++) {
-					if(p.hasPotionEffect(Lasertag.glowingEffect)) p.removePotionEffect(Lasertag.glowingEffect);
-					Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-						@Override
-						public void run() {
+//				for(int t = 0; t < 5; t++) {
+//					if(p.hasPotionEffect(Lasertag.glowingEffect)) p.removePotionEffect(Lasertag.glowingEffect);
+//					Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
+//						@Override
+//						public void run() {
 							Firework fw = (Firework) Minigames.world.spawnEntity(w.getLocation(), EntityType.FIREWORK);
 							FireworkMeta fwm = fw.getFireworkMeta();
 							FireworkEffect fwe = FireworkEffect.builder().flicker(true).withColor(Color.GREEN).with(Type.BALL).trail(true).build();
 							fwm.addEffect(fwe);
 							fwm.setPower(1);
 							fw.setFireworkMeta(fwm);
-						}
-					}, 60*t);
-				}
+//						}
+//					}, 60*t);
+//				}
 			}
 			
 			p.sendTitle("§b"+winnerTeamsString+" §awon", "§aScore: §d"+amount, 20, 20*5, 20);
@@ -408,19 +408,19 @@ public class SessionRound {
 			for(SessionTeam team : winnerTeams) {
 				for(Player w : team.getPlayers()) {
 					if(p.hasPotionEffect(Lasertag.glowingEffect)) p.removePotionEffect(Lasertag.glowingEffect);
-					for(int t = 0; t < 4; t++) {
-						Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-							@Override
-							public void run() {
+//					for(int t = 0; t < 4; t++) {
+//						Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
+//							@Override
+//							public void run() {
 								Firework fw = (Firework) Minigames.world.spawnEntity(w.getLocation(), EntityType.FIREWORK);
 								FireworkMeta fwm = fw.getFireworkMeta();
 								FireworkEffect fwe = FireworkEffect.builder().flicker(true).withColor(Color.GREEN).with(Type.BALL).trail(true).build();
 								fwm.addEffect(fwe);
 								fwm.setPower(1);
 								fw.setFireworkMeta(fwm);
-							}
-						}, 60*t);
-					}
+//							}
+//						}, 60*t);
+//					}
 				}
 			}
 			p.sendTitle(winnerTeamsString+" §rwon", "Score: §d"+amount+"\n§rBest Player: ", 20, 20*5, 20);

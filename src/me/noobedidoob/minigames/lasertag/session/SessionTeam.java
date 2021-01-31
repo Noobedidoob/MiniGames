@@ -25,19 +25,20 @@ public class SessionTeam {
 	public SessionTeam(Session session, LasertagColor colorName) {
 		new SessionTeam(session, colorName, new Player[] {});
 	}
-	public SessionTeam(Session session, LasertagColor colorName, Player[] players) {
+	public SessionTeam(Session session, LasertagColor colorName, Player... players) {
 		this.session = session;
 		this.colorName = colorName;
-		for(Player p : players) {
-			this.players.add(p);
-		}
 		points = 0;
-		for(Player p : players) {
-			playerTeam.put(p, this);
-		}
 		getTeamByCooserSlot.put(getTeamChooserSlot(), this);
 		scoreboardTeam = session.scoreboard.board.registerNewTeam(colorName.name());
 		scoreboardTeam.setColor(colorName.getChatColor());
+
+		for(Player p : players) {
+			addPlayer(p);
+		}
+		for(Player p : players) {
+			playerTeam.put(p, this);
+		}
 	}
 	
 	public Player[] getPlayers() {
@@ -46,6 +47,7 @@ public class SessionTeam {
 	
 	public void addPlayer(Player p) {
 		if (!players.contains(p)) {
+			System.out.println("Adding player! "+colorName.name());
 			players.add(p);
 			playerTeam.put(p, this);
 			scoreboardTeam.addEntry(p.getName());
