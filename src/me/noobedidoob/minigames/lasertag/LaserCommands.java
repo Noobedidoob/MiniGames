@@ -4,29 +4,34 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import me.noobedidoob.minigames.lasertag.Lasertag.LtColorNames;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
-import me.noobedidoob.minigames.lasertag.commands.RoundCommands;
+import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
-import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.LasertagColor;
-import me.noobedidoob.minigames.utils.MgUtils;
 
 public class LaserCommands implements CommandExecutor, TabCompleter {
 
 	private Minigames m;
 	private ModifierCommands modifierCommands;
-	private RoundCommands roundCommands;
-	public LaserCommands(Minigames minigames, ModifierCommands modifierCommands, RoundCommands roundCommands) {
+	private SessionCommands sessionCommands;
+	public LaserCommands(Minigames minigames, ModifierCommands modifierCommands, SessionCommands sessionCommands) {
 		this.m = minigames;
 		this.modifierCommands = modifierCommands;
-		this.roundCommands = roundCommands;
+		this.sessionCommands = sessionCommands;
 	}
 	
 	
@@ -36,8 +41,8 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					  + "§e/lt modifiers — §7See current stats of modifiers\n" 
 					  + "§e/lt setmodifier — §7See all changeable modifiers\n"
 					  + "§e/lt setmodifier <name> <value>\n"
-					  + "§e/lt cancel — §7cancel the registrated round\n"
-					  + "§e/lt start — §7start the registrated round\n"
+					  + "§e/lt cancel — §7cancel the registrated session\n"
+					  + "§e/lt start — §7start the registrated session\n"
 					  + "§e/lt stop — §7stop the ongoing game\n"
 					  + "§e/lt loadtexturepack — §7stop the ongoing game\n"
 					  + "\n————————————————————————————————\n";
@@ -48,22 +53,72 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					+ "/lt loadtexturepack — \n"
 					+ "\n———————————————\n";
 	
-	
+
+	int counter = 1;
+	List<String> lore = new ArrayList<String>();
 	public HashMap<Player, Flag> playerFlag = new HashMap<Player, Flag>();
 	public HashMap<Player, Boolean> flagIsFollowing = new HashMap<Player, Boolean>();
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 		if(m.worldFound) {
 			if(cmd.getName().equalsIgnoreCase("lasertag")) {
+				if(args.length == 1 && args[0].equalsIgnoreCase("test") && sender instanceof Player) {
+					Player p = (Player) sender;
+					p.sendMessage("§aTESTING...");
+					p.getInventory().clear();
+					Inventory inv = Bukkit.createInventory(null, 9, "Test inv");
+					ItemStack item = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+					ItemMeta meta = item.getItemMeta();
+					meta.setDisplayName("§a§lTest");
+					lore.add("§aTest 0");
+					meta.setLore(lore);
+					item.setItemMeta(meta);
+					inv.setItem(0, item);
+					p.openInventory(inv);
+					
+					new BukkitRunnable(){
+			            @Override
+			            public void run(){
+			                Inventory inv = ((HumanEntity) p).getOpenInventory().getTopInventory();
+			               
+			                ItemStack item = inv.getItem(0);
+			                ItemMeta meta = item.getItemMeta();
+			                lore.add("Test "+counter++);
+		                    meta.setLore(lore);
+			               
+		                    item.setItemMeta(meta);
+			                inv.setItem(0, item);
+			                
+			                if(counter == 10) cancel();
+			            }  
+			        }.runTaskTimer(Minigames.minigames, 20L, 20L);
+					
+					
+//					counter = 1;
+//					new Timer().schedule(new TimerTask() {
+//						@Override
+//						public void run() {
+//							if(counter != 10) {
+//
+//								lore.add("Test "+counter);
+//								p.getOpenInventory().getTopInventory().getItem(0).getItemMeta().setLore(lore);
+//								p.updateInventory();
+//								
+//								p.sendMessage("Added lore nr. "+counter++);
+//							} else cancel();
+//						}
+//					}, 1000, 1000);
+					return true;
+				}
 				
 				if(args.length >= 1) {
-					if(args[0].toLowerCase().contains("modifier") | args[0].equalsIgnoreCase("withmultiweapons")) {
+					if(args[0].toLowerCase().contains("modifier")/* | args[0].equalsIgnoreCase("withmultiweapons")*/) {
 						modifierCommands.perform(sender, args);
 						return true;
 					}
 					
-					if(MgUtils.contains(args[0], "start", "stop", "cancel","end", "new", "settime")) {
-						roundCommands.perform(sender, args);
+					if(SessionCommands.commandArgs.contains(args[0]) | SessionCommands.adminCommandArgs.contains(args[0])) {
+						sessionCommands.perform(sender, args);
 						return true;
 					}
 				}
@@ -89,7 +144,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 							}
 						} else if(!flagIsFollowing.get(p)){
 							try {
-								Flag f = new Flag(p.getLocation(), new LasertagColor(LtColorNames.valueOf(c.substring(0,1).toUpperCase()+c.substring(1).toLowerCase())));
+								Flag f = new Flag(p.getLocation(), LasertagColor.valueOf(c.substring(0,1).toUpperCase()+c.substring(1).toLowerCase()));
 								f.attachPlayer(p);
 								playerFlag.put(p, f);
 								flagIsFollowing.put(p, true);
@@ -108,79 +163,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 						} else sender.sendMessage("You may only perform ths command as a player");
 						return true;
 					} 
-						
-						
-//					if(args[0].equalsIgnoreCase("start") && sender.isOp()) {
-//						return RoundCommands.start(args, sender);
-//					} else if(args[0].equalsIgnoreCase("cancel") && sender.isOp()) {
-//						return RoundCommands.cancel(args, sender);
-//					} else if(args[0].equalsIgnoreCase("stop") && sender.isOp()) {
-//						return RoundCommands.stop(args, sender);
-//					} else if(args[0].equalsIgnoreCase("end") && sender.isOp()) {
-//						return RoundCommands.end(args, sender);
-//					} else if(args[0].equalsIgnoreCase("settime") && sender.isOp()) {
-//						return RoundCommands.setTime(args, sender);
-//					}
-					
-					
-					
-					/*else if(args[0].equalsIgnoreCase("modifiers")) {
-						return ModifierCommands.getCurrentModifiers(args, sender);
-					} else if(args[0].equalsIgnoreCase("setmodifier")) {
-						return ModifierCommands.getAccessableModifiers(sender);
-					} else if(args[0].equalsIgnoreCase("withmultiweapons")) {
-						if (Game.waiting()) {
-							Modifiers.setMod(Mod.WITH_MULTIWEAPONS, true);
-							ItemStack newLasergun = Weapons.lasergunItem;
-							ItemStack newDagger = Weapons.daggerItem;
-							newLasergun.removeEnchantment(Enchantment.DAMAGE_ALL);
-							ItemMeta newLasergunMeta = newLasergun.getItemMeta();
-							ItemMeta newDaggerMeta = newLasergun.getItemMeta();
-							for (Player ap : Game.players()) {
-								if (Game.teams()) {
-									newLasergunMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(ap)).getChatColor()
-											+ "§lLasergun #" + (Game.getTeamColor(Game.getPlayerTeam(ap)).getOrdinal()+1));
-									newDaggerMeta.setDisplayName(Game.getTeamColor(Game.getPlayerTeam(ap)).getChatColor()
-											+ "§lDagger #" + (Game.getTeamColor(Game.getPlayerTeam(ap)).getOrdinal()+1));
-								} else {
-									int ordinal = Game.getPlayerColor(ap).getOrdinal();
-									newLasergunMeta.setDisplayName(Game.getPlayerColor(ap).getChatColor() + "§lLasergun #" + (ordinal + 1));
-									newDaggerMeta.setDisplayName(Game.getPlayerColor(ap).getChatColor() + "§lDagger #" + (ordinal + 1));
-								}
-								newLasergun.setItemMeta(newLasergunMeta);
-								newDagger.setItemMeta(newDaggerMeta);
-								for(int slot = 0; slot < 9; slot++) {
-									ap.getInventory().setItem(slot, new ItemStack(Material.AIR));
-								}
-								ap.getInventory().setItem(0, newLasergun);
-								ap.getInventory().setItem(1, newDagger);
-								
-								
-								ap.openInventory(Weapons.getPlayersWeaponsInv(ap));
-							} 
-						} else sender.sendMessage("§cPlease register a new round first!");
-						return true;
-					} */
-				} /*else if(args.length == 3) {
-					if(!Game.tagging()) {
-						if(Game.waiting()) {
-							if(args[0].equalsIgnoreCase("setmodifier") && sender.isOp()) {
-								return ModifierCommands.setModifier(args, sender);
-							}
-						}
-					}
-				}*/
-				
-				
-//				if(args.length > 3) {
-//					if(args[0].equalsIgnoreCase("new") && sender.isOp()) {
-//						if(args[1].equalsIgnoreCase("solo")) {
-//							return RoundCommands.newSolo(args, sender);
-//						} else if(args[1].equalsIgnoreCase("teams")) {
-//							return RoundCommands.newTeams(args, sender);
-//						}
-//					}
-//				}
+				}
 			}
 		} else {
 			sender.sendMessage("§cMain world for MiniGames still not found! Please define the main world first to continue!");
@@ -197,15 +180,15 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 			if(cmd.getName().equalsIgnoreCase("lasertag")) {
 				
 				list = modifierCommands.getTabComplete(list, sender, args);
-				list = roundCommands.getTabComplete(list, sender, args);
+				list = sessionCommands.getTabComplete(list, sender, args);
 				
 				if(args.length == 1) {
 					
-					if(!Game.waiting() && !Game.tagging() && sender.isOp()) list.add("new");
-					if(Game.waiting() && sender.isOp()) list.add("start");
-//					if(Game.waiting() && sender.isOp()) list.add("withmultiweapons");
-					if(Game.waiting() && sender.isOp()) list.add("cancel");
-					if(Game.tagging() && sender.isOp()) list.add("stop");
+//					if(!Game.waiting() && !Game.tagging() && sender.isOp()) list.add("new");
+//					if(Game.waiting() && sender.isOp()) list.add("start");
+////					if(Game.waiting() && sender.isOp()) list.add("withmultiweapons");
+//					if(Game.waiting() && sender.isOp()) list.add("cancel");
+//					if(Game.tagging() && sender.isOp()) list.add("stop");
 //					list.add("modifiers");
 					list.add("loadtexturepack");
 //					if(Game.waiting() && sender.isOp()) list.add("setmodifier");

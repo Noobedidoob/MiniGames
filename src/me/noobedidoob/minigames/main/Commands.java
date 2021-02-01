@@ -20,8 +20,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 	}
 	
 	String opCommands = "§egetworlds §7— \n"
-						+ "§esetworld <name> §7— \n"
-						+ "§eresetworld <true|false> §7— \n";
+						+ "§esetworld <name> §7— \n";
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
@@ -98,19 +97,6 @@ public class Commands implements CommandExecutor, TabCompleter{
 						}
 					} else {
 						sender.sendMessage("§cThe world §d"+n+"§c doesn't exist!");
-					}
-				}
-			} else if(args[0].equalsIgnoreCase("resetworld")) {
-				if(sender.isOp()) {
-					String vString = args[1];
-					if(vString.toUpperCase().contains("TRUE") | vString.toUpperCase().contains("false")) {
-						boolean value = Boolean.parseBoolean(vString);
-						Minigames.world.setAutoSave(value);
-						sender.sendMessage("§aSuccessfully set resetworld to §d"+value+"§a!");
-						sender.sendMessage("§7Note: If you want to completely reset the world just delete the §d\"Minigames\" §7folder!");
-					} else {
-						sender.sendMessage("§c'§b"+vString+"§c' is not a valid statement! Please use §etrue §cor §efalse");
-						return true;
 					}
 				}
 			}

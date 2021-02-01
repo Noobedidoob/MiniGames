@@ -11,13 +11,23 @@ import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffectType;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
-import me.noobedidoob.minigames.lasertag.commands.RoundCommands;
+import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.listeners.ClickInventoryListener;
 import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
@@ -28,27 +38,27 @@ import me.noobedidoob.minigames.lasertag.listeners.JoinQuitListener;
 import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
-import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.methods.RoundManager;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
 import me.noobedidoob.minigames.utils.Map;
 
-public class Lasertag {
+public class Lasertag implements Listener{
 	public static Minigames minigames;
 	public static Lasertag lasertag;
 	public static LaserCommands laserCommands;
 	public static ModifierCommands modifierCommands;
-	public static RoundCommands roundCommands;
+	public static SessionCommands sessionCommands;
 	
 	
 	public Lasertag(Minigames minigames) {
 		Lasertag.minigames = minigames;
 		lasertag = this;
 		
-		new Game();
+//		new Game();
 		
 		new InteractListener(minigames);
 		new ClickInventoryListener(minigames);
@@ -60,28 +70,22 @@ public class Lasertag {
 		new DropSwitchItemListener(minigames);
 		new RespawnListener(minigames);
 		new UndefinedListener(minigames);
+		
+		
 	}
 	
 	
 	public void enable() {
-		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new RoundCommands(minigames));
+		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new SessionCommands(minigames));
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
-//		modifierCommands = new ModifierCommands(minigames);
-//		minigames.getCommand("lasertag").setExecutor(modifierCommands);
-//		minigames.getCommand("lasertag").setTabCompleter(modifierCommands);
-//		roundCommands = new RoundCommands(minigames);
-//		minigames.getCommand("lasertag").setExecutor(roundCommands);
-//		minigames.getCommand("lasertag").setTabCompleter(roundCommands);
+		Bukkit.getPluginManager().registerEvents(this, minigames);
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
-//			Weapons.playerCoolingdown.put(p, false);
-//			Weapons.playerAmmo.put(p, Modifiers.bulletsInMagazine);
-//			Weapons.playerMinigunAmmo.put(p, Modifiers.minigunAmmo);
-//			Weapons.playerMinigunCooldown.put(p, false);
-//			Weapons.playerReloading.put(p, false);
 			laserCommands.flagIsFollowing.put(p, false);
 			p.setExp(1f);
+			p.setLevel(0);
+			setPlayersLobbyInv(p);
 		}
 		
 		registerMaps();
@@ -89,12 +93,10 @@ public class Lasertag {
 		Weapons.getTestSet();
 	}
 	public void disable() {
-		try {
-			if(Game.tagging()) {
-				RoundManager.stop(true);
-			}
-		} catch (Exception e) {
+		for(Player p : Bukkit.getOnlinePlayers()) {
+			p.setWalkSpeed(0.2f);
 		}
+//		Session.closeAllSessions();
 	}
 	
 	//TODO: wait for players to be ready
@@ -105,21 +107,9 @@ public class Lasertag {
 	public static int timeCountdownTask;
 	public static List<UUID> disconnectedPlayers = new ArrayList<UUID>();
 	public static HashMap<Player, Boolean> isProtected = new HashMap<Player, Boolean>();
-	public static boolean everybodyReady = false;
 	public static Area testArea = new Area(194, 4, -98, 246, 22, -67);
 	public static HashMap<Player, Boolean> playerTesting = new HashMap<Player, Boolean>();
 
-	
-	public enum LtColorNames {
-		Red,
-		Blue,
-		Green,
-		Yellow,
-		Purple,
-		Gray,
-		Orange,
-		White
-	}
 	
 	public enum GameType {
 		SOLO,
@@ -132,7 +122,7 @@ public class Lasertag {
 	
 	//---------------Maps------------------//
 	
-	public static HashMap<String, Map> maps = new HashMap<String, Map>();
+	public static HashMap<String, Map> getMapByName = new HashMap<String, Map>();
 	public static List<String> mapNames = new ArrayList<String>();
 	
 	//-------------------------------------//
@@ -146,17 +136,9 @@ public class Lasertag {
 			Coordinate centerCoord = new Coordinate(cs.getInt(name+".center.x"), cs.getInt(name+".center.y"), cs.getInt(name+".center.z"));
 			Coordinate coord1 = new Coordinate(cs.getInt(name+".area.x.min"), cs.getInt(name+".area.y.min"), cs.getInt(name+".area.z.min"));
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
-//			int gatherYMin = coord1.getY();
-//			int gatherYMax = coord2.getY();
-//			if(cs.isConfigurationSection(name+".gather.y.min") && cs.isConfigurationSection(name+".gather.y.max")) {
-//				gatherYMin = cs.getInt(name+".gather.y.min");
-//				gatherYMax = cs.getInt(name+".gather.y.max");
-//			}
-//			Coordinate gatherCoord1 = new Coordinate(cs.getInt(name+".gather.x.min"), gatherYMin, cs.getInt(name+".gather.z.min"));
-//			Coordinate gatherCoord2 = new Coordinate(cs.getInt(name+".gather.x.max"), gatherYMax, cs.getInt(name+".gather.z.max"));
 			
 			Map map = new Map(name, centerCoord, new Area(coord1, coord2), /*new Area(gatherCoord1, gatherCoord2), */world);
-			maps.put(name, map);
+			getMapByName.put(name, map);
 			
 			boolean withRandomSpawn = cs.getBoolean(name+".area.randomspawn");
 			map.withRandomSpawn(withRandomSpawn);
@@ -176,23 +158,6 @@ public class Lasertag {
 				map.setProtectionRaduis(cs.getInt(name+".basespawn.protectionradius"));
 			}
 			
-//			boolean withMiniguns = cs.getBoolean(name+".miniguns.enabled");
-//			map.withMiniguns(withMiniguns);
-//			if(withMiniguns) {
-//				List<Coordinate> coordList = new ArrayList<Coordinate>();
-//				List<Integer> xList = cs.getIntegerList(name+".miniguns.locations.x");
-//				List<Integer> yList = cs.getIntegerList(name+".miniguns.locations.y");
-//				List<Integer> zList = cs.getIntegerList(name+".miniguns.locations.z");
-//				if(xList.size() == yList.size() && xList.size() == zList.size()) {
-//					for(int i = 0; i < xList.size(); i++) {
-//						Coordinate coord = new Coordinate(xList.get(i), yList.get(i), zList.get(i));
-//						coordList.add(coord);
-//					}
-//					Coordinate[] coordinates = new Coordinate[xList.size()];
-//					coordinates = coordList.toArray(coordinates);
-//					map.setMinigunCoords(coordinates);
-//				}
-//			}
 			
 			boolean enabled = true;
 			if(world == null) System.out.println("WORLD IS NULL!!!");
@@ -254,6 +219,113 @@ public class Lasertag {
 			}
 		}, 0, 1);
 	}
+	
+	public static void setPlayersLobbyInv(Player p) {
+		ItemStack find = new ItemStack(Material.COMPASS);
+		ItemMeta findMeta = find.getItemMeta();
+		findMeta.setDisplayName("§aFind Sessions");
+		find.setItemMeta(findMeta);
+		p.getInventory().setItem(0, find);
+		
+		ItemStack create = new ItemStack(Material.NETHER_STAR);
+		ItemMeta cMeta = create.getItemMeta();
+		cMeta.setDisplayName("§eStart new session");
+		create.setItemMeta(cMeta);
+		p.getInventory().setItem(1, create);
+	}
+	public static void openPlayerFindSessionInv(Player p) {
+		Inventory inv = Bukkit.createInventory(null, (((Session.getAllSessions().length-1)/9)+1)*9, "§0Join a session:");
+		
+		int i = 0;
+		for(Session session : Session.getAllSessions()) {
+			if(!session.tagging()) {
+				ItemStack s = new ItemStack(Material.PLAYER_HEAD);
+				SkullMeta meta = (SkullMeta) s.getItemMeta();
+				meta.setDisplayName("§d"+session.getOwner().getName()+"§a's session");
+				meta.setOwningPlayer(session.getOwner());
+				List<String> lore = new ArrayList<String> ();
+				for(Player a : session.getAdmins()) {
+					if(a != session.getOwner()) lore.add("§b"+a.getName());
+				}
+				for(Player ap : session.getPlayers()) {
+					if(!session.isAdmin(ap)) lore.add("§a"+ap.getName());
+				}
+				meta.setLore(lore);
+				s.setItemMeta(meta);
+				inv.setItem(i++, s);
+			}
+		}
+		
+		p.openInventory(inv);
+	}
+	@EventHandler
+	public void onPlayerInteract(PlayerInteractEvent e) {
+		if(e.getItem() == null) return;
+		if(e.getItem().getType() == Material.COMPASS) {
+			openPlayerFindSessionInv(e.getPlayer());
+		} else if(e.getItem().getType() == Material.NETHER_STAR) {
+			SessionInventorys.openNewSessionInv(e.getPlayer());
+		}
+	}
+	@EventHandler
+	public void onPlayerClickInventory(InventoryClickEvent e) {
+		try {
+			Player p = (Player) e.getWhoClicked();
+			if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
+				String code = e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", "");
+				Session s = Session.getSessionFromCode(code);
+				if(s != null) {
+					if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
+						if(!s.tagging()) {
+							p.closeInventory();
+							s.addPlayer((Player) e.getWhoClicked());
+						} else Session.sendMessage(p, "§cThe session is already running! Please wait!");
+					} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
+				} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
+			}
+		} catch (NullPointerException | ArrayIndexOutOfBoundsException e1) {
+		}
+	}
+	
+	
+	
+	public enum LasertagColor {
+		Red(ChatColor.RED, 255, 0, 0),
+		Blue(ChatColor.BLUE, 0, 160, 255),
+		Green(ChatColor.GREEN, 100, 255, 0),
+		Yellow(ChatColor.YELLOW, 255, 255, 0),
+		Purple(ChatColor.LIGHT_PURPLE, 150, 0, 255),
+		Gray(ChatColor.GRAY, 150, 150, 150),
+		Orange(ChatColor.GOLD, 255, 150, 0),
+		White(ChatColor.WHITE, 255, 255, 255);
+		
+		private Color color;
+		private ChatColor chatColor;
+		
+		LasertagColor(ChatColor chatColor, int r, int g, int b) {
+			this.chatColor = chatColor;
+			this.color = Color.fromRGB(r, g, b);
+		}
+
+		public ChatColor getChatColor() {
+			return chatColor;
+		}
+		public Color getColor() {
+			return color;
+		}
+		
+		public String getName() {
+			return this.name();
+		}
+		
+		public static LasertagColor getFromString(String s) {
+			for(LasertagColor name : LasertagColor.values()) {
+				if(name.name().equalsIgnoreCase(s)) return name;
+			}
+			return null;
+		}
+	}
+	
 	
 	
 	public static Logger logger = Bukkit.getLogger();

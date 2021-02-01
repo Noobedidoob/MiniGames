@@ -12,9 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.Game;
-import me.noobedidoob.minigames.lasertag.commands.ModifierCommands.Mod;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class DropSwitchItemListener implements Listener {
@@ -28,11 +27,13 @@ public class DropSwitchItemListener implements Listener {
 	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent e) {
 		Player p = e.getPlayer();
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
 		ItemStack item = e.getItemDrop().getItemStack();
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
-		if(((Game.tagging() | Game.waiting()) && Game.isInGame(p)) | Lasertag.playerTesting.get(p)) {
-			if (Game.isInGame(p)) {
-				if (!Mod.multiWeapons()) PlayerZoomer.toggleZoom(p);
+		if(((session.tagging() | session.waiting()) && session.isInSession(p)) | Lasertag.playerTesting.get(p)) {
+			if (session.isInSession(p)) {
+				if (!session.withMultiweapons()) PlayerZoomer.toggleZoom(p);
 			} else if(item != null) {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) {
 					PlayerZoomer.toggleZoom(p);
@@ -46,12 +47,14 @@ public class DropSwitchItemListener implements Listener {
 	@EventHandler
 	public void onPlayerSwapItem(PlayerSwapHandItemsEvent e) {
 		Player p = e.getPlayer();
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
 		@SuppressWarnings("deprecation")
 		ItemStack item = p.getItemInHand();
 		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
-		if(((Game.tagging() | Game.waiting()) && Game.isInGame(p)) | Lasertag.playerTesting.get(p)) {
-			if (Game.isInGame(p)) {
-				if (!Mod.multiWeapons()) PlayerZoomer.toggleZoom(p);
+		if(((session.tagging() | session.waiting()) && session.isInSession(p)) | Lasertag.playerTesting.get(p)) {
+			if (session.isInSession(p)) {
+				if (!session.withMultiweapons()) PlayerZoomer.toggleZoom(p);
 				else if(item != null && item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) PlayerZoomer.toggleZoom(p); 
 			} else if(item != null && (item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER") | item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN"))) {
 				PlayerZoomer.toggleZoom(p);

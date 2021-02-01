@@ -10,12 +10,13 @@ import org.bukkit.World;
 
 public class Map {
 	
+	public static List<Map> maps = new ArrayList<Map>(); 
+	
 	//———————————————in constructor—————————————————//
 	private String name;
 	
 	private Coordinate centerCoord;
 	private Area area;
-//	private Area gatherArea;
 	
 	private World world;
 	//——————————————————————————————————————————————//
@@ -38,11 +39,10 @@ public class Map {
 	//——————————————————————————————————————————————//
 	
 	public Map(String name, Coordinate centerCoordinate, Area area, /*Area gatherArea, */ World world) {
-		super();
-		this.name = name;
+		maps.add(this);
+		this.name = name.substring(0, 1).toUpperCase()+name.substring(1);
 		this.centerCoord = centerCoordinate;
 		this.area = area;
-//		this.gatherArea = gatherArea;
 		this.world = world;
 		
 		for(ChatColor color : ChatColor.values()) hasColor.put(color, false);
@@ -57,9 +57,6 @@ public class Map {
 	public Area getArea() {
 		return area;
 	}
-//	public Area getGatherArea() {
-//		return gatherArea;
-//	}
 
 	
 	
@@ -138,37 +135,34 @@ public class Map {
 
 
 	public Location getRandomSpawnLocation() {
-		int x = (int) (Math.random()*((area.getMaxX()-area.getMinX())+1))+area.getMinX();
-		int z = (int) (Math.random()*((area.getMaxZ()-area.getMinZ())+1))+area.getMinZ();
-		int y = world.getHighestBlockYAt(x, z);
-		if(y > area.getMaxY()-2) {
+		int x = (int) (Math.random()*(((area.getMaxX()-1)-(area.getMinX()+1))+1))+area.getMinX();
+		int z = (int) (Math.random()*(((area.getMaxZ()-1)-(area.getMinZ()+1))+1))+area.getMinZ();
+		
+//		if(world.getBlockAt(x, y, z).getType() != Material.AIR | world.getBlockAt(x, y+1, z).getType() != Material.AIR) return getRandomSpawnLocation();
+//		if(y > area.getMaxY()-2) {
+			for(int i = area.getMinY(); i < area.getMaxY(); i++) {
+				if(world.getBlockAt(x, i, z).getType().isAir() && world.getBlockAt(x, i+1, z).getType().isAir()) return new Location(world, x, i, z);
+			}
+//			y = area.getMaxY()-2;
+//		}
+		return getRandomSpawnLocation();
+	}
+	
+//	public Location getRandomGatherLocation() {
+//		int x = (int) (Math.random()*((area.getMaxX()-area.getMinX())+1))+area.getMinX();
+//		int z = (int) (Math.random()*((area.getMaxZ()-area.getMinZ())+1))+area.getMinZ();
+//		int y = world.getHighestBlockYAt(x, z);
+//		if(y > area.getMaxY()-2) {
 //			for(int i = y; i > area.getMinY(); i++) {
 //				if(!world.getBlockAt(x, y, z).getType().isAir()) {
 //					y = i+1;
 //					i = area.getMinY()-1;
 //				} else y = i;
 //			}
-			y = area.getMaxY()-2;
-		}
-		Location loc = new Location(world, x, y, z);
-		return loc;
-	}
-	
-	public Location getRandomGatherLocation() {
-		int x = (int) (Math.random()*((area.getMaxX()-area.getMinX())+1))+area.getMinX();
-		int z = (int) (Math.random()*((area.getMaxZ()-area.getMinZ())+1))+area.getMinZ();
-		int y = world.getHighestBlockYAt(x, z);
-		if(y > area.getMaxY()-2) {
-			for(int i = y; i > area.getMinY(); i++) {
-				if(!world.getBlockAt(x, y, z).getType().isAir()) {
-					y = i+1;
-					i = area.getMinY()-1;
-				} else y = i;
-			}
-		}
-		Location loc = new Location(world, x, y, z);
-		return loc;
-	}
+//		}
+//		Location loc = new Location(world, x, y, z);
+//		return loc;
+//	}
 	
 	public Location getTeamSpawnLoc(ChatColor color) {
 		if(hasColor(color)) return teamSpawCoords.get(color).getLocation(world);

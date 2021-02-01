@@ -39,6 +39,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.noobedidoob.minigames.hideandseek.HideAndSeek;
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
@@ -61,9 +63,11 @@ public class Minigames extends JavaPlugin implements Listener{
 //	HashMap<String, Location> pLastLocation = new HashMap<String, Location>();
 //	HashMap<Player, Boolean> wasMoving = new HashMap<Player, Boolean>();
 	
+
+	public static Minigames minigames;
 	public void onEnable() {
+		minigames = this;
 		reloadConfig();
-		setStaticMain();
 		
 //		new GUI(Bukkit.getServer().getName());
 		
@@ -115,12 +119,13 @@ public class Minigames extends JavaPlugin implements Listener{
 //		hideAndSeek.disable();
 		
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
+		
+		Bukkit.getOnlinePlayers().forEach(p ->{
+			p.getInventory().clear();
+			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+		});
 	}
 	
-	public static Minigames minigames;
-	public void setStaticMain() {
-		minigames = this;
-	}
 	
 	@SuppressWarnings("deprecation")
 	public void setWorld() {
@@ -136,7 +141,7 @@ public class Minigames extends JavaPlugin implements Listener{
 				else inform("Created world successfully!");
 			} else {
 				this.getServer().createWorld(new WorldCreator(worldName));
-				inform("Sucessfully loaded minigame world. Use the command 'mg replaceworld' to replace the existing world with the original from the plugin");
+				inform("Sucessfully loaded minigame world");
 			}
 			if(getConfig().getBoolean("disable-other-worlds")) disableServerWorlds();
 			else {
@@ -185,10 +190,6 @@ public class Minigames extends JavaPlugin implements Listener{
 			warn("Error: "+e.getLocalizedMessage());
 		}
 
-	}
-	
-	public void replaceWorld() {
-		
 	}
 	
 	public void askForWorld() {
@@ -324,6 +325,10 @@ public class Minigames extends JavaPlugin implements Listener{
 			e1.printStackTrace();
 		}
 		
+	}
+	
+	public static void sendPlayerActionBarMessage(Player p, String msg) {
+		p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
 	}
 
 	public static Logger logger = Bukkit.getLogger();

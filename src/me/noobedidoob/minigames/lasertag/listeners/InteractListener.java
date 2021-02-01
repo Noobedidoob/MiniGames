@@ -13,10 +13,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.Game;
 import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class InteractListener implements Listener {
@@ -34,7 +34,7 @@ public class InteractListener implements Listener {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {
-					LaserShooter.fireTest(p, Weapons.getFireWeapon(e.getItem()));
+					LaserShooter.fireTest(p, Weapon.getWeaponFromItem(e.getItem()));
 				} catch (Exception e2) {
 					return;
 				}
@@ -42,16 +42,19 @@ public class InteractListener implements Listener {
 				if(e.getItem() == null) return;
 				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")/* | e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")*/) {
 					PlayerZoomer.toggleZoom(p);
+					return;
 				}
 			}
 		} 
-		
-		if(Game.tagging()) {
+
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		if(session.tagging()) {
 			Lasertag.isProtected.put(p, false);
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {
-					LaserShooter.fire(p, Weapons.getFireWeapon(e.getItem()));
+					LaserShooter.fire(p, Weapon.getWeaponFromItem(e.getItem()));
 				} catch (Exception e2) {
 					return;
 				}
