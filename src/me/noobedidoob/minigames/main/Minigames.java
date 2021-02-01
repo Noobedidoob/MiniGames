@@ -39,6 +39,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.noobedidoob.minigames.hideandseek.HideAndSeek;
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
@@ -323,6 +325,10 @@ public class Minigames extends JavaPlugin implements Listener{
 			e1.printStackTrace();
 		}
 		
+	}
+	
+	public static void sendPlayerActionBarMessage(Player p, String msg) {
+		p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(msg));
 	}
 
 	public static Logger logger = Bukkit.getLogger();

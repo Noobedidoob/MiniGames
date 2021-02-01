@@ -88,7 +88,7 @@ public class LaserShooter{
 								}
 								if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
 									if(loc.distance(session.getMap().getTeamSpawnLoc(session.getPlayerColor(hitP).getChatColor())) < session.getMap().getProtectionRaduis()) {
-										p.sendMessage("§cYou cant shoot inside the base!");
+										Minigames.sendPlayerActionBarMessage(p, "§cYou cant shoot inside the base!");
 										return;
 									}
 									boolean headshot = false;
@@ -188,7 +188,7 @@ public class LaserShooter{
 									}
 									if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
 										if(loc.distance(session.getMap().getTeamSpawnLoc(session.getPlayerColor(hitP).getChatColor())) < session.getMap().getProtectionRaduis()) {
-											p.sendMessage("§cYou cant shoot inside the base!");
+											Minigames.sendPlayerActionBarMessage(p, "§cYou cant shoot inside the base!");
 											return;
 										}
 										if(isLaserInsideEntity(hitP, loc)) {
@@ -278,7 +278,7 @@ public class LaserShooter{
 								}
 								if(!fromTeam && !alreadyKilledPlayers.contains(hitP)) {
 									if(loc.distance(session.getMap().getTeamSpawnLoc(session.getPlayerColor(hitP).getChatColor())) < session.getMap().getProtectionRaduis()) {
-										p.sendMessage("§cYou cant shoot inside the base!");
+										Minigames.sendPlayerActionBarMessage(p, "§cYou cant shoot inside the base!");
 										return;
 									}
 									if(isLaserInsideEntity(hitP, loc)) {
