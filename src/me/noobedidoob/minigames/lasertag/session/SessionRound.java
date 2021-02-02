@@ -72,7 +72,7 @@ public class SessionRound {
 					if(session.getTime(TimeFormat.SECONDS) <= 5 && session.getTime(TimeFormat.SECONDS) > 0) {
 						for(Player p : session.getPlayers()) {
 							p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 2, 0.529732f);
-							p.sendTitle("§c"+session.getTime(TimeFormat.SECONDS), "", 5, 20, 5);
+							p.sendTitle("§c"+session.getTime(TimeFormat.SECONDS), "", 0, 21, 5);
 						}
 					}
 					session.setTime(session.getTime(TimeFormat.SECONDS)-1, TimeFormat.SECONDS, false);
@@ -97,7 +97,7 @@ public class SessionRound {
 		if (session.isSolo()) {
 			ItemStack lasergun = Weapon.LASERGUN.getItem();
 			ItemMeta lasergunMeta = lasergun.getItemMeta();
-			lasergunMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lLasergun #"+(session.getPlayerColor(p).ordinal()+1));
+			lasergunMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"Lasergun #"+(session.getPlayerColor(p).ordinal()+1));
 			lasergun.setItemMeta(lasergunMeta);
 			
 			p.getInventory().clear();
@@ -106,7 +106,7 @@ public class SessionRound {
 			if(session.withMultiweapons()){
 				ItemStack dagger = Weapon.DAGGER.getItem();
 				ItemMeta daggerMeta = dagger.getItemMeta();
-				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lDagger #"+(session.getPlayerColor(p).ordinal()+1));
+				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"Dagger #"+(session.getPlayerColor(p).ordinal()+1));
 				daggerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
 				dagger.setItemMeta(daggerMeta);
 				p.getInventory().setItem(1, dagger);
@@ -114,7 +114,7 @@ public class SessionRound {
 				ItemStack second = session.getPlayerSecondaryWeapon(p).getItem();
 				ItemMeta sMeta = second.getItemMeta();
 				String name = session.getPlayerSecondaryWeapon(p).name().substring(0, 1)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
-				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§l"+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
+				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
 				second.setItemMeta(sMeta);
 				p.getInventory().setItem(2, second);
 			}
@@ -131,7 +131,7 @@ public class SessionRound {
 			boots.setItemMeta(armourItemMeta);
 			ItemStack teamLasergun = Weapon.LASERGUN.getItem();
 			ItemMeta teamLasergunMeta = teamLasergun.getItemMeta();
-			teamLasergunMeta.setDisplayName(teamColor.getChatColor()+"§lLasergun #"+(teamColor.ordinal()+1));
+			teamLasergunMeta.setDisplayName(teamColor.getChatColor()+"Lasergun #"+(teamColor.ordinal()+1));
 			teamLasergunMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
 			teamLasergun.setItemMeta(teamLasergunMeta);
 			
@@ -144,7 +144,7 @@ public class SessionRound {
 			if(session.withMultiweapons()) {
 				ItemStack dagger = Weapon.DAGGER.getItem();
 				ItemMeta daggerMeta = dagger.getItemMeta();
-				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"§lDagger #"+(session.getPlayerColor(p).ordinal()+1));
+				daggerMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"Dagger #"+(session.getPlayerColor(p).ordinal()+1));
 				daggerMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
 				dagger.setItemMeta(daggerMeta);
 				p.getInventory().setItem(1, dagger);
@@ -152,7 +152,7 @@ public class SessionRound {
 				ItemStack second = session.getPlayerSecondaryWeapon(p).getItem();
 				ItemMeta sMeta = second.getItemMeta();
 				String name = session.getPlayerSecondaryWeapon(p).name().substring(0, 1)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
-				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor() + "§l"+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
+				sMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+name+" #" + (session.getPlayerColor(p).ordinal() + 1));
 				second.setItemMeta(sMeta);
 				p.getInventory().setItem(2, second);
 			}

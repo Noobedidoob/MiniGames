@@ -55,36 +55,43 @@ public class SessionModifiers {
     
 	public enum Mod{
 		POINTS(1, "Normal amount of points a player gets"),
-//		WITH_MULTIWEAPONS(false, "Playing with multiple weapons"),
 		SNIPER_SHOT_EXTRA(1, "Extra points when killing with snipe-shot"),
-		MINIMAL_SNIPE_DISTANCE(35, "Minimal distance of a shot to be a sniper shot"),
 		NORMAL_SHOT_EXTRA(0, "Extra points when a player shot normal"),
 		BACKSTAB_EXTRA(0, "Extra points when backstabbing"),
 		PVP_EXTRA(0, "Extra ponts when killed at melee"),
 		HEADSHOT_EXTRA(1, "Extra ponts when killing with headshot"),
 		STREAK_EXTRA(2, "Extra points when having a streak"),
+		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
+		
+		MINIMAL_SNIPE_DISTANCE(35, "Minimal distance of a shot to be a sniper shot"),
+		
 		STREAK_SHUTDOWN(2, "Extra points when shutting down a streak"),
 		MIN_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
-		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
+		
 		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
+		
 		WIDTH_ADDON(0d, "Addon to a players hitbox width"),
 		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
+		
 		SHOOT_THROUGH_BLOCKS(false, "Shoot through blocks"),
 		HIGHLIGHT_PLAYERS(false, "Making players glow and more visible"),
 		HIGHLIGHT_POWER(255, "Glowing power"),
+		
 		LASERGUN_COOLDOWN_TICKS(12, "Ticks a lasergun takes to cool down"),
 		LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS(2, "Ticks a lasergun takes to cool down when playing with multiple weapons"),
 		SNIPER_COOLDOWN_TICKS(100, "Ticks a sniperrifle takes to cool down"),
 		SHOTGUN_COOLDOWN_TICKS(40, "Ticks a shotgun takes to cool down"),
 		SNIPER_AMMO_BEFORE_COOLDOWN(2, "Maximal sniper ammo"),
+		
 		LASERGUN_NORMAL_DAMAGE(100, "Normal lasergun shot damage"),
 		LASERGUN_MULTIWEAPONS_DAMAGE(9, "lasergun shot damage when playing with multiple weapons"),
 		LASERGUN_PVP_DAMAGE(10, "Lasergun melee damage (only without multiweapons"),
 		SHOTGUN_DAMAGE(11, "Shotgun shot damage"),
 		SNIPER_DAMAGE(100, "Sniper shot damage"),
-		STABBER_DAMAGE(10, "Stabber melee damage");
+		STABBER_DAMAGE(10, "Stabber melee damage"),
 		
-		
+		HEADSHOT_MULTIPLIKATOR(1.5d, "Extra damage when hitting the head"),
+		SNIPER_SHOT_MULTIPLIKATOR(1.5d, "Extra damage when sniping");
 		
 		private Object ogValue;
 		private String description;
@@ -98,8 +105,6 @@ public class SessionModifiers {
         }
 		
 
-        
-		
         public Object getOg() {
             return ogValue;
         }

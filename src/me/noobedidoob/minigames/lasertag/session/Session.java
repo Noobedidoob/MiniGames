@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.scoreboard.Team;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
@@ -85,6 +86,7 @@ public class Session implements Listener{
 	public void start(boolean countdown) {
 		if(!round.tagging()) {
 			if(setSessionMap()){
+				map.setUsed(true, this);
 				round.preparePlayers();
 				if(!countdown) round.start();
 				else {
@@ -92,19 +94,19 @@ public class Session implements Listener{
 					Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 						@Override
 						public void run() {
-							for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(),5,30,5);
+							for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(), 0,30,5);
 							Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 								@Override
 								public void run() {
-									for(Player p : players) p.sendTitle("§aStarting Lasetag in §d3","§eMap: §b"+map.getName(),5,30,5);
+									for(Player p : players) p.sendTitle("§aStarting Lasetag in §d3","§eMap: §b"+map.getName(),0,30,5);
 									Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 										@Override
 										public void run() {
-											for(Player p : players) p.sendTitle("§aStarting Lasetag in §d2","§eMap: §b"+map.getName(),5,30,5);
+											for(Player p : players) p.sendTitle("§aStarting Lasetag in §d2","§eMap: §b"+map.getName(),0,30,5);
 											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 												@Override
 												public void run() {
-													for(Player p : players) p.sendTitle("§aStarting Lasetag in §d1","§eMap: §b"+map.getName(),5,30,5);
+													for(Player p : players) p.sendTitle("§aStarting Lasetag in §d1","§eMap: §b"+map.getName(),0,20,5);
 													Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 														@Override
 														public void run() {
@@ -131,7 +133,7 @@ public class Session implements Listener{
 				round.stop(external);
 			} 
 		}
-		
+		map.setUsed(false, null);
 		setAllPlayersWaitingInv();
 		
 		if(votedBefore) mapState = MapState.VOTING;
@@ -275,6 +277,10 @@ public class Session implements Listener{
 				}
 				return false;
 			}
+			if(m.isUsed()) {
+				broadcast("§cThis map is currently in use! Please try again later or choose another map!");
+				return false;
+			}
 			
 			broadcast("§ePlaying with in the map §b"+map.getName());
 			mapState = MapState.SET;
@@ -294,6 +300,11 @@ public class Session implements Listener{
 			mapState = MapState.NULL;
 			refreshScoreboard();
 			SessionInventorys.openMapInv(owner);
+			return false;
+		} else if(map.isUsed()) {
+			for(Player a : admins) {
+				sendMessage(a, "§cThis map is currently in use! Please try again later or choose another map!");
+			}
 			return false;
 		}
 		return true;
@@ -413,17 +424,17 @@ public class Session implements Listener{
 		return playerColor.get(p);
 	}
 	public void refreshSoloPlayerColors() {
-		try {
-			if (isSolo()) {
-				for (Player p : players) {
-					int ordinal = players.indexOf(p);
-					if (ordinal > LasertagColor.values().length - 1) ordinal -= LasertagColor.values().length;
-					playerColor.put(p, LasertagColor.values()[ordinal]);
-				}
-			} 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		if (isSolo()) {
+			for (Player p : players) {
+				int ordinal = players.indexOf(p);
+				if (ordinal > LasertagColor.values().length - 1) ordinal -= LasertagColor.values().length;
+				playerColor.put(p, LasertagColor.values()[ordinal]);
+				try { scoreboard.board.getTeam(LasertagColor.values()[ordinal].name()).unregister(); } catch (NullPointerException e) { 	}
+				Team t = scoreboard.board.registerNewTeam(LasertagColor.values()[ordinal].name());
+				t.setColor(LasertagColor.values()[ordinal].getChatColor());
+				t.addEntry(p.getName());
+			}
+		} 
 		refreshScoreboard();
 	}
 	public int getPlayerPoints(Player p) {
@@ -473,6 +484,7 @@ public class Session implements Listener{
 		sendMessage(p, "§cYou left the session!");
 	}
 	public void removePlayer(Player p) {
+		try {if(isSolo()) {scoreboard.board.getTeam(getPlayerColor(p).name()).unregister();}} catch (NullPointerException e) {}
 		p.getInventory().clear();
 		Lasertag.setPlayersLobbyInv(p);
 		try {
@@ -668,6 +680,11 @@ public class Session implements Listener{
 			sendMessage(p, s);
 		}
 	}
+	public void sendMessageAll(String s) {
+		for(Player p : players) {
+			p.sendMessage(s);
+		}
+	}
 	public void broadcast(String s, Player... excludedPlayers) {
 		for(Player p : players) {
 			boolean notExcluded = true;
@@ -713,7 +730,7 @@ public class Session implements Listener{
     
     public void setMod(Mod m, Object value) {
     	modifiers.set(m, value);
-    	broadcast("§aThe modifier +§b"+m.name().toLowerCase()+" §a was set to §e"+value.toString());
+    	broadcast("§aThe modifier §b"+m.name().toLowerCase()+" §a was set to §e"+value.toString());
     }
     
     

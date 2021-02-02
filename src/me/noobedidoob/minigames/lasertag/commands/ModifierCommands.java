@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.MgUtils;
 
 public class ModifierCommands  {
 	
@@ -24,7 +23,7 @@ public class ModifierCommands  {
 			if (!(sender instanceof Player) | Session.getPlayerSession((Player) sender) == null) {
 				for (Mod m : Mod.values()) {
 					sender.sendMessage("\n§7———————§b§lStanderd Modifiers§r§7———————");
-					sender.sendMessage("§7> " + m.getDescription() + ": §a" + m.getOg().toString());
+					sender.sendMessage("§7> " + m.name()+ ": §a" + m.getOg().toString());
 					sender.sendMessage("§7——————————————————\n");
 				} 
 				return;
@@ -32,7 +31,7 @@ public class ModifierCommands  {
 				sender.sendMessage("\n§7—————————§b§lModifiers§r§7—————————");
 				Session s = Session.getPlayerSession((Player) sender);
 				s.modifiers.modValues.forEach((m, v) ->{
-					sender.sendMessage("§7> " + m.getDescription() + ": §a" + s.getModValue(m).toString());
+					sender.sendMessage("§7> " + m.name() + ": §a" + s.getModValue(m).toString());
 				});
 				sender.sendMessage("§7—————————————————————\n");
 			}
@@ -55,18 +54,6 @@ public class ModifierCommands  {
 				String valString = args[2];
 				Object value = valString;
 				
-				if(MgUtils.isNumericOnly(valString)) {
-					value = Integer.parseInt(valString);
-				} else if(MgUtils.isAlphabeticOnly(valString)) {
-					if(valString.equalsIgnoreCase("true") | valString.equalsIgnoreCase("false")) value = Boolean.parseBoolean(valString);
-					else {
-						Session.sendMessage(p, "§cThe given value is invalid! Please use a §evalid number §cor §etrue§c/§efalse!");
-						return;
-					}
-				} else {
-					
-				}
-				
 				try {
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException e1) {
@@ -83,7 +70,12 @@ public class ModifierCommands  {
 				if(m != null) {
 					if(value.getClass() == m.getOg().getClass()) {
 						session.setMod(m, value);
-						Session.sendMessage(p, "§aSuccessfully set the value of the modifier §b"+m.name().toLowerCase()+" §a to §e"+value.toString());
+//						Session.sendMessage(p, "§aSuccessfully set the value of the modifier §b"+m.name().toLowerCase()+" §a to §e"+value.toString());
+						return;
+					} else if(value.getClass() == Integer.class && m.getOg().getClass() == Double.class) {
+						value = Double.parseDouble(valString+"d");
+						session.setMod(m, value);
+//						Session.sendMessage(p, "§aSuccessfully set the value of the modifier §b"+m.name().toLowerCase()+" §a to §e"+value.toString());
 						return;
 					} else {
 						Session.sendMessage(p, "§cThe given type of value doesnt match with the modifiers value type! Please use §e"+m.getValueTypeName());

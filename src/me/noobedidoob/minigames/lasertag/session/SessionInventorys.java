@@ -248,7 +248,8 @@ public class SessionInventorys implements Listener{
 					if(session.isTeams()) {
 						if(session.isAdmin(p)) i = 3;
 					}
-					p.getInventory().getItem(i).setType(Weapon.SHOTGUN.getType());
+					p.getInventory().getItem(i).setType(Weapon.SHOTGUN.getType()); 
+//					p.getInventory().setItem(i, Weapon.SHOTGUN.getColoredItem(session.getPlayerColor(p)));
 					p.closeInventory();
 				} else if(slot == 7){
 					session.setPlayerSecondaryWeapon(p, Weapon.SNIPER);
@@ -259,6 +260,7 @@ public class SessionInventorys implements Listener{
 						if(session.isAdmin(p)) i = 3;
 					}
 					p.getInventory().getItem(i).setType(Weapon.SNIPER.getType());
+//					p.getInventory().setItem(i, Weapon.SNIPER.getColoredItem(session.getPlayerColor(p)));
 					p.closeInventory();
 				}
 			}
@@ -446,7 +448,7 @@ public class SessionInventorys implements Listener{
 		
 		int i = 9;
 		for(Map m : Map.maps) {
-			if(session.isMapPlayable(m)) {
+			if(session.isMapPlayable(m) && !m.isUsed()) {
 				ItemStack item = new ItemStack(Material.FILLED_MAP);
 				ItemMeta itemMeta = item.getItemMeta();
 				itemMeta.setDisplayName("§r§b"+m.getName());
@@ -588,7 +590,7 @@ public class SessionInventorys implements Listener{
 		
 		int i = 0;
 		for(Map m : Map.maps) {
-			if(session.isMapPlayable(m)) {
+			if(session.isMapPlayable(m) && !m.isUsed()) {
 				ItemStack item = new ItemStack(Material.FILLED_MAP);
 				ItemMeta itemMeta = item.getItemMeta();
 				Integer votes = session.mapVotes.get(m);
@@ -662,13 +664,13 @@ public class SessionInventorys implements Listener{
 		if (session.isTeams()) {
 			ChatColor chatColor = session.getTeamColor(session.getPlayerTeam(p)).getChatColor();
 			int nr = session.getTeamColor(session.getPlayerTeam(p)).ordinal()+1;
-			newShotgunMeta.setDisplayName(chatColor + "§lShotgun #" + nr);
-			newSnipernMeta.setDisplayName(chatColor + "§lSniper #" + nr);
+			newShotgunMeta.setDisplayName(chatColor + "Shotgun #" + nr);
+			newSnipernMeta.setDisplayName(chatColor + "Sniper #" + nr);
 		} else {
 			ChatColor chatColor = session.getPlayerColor(p).getChatColor();
 			int nr = session.getPlayerColor(p).ordinal()+1;
-			newShotgunMeta.setDisplayName(chatColor + "§lShotgun #" + nr);
-			newSnipernMeta.setDisplayName(chatColor + "§lSniper #" +nr);
+			newShotgunMeta.setDisplayName(chatColor + "Shotgun #" + nr);
+			newSnipernMeta.setDisplayName(chatColor + "Sniper #" +nr);
 		}
 		newShotgun.setItemMeta(newShotgunMeta);
 		newSniper.setItemMeta(newSnipernMeta);

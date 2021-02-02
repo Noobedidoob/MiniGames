@@ -90,7 +90,6 @@ public class Lasertag implements Listener{
 		
 		registerMaps();
 		Weapons.registerWeapons();
-		Weapons.getTestSet();
 	}
 	public void disable() {
 		for(Player p : Bukkit.getOnlinePlayers()) {
@@ -171,8 +170,8 @@ public class Lasertag implements Listener{
 			} else {
 				if(!world.getBlockAt(centerCoord.getLocation(world).subtract(0, 1, 0)).getType().name().equals(blockName)) enabled = false;
 			}
-			map.approved = enabled;
 			if(!enabled) {
+				map.setEnabled(false);
 				unenabledMaps++;
 				warn("The Map \""+name.substring(0, 1).toUpperCase()+name.substring(1) + "\" could not be approved because expected block  '"+blockName+"' didnt match with "
 				+world.getBlockAt(centerCoord.getLocation(world).subtract(0, 1, 0)).getType().name()+"' at "+centerCoord.getX()+", "+(centerCoord.getY()-1)+", "+centerCoord.getZ()

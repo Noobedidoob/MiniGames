@@ -6,6 +6,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+
 public class PlayerZoomer {
 	
 	static HashMap<Player, Boolean> isPlayerZoomed = new HashMap<Player, Boolean>();
@@ -23,9 +25,18 @@ public class PlayerZoomer {
 		isPlayerZoomed.put(p, !zoomed);
 	}
 	
-	public static void zoomPlayerIn(Player p) {
+	public static void zoomPlayerIn(Player p, Weapon w) {
 		ItemStack visor = new ItemStack(Material.CARVED_PUMPKIN); 
-		p.setWalkSpeed(-0.5f);
+		switch (w) {
+		case SNIPER:
+			p.setWalkSpeed(-0.5f);
+			break;
+		case LASERGUN:
+			p.setWalkSpeed(-0.1f);
+			break;
+		default:
+			break;
+		}
 		p.getInventory().setHelmet(visor);
 		isPlayerZoomed.put(p, true);
 	}
@@ -34,5 +45,4 @@ public class PlayerZoomer {
 		p.getInventory().setHelmet(new ItemStack(Material.AIR));
 		isPlayerZoomed.put(p, false);
 	}
-
 }

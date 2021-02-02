@@ -12,12 +12,13 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.util.Vector;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -32,6 +33,8 @@ public class MoveListener implements Listener {
 		PluginManager pluginManeger = Bukkit.getPluginManager();
 		pluginManeger.registerEvents(this, minigames);
 	}
+	
+	private HashMap<Player, ItemStack[]> playerStoredInv = new HashMap<>();
 	  
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
@@ -84,24 +87,22 @@ public class MoveListener implements Listener {
 		}
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
 		
-		if (session != null && !session.isInSession(p)) {
-			if (Lasertag.playerTesting.get(p) == null)
-				Lasertag.playerTesting.put(p, false);
-			if (!Lasertag.playerTesting.get(p)) {
-				if(Lasertag.testArea.isInside(e.getTo())) {
-					Lasertag.playerTesting.put(p, true);
-					p.getInventory().clear();
-					for (int i = 0; i < Weapons.getTestSet().length; i++) {
-						p.getInventory().setItem(i, Weapons.getTestSet()[i]);
-					}
-					p.getInventory().getItem(3).setAmount(2);
-				}
-			} else if (Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
-				Lasertag.playerTesting.put(p, false);
-				p.getInventory().clear();
-				PlayerZoomer.zoomPlayerOut(p);
-			} 
-		}
+		if (session != null && session.tagging()) return;
+		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
+		if (!Lasertag.playerTesting.get(p)) {
+			if(Lasertag.testArea.isInside(e.getTo())) {
+				Lasertag.playerTesting.put(p, true);
+				playerStoredInv.put(p, p.getInventory().getContents());
+				p.getInventory().setItem(0, Weapon.LASERGUN.getItem());
+				p.getInventory().setItem(1, Weapon.SHOTGUN.getItem());
+				p.getInventory().setItem(2, Weapon.SNIPER.getItem());
+				p.getInventory().getItem(2).setAmount(2);
+			}
+		} else if (Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
+			Lasertag.playerTesting.put(p, false);
+			p.getInventory().setContents(playerStoredInv.get(p));
+			PlayerZoomer.zoomPlayerOut(p);
+		} 
 	}
 	
 	HashMap<Player, Pair> playersLastLocation = new HashMap<Player, Pair>();

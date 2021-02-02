@@ -123,6 +123,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		Bukkit.getOnlinePlayers().forEach(p ->{
 			p.getInventory().clear();
 			p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
+			p.teleport(spawn);
 		});
 	}
 	

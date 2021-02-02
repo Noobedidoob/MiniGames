@@ -21,6 +21,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
@@ -65,7 +66,7 @@ public class LaserShooter{
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 				
 				int range = 100;
-				if(session.withMultiweapons()) range = 35;
+//				if(session.withMultiweapons()) range = 35;
 				for(double d = 0; d<range; d += 0.1) {
 					if(d==0) Weapons.cooldownPlayer(p, Weapon.LASERGUN, false);
 					loc = l1.add(direction);
@@ -388,8 +389,9 @@ public class LaserShooter{
 			}, 20*5);
 			return true;
 		}
-		boolean shooThroughEnabled = s.getBooleanMod(Mod.SHOOT_THROUGH_BLOCKS);
-		if(!shooThroughEnabled) {
+		boolean shootThroughEnabled = false;
+		if(s != null) shootThroughEnabled= s.getBooleanMod(Mod.SHOOT_THROUGH_BLOCKS);
+		if(!shootThroughEnabled) {
 			Material m = Minigames.world.getBlockAt(loc).getType();
 			if(!m.isAir() && !m.name().contains("Fence")) {
 				if(m.isSolid()) {
@@ -432,8 +434,8 @@ public class LaserShooter{
 		if(w == null) throw new NullPointerException("Weapon is null");
 		switch (w) {
 		case LASERGUN:
-			if(!Weapons.lasergunCoolingdown.get(p)) {
-				Weapons.cooldownPlayer(p, w, true);
+			if(!p.hasCooldown(Weapon.LASERGUN.getType())) {
+				p.setCooldown(Weapon.LASERGUN.getType(), Mod.LASERGUN_COOLDOWN_TICKS.getOgInt());
 				Location startLoc = p.getLocation();
 				startLoc.setY(startLoc.getY()+p.getEyeHeight());
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
@@ -457,12 +459,11 @@ public class LaserShooter{
 			
 			
 		case SHOTGUN:
-			if(!Weapons.shotgunCoolingdown.get(p)) {
-				Weapons.cooldownPlayer(p, w, true);
+			if(!p.hasCooldown(Weapon.SHOTGUN.getType())) {
+				p.setCooldown(Weapon.SHOTGUN.getType(), Mod.SHOTGUN_COOLDOWN_TICKS.getOgInt());
 				Location startLoc = p.getLocation();
 				startLoc.setY(startLoc.getY()+p.getEyeHeight());
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
-				startLoc.setY(p.getLocation().getY()+p.getEyeHeight()-0.15);
 				Location[] startLocs = new Location[9];
 				float dis = 15; 
 				int n = 0;
@@ -500,7 +501,7 @@ public class LaserShooter{
 			
 		
 		case SNIPER:
-			if(!Weapons.sniperCoolingdown.get(p)) {
+			if(!p.hasCooldown(Weapon.SNIPER.getType())) {
 				Location startLoc = p.getLocation();
 				startLoc.setY(startLoc.getY()+p.getEyeHeight());
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
@@ -510,24 +511,43 @@ public class LaserShooter{
 				
 				for(double d = 0; d<100; d += 1) {
 					
-					if(d==0) {
-						if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
-						int shots = playersSnipershots.get(p);
-						if(shots == Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1) {
-							Weapons.cooldownPlayer(p, Weapon.SNIPER, true);
-							playersSnipershots.put(p, 0);
-							p.getInventory().getItem(3).setAmount(1);
-						} else {
-							playersSnipershots.put(p, shots+1);
-							p.getInventory().getItem(3).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1-shots);
+					try {
+						if(d==0) {
+							int s = p.getInventory().getItem(2).getAmount();
+							if(s > 1) {
+								p.getInventory().getItem(2).setAmount(s-1);
+							} else {
+								p.setCooldown(Weapon.SNIPER.getType(), Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
+								p.getInventory().getItem(2).setAmount(1);
+								new BukkitRunnable() {
+									@Override
+									public void run() {
+										p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
+									}
+								}.runTaskLater(Minigames.minigames, Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
+							}
+							
+							
+//							if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
+//							int shots = playersSnipershots.get(p);
+//							if(shots == Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1) {
+//								Weapons.cooldownPlayer(p, Weapon.SNIPER, true);
+//								playersSnipershots.put(p, 0);
+//								p.getInventory().getItem(2).setAmount(1);
+//							} else {
+//								playersSnipershots.put(p, shots+1);
+//								p.getInventory().getItem(2).setAmount((Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1)-shots);
+//							}
+
 						}
 						
+						loc1 = startLoc.add(direction1);
+						spawnTestProjectile(p, loc1, Color.PURPLE);
+						
+						if(!checkloc(p, loc1)) return;
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-					
-					loc1 = startLoc.add(direction1);
-					spawnTestProjectile(p, loc1, Color.PURPLE);
-					
-					if(!checkloc(p, loc1)) return;
 				}
 			}
 			break;

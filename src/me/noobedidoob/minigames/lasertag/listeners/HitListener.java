@@ -36,7 +36,7 @@ public class HitListener implements Listener {
 					if (!session.inSameTeam(p, damager)) {
 						if (Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
 						if (Lasertag.isProtected.get(p)) {
-							damager.sendMessage("§cHe still has spawnprotection! You can't hit him!");
+							Minigames.sendPlayerActionBarMessage(damager, "§cHe still has spawnprotection! You can't hit him!");
 							e.setCancelled(true);
 						} else {
 							if (!session.withMultiweapons()) {

@@ -8,20 +8,19 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import me.noobedidoob.minigames.lasertag.session.Session;
+
 public class Map {
 	
 	public static List<Map> maps = new ArrayList<Map>(); 
 	
-	//———————————————in constructor—————————————————//
 	private String name;
 	
 	private Coordinate centerCoord;
 	private Area area;
 	
 	private World world;
-	//——————————————————————————————————————————————//
 	
-	//——————————outside of constructor——————————————//
 	private boolean withMiniguns = false;
 	private boolean randomSpawn = false;
 	private boolean baseSpawn = false;
@@ -35,8 +34,6 @@ public class Map {
 	public HashMap<Coordinate, ChatColor> baseColor = new HashMap<Coordinate, ChatColor>();
 	
 	private int protectionRaduis;
-	public boolean approved; 
-	//——————————————————————————————————————————————//
 	
 	public Map(String name, Coordinate centerCoordinate, Area area, /*Area gatherArea, */ World world) {
 		maps.add(this);
@@ -137,35 +134,35 @@ public class Map {
 	public Location getRandomSpawnLocation() {
 		int x = (int) (Math.random()*(((area.getMaxX()-1)-(area.getMinX()+1))+1))+area.getMinX();
 		int z = (int) (Math.random()*(((area.getMaxZ()-1)-(area.getMinZ()+1))+1))+area.getMinZ();
-		
-//		if(world.getBlockAt(x, y, z).getType() != Material.AIR | world.getBlockAt(x, y+1, z).getType() != Material.AIR) return getRandomSpawnLocation();
-//		if(y > area.getMaxY()-2) {
-			for(int i = area.getMinY(); i < area.getMaxY(); i++) {
-				if(world.getBlockAt(x, i, z).getType().isAir() && world.getBlockAt(x, i+1, z).getType().isAir()) return new Location(world, x, i, z);
-			}
-//			y = area.getMaxY()-2;
-//		}
+		for(int i = area.getMinY(); i < area.getMaxY(); i++) {
+			if(world.getBlockAt(x, i, z).getType().isAir() && world.getBlockAt(x, i+1, z).getType().isAir()) return new Location(world, x, i, z);
+		}
 		return getRandomSpawnLocation();
 	}
 	
-//	public Location getRandomGatherLocation() {
-//		int x = (int) (Math.random()*((area.getMaxX()-area.getMinX())+1))+area.getMinX();
-//		int z = (int) (Math.random()*((area.getMaxZ()-area.getMinZ())+1))+area.getMinZ();
-//		int y = world.getHighestBlockYAt(x, z);
-//		if(y > area.getMaxY()-2) {
-//			for(int i = y; i > area.getMinY(); i++) {
-//				if(!world.getBlockAt(x, y, z).getType().isAir()) {
-//					y = i+1;
-//					i = area.getMinY()-1;
-//				} else y = i;
-//			}
-//		}
-//		Location loc = new Location(world, x, y, z);
-//		return loc;
-//	}
 	
 	public Location getTeamSpawnLoc(ChatColor color) {
 		if(hasColor(color)) return teamSpawCoords.get(color).getLocation(world);
 		else return centerCoord.getLocation(world);
 	}
+	
+	
+	private boolean used = false;
+	Session usingSession;
+	public void setUsed(boolean used, Session session) {
+		this.used = used;
+		this.usingSession = session;
+	}
+	public boolean isUsed() {
+		return used;
+	}
+	
+	private boolean enabled = true;
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	public boolean isEnabled() {
+		return enabled;
+	}
+	
 }

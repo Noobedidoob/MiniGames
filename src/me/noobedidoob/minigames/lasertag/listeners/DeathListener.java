@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
@@ -34,8 +35,10 @@ public class DeathListener implements Listener {
 		if(session == null) return;
 		if(!session.isInSession(victim)) return;
 		
-		if (victim.getGameMode() == GameMode.ADVENTURE | victim.getGameMode() == GameMode.SURVIVAL) {
+		if (victim.getGameMode() == GameMode.ADVENTURE) {
 			if (damage < victim.getHealth()) {
+				if(headshot) damage *= session.getDoubleMod(Mod.HEADSHOT_MULTIPLIKATOR);
+				if(snipe) damage *= session.getDoubleMod(Mod.SNIPER_SHOT_MULTIPLIKATOR);
 				victim.damage(damage);
 			} else {
 				int points = session.getIntMod(Mod.POINTS);
@@ -83,7 +86,12 @@ public class DeathListener implements Listener {
 				if (streakedPlayers.get(victim) == null) streakedPlayers.put(victim, 0);
 				if (streakedPlayers.get(victim) >= session.getIntMod(Mod.MIN_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
 				victim.damage(100);
-				addStreak(killer, victim);
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						addStreak(killer, victim);
+					}
+				}.runTaskLater(Minigames.minigames, 1);
 				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.isProtected.put(victim, true);
 			} 
@@ -95,22 +103,19 @@ public class DeathListener implements Listener {
 		Player p = e.getEntity();
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
+		e.setDeathMessage("");
 		if(session.tagging()) {
 			streakedPlayers.put(p, 0);
 			if(deathMessage.get(p) != null) {
-				e.setDeathMessage(deathMessage.get(p));
+				session.sendMessageAll(deathMessage.get(p));
 				e.setKeepInventory(true);
 				e.getKeepLevel();
 				deathMessage.put(p, null);
 			} else if(hideNextDM.get(p) != null && !hideNextDM.get(p)) {
-				e.setDeathMessage(session.getPlayerColor(p).getChatColor()+p.getName()+" §rdied");
+				session.sendMessageAll(session.getPlayerColor(p).getChatColor()+p.getName()+" §rdied");
 			} else {
-				e.setDeathMessage("");
 				hideNextDM.put(p, false);
 			}
-		} else {
-			System.out.println(e.getDeathMessage());
-			e.setDeathMessage(p.getName()+" died");
 		}
 	}
 	
