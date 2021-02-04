@@ -60,7 +60,7 @@ public class MoveListener implements Listener {
 				if(e.getFrom().getPitch() != e.getTo().getPitch() | e.getFrom().getYaw() != e.getTo().getYaw()) {
 					Lasertag.isProtected.put(e.getPlayer(), false);
 				}
-				if(e.getTo().getY() < 0) {
+				if(e.getTo().getY() < 0 | (session.isMapSet() && session.getMap().getName().equalsIgnoreCase("skyhigh") && e.getTo().getY() < 70)) {
 					e.getPlayer().damage(100);
 				}
 				if(session.withMultiweapons()) {

@@ -63,7 +63,7 @@ public class SessionModifiers {
 		STREAK_EXTRA(2, "Extra points when having a streak"),
 		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
 		
-		MINIMAL_SNIPE_DISTANCE(35, "Minimal distance of a shot to be a sniper shot"),
+		MINIMAL_SNIPE_DISTANCE(30, "Minimal distance of a shot to be a sniper shot"),
 		
 		STREAK_SHUTDOWN(2, "Extra points when shutting down a streak"),
 		MIN_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),

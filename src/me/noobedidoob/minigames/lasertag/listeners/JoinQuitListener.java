@@ -38,8 +38,15 @@ public class JoinQuitListener implements Listener {
 		Session session = Session.getPlayerSession(p);
 		if(session != null) {
 			session.disconnectPlayer(p);
+			e.setQuitMessage("");
+			for(Player op : Bukkit.getOnlinePlayers()) {
+				if(!session.isInSession(op)) {
+					op.sendMessage("§e"+p.getName()+" left");
+				}
+			}
 		}
 		try {PlayerZoomer.zoomPlayerOut(p);} catch (Exception e2) {}
+		
 	}
 	
 	@EventHandler
@@ -51,9 +58,21 @@ public class JoinQuitListener implements Listener {
 		p.setAllowFlight(true);
 		Lasertag.setPlayersLobbyInv(p);
 		
-//		for(Session session : Session.getAllSessions()) {
-//			if(session.disconnectedPlayers.get(p.getUniqueId()) != null) session.reconnectPlayer(p);
-//		}
+		
+		for(Session session : Session.getAllSessions()) {
+			if(session.disconnectedPlayers.get(p.getUniqueId()) != null) {
+				session.reconnectPlayer(p);
+				e.setJoinMessage("");
+				for(Player op : Bukkit.getOnlinePlayers()) {
+					if(!session.isInSession(op)) {
+						op.sendMessage("§e"+p.getName()+" joined");
+					}
+				}
+				return;
+			}
+		}
+
+		p.teleport(Minigames.spawn);
 		
 	}
 }

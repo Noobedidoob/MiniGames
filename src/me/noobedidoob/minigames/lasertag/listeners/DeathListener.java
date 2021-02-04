@@ -105,6 +105,7 @@ public class DeathListener implements Listener {
 		if(session == null) return;
 		e.setDeathMessage("");
 		if(session.tagging()) {
+			Lasertag.isProtected.put(p, true);
 			streakedPlayers.put(p, 0);
 			if(deathMessage.get(p) != null) {
 				session.sendMessageAll(deathMessage.get(p));

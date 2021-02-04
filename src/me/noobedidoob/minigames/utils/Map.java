@@ -8,8 +8,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import me.noobedidoob.minigames.lasertag.session.Session;
-
 public class Map {
 	
 	public static List<Map> maps = new ArrayList<Map>(); 
@@ -21,13 +19,11 @@ public class Map {
 	
 	private World world;
 	
-	private boolean withMiniguns = false;
 	private boolean randomSpawn = false;
 	private boolean baseSpawn = false;
 	
 	private int baseAmount = 0;
 	
-	private Coordinate[] minigunCoords = null;
 	private HashMap<ChatColor, Coordinate> teamSpawCoords = new HashMap<ChatColor, Coordinate>();
 	private HashMap<ChatColor, Boolean> hasColor = new HashMap<ChatColor, Boolean>();
 	public List<Coordinate> baseCoords = new ArrayList<Coordinate>();
@@ -66,28 +62,13 @@ public class Map {
 	}
 
 
-	public void withMiniguns(boolean value) {
-		this.withMiniguns = value;
-	}
-	public boolean withMiniguns() {
-		return this.withMiniguns;
-	}
-	public void setMinigunCoords(Coordinate...coordinates) {
-		this.minigunCoords = coordinates;
-	}
-	public Coordinate[] getMinigunCoords() {
-		return this.minigunCoords;
-	}
-	
-	
-	
-	
 	public void withBaseSpawn(boolean value) {
 		this.baseSpawn = value;
 	}
 	public boolean withBaseSpawn() {
 		return this.baseSpawn;
 	}
+	
 	public void setTeamSpawnCoords(ChatColor color, Coordinate coordinate) {
 		this.teamSpawCoords.put(color, coordinate);
 		this.hasColor.put(color, true);
@@ -99,6 +80,9 @@ public class Map {
 		
 		baseCoords.add(coordinate);
 		baseColor.put(coordinate, color);
+	}
+	public Coordinate[] getBaseCoords() {
+		return baseCoords.toArray(new Coordinate[baseCoords.size()]);
 	}
 	public boolean hasColor(ChatColor color) {
 		return this.hasColor.get(color);
@@ -148,10 +132,8 @@ public class Map {
 	
 	
 	private boolean used = false;
-	Session usingSession;
-	public void setUsed(boolean used, Session session) {
+	public void setUsed(boolean used) {
 		this.used = used;
-		this.usingSession = session;
 	}
 	public boolean isUsed() {
 		return used;

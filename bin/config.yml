@@ -57,7 +57,7 @@ Lasertag:
           x: 345.5
           y: 4
           z: -206.5
-        protectionradius: 10
+        protectionradius: 7
     duel:
       center:
         x: 287
@@ -113,7 +113,7 @@ Lasertag:
           x: 348.5
           y: 13
           z: -107.5
-        protectionradius: 4
+        protectionradius: 6
     skyhigh:
       center:
         x: 746
@@ -141,14 +141,14 @@ Lasertag:
       basespawn:
         enabled: true
         red:
-          x: 821.5
-          y: 96
-          z: -416.5
+          x: 814.5
+          y: 98
+          z: -421.5
         blue:
-          x: 670.5
-          y: 96
-          z: -402.5
-        protectionradius: 10
+          x: 678.5
+          y: 98
+          z: -398.5
+        protectionradius: 15
     big8:
       center:
         x: 298

@@ -12,6 +12,9 @@ import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 public class HitListener implements Listener {
 	
@@ -36,7 +39,7 @@ public class HitListener implements Listener {
 					if (!session.inSameTeam(p, damager)) {
 						if (Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
 						if (Lasertag.isProtected.get(p)) {
-							Minigames.sendPlayerActionBarMessage(damager, "§cHe still has spawnprotection! You can't hit him!");
+							damager.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
 							e.setCancelled(true);
 						} else {
 							if (!session.withMultiweapons()) {

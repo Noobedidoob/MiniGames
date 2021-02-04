@@ -1,6 +1,7 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,12 +23,15 @@ public class RespawnListener implements Listener {
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent e) {
 		Session session = Session.getPlayerSession(e.getPlayer());
-		if(session == null) return;
-		if(session.tagging()) {
-			for(Player p : session.getPlayers()) {
-				if(p == e.getPlayer()) {
-					e.setRespawnLocation(PlayerTeleporter.getPlayerSpawnLoc(p));
-					Lasertag.isProtected.put(p, true);
+		if(session != null) {
+			if(session.tagging()) {
+				for(Player p : session.getPlayers()) {
+					if(p == e.getPlayer()) {
+						Location respawnLoc = PlayerTeleporter.getPlayerSpawnLoc(p);
+						p.setBedSpawnLocation(respawnLoc, true);
+						e.setRespawnLocation(respawnLoc);
+						Lasertag.isProtected.put(p, true);
+					}
 				}
 			}
 		}

@@ -21,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.potion.PotionEffectType;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
@@ -36,6 +37,7 @@ import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
 public class SessionRound {
 	
 	private Session session;
+	@SuppressWarnings("unused")
 	private SessionScoreboard scoreboard;
 	public SessionRound(Session session, SessionScoreboard scoreboard) {
 		this.session = session;
@@ -76,7 +78,7 @@ public class SessionRound {
 						}
 					}
 					session.setTime(session.getTime(TimeFormat.SECONDS)-1, TimeFormat.SECONDS, false);
-					scoreboard.refresh();
+//					scoreboard.refresh();
 				} else {
 					Bukkit.getScheduler().cancelTask(Lasertag.timeCountdownTask);
 					stop(false);
@@ -97,7 +99,10 @@ public class SessionRound {
 		if (session.isSolo()) {
 			ItemStack lasergun = Weapon.LASERGUN.getItem();
 			ItemMeta lasergunMeta = lasergun.getItemMeta();
-			lasergunMeta.setDisplayName(session.getPlayerColor(p).getChatColor()+"Lasergun #"+(session.getPlayerColor(p).ordinal()+1));
+			LasertagColor color = session.getPlayerColor(p);
+			ChatColor chatColor = color.getChatColor();
+			int nr = color.ordinal()+1;
+			lasergunMeta.setDisplayName(chatColor+"Lasergun #"+nr);
 			lasergun.setItemMeta(lasergunMeta);
 			
 			p.getInventory().clear();
@@ -169,6 +174,7 @@ public class SessionRound {
 				p.sendTitle("§cStopped the game!","",20, 20*4, 20);
 				p.teleport(Minigames.spawn);
 				session.setAllPlayersInv();
+				p.removePotionEffect(PotionEffectType.GLOWING);
 			}
 		} else {
 			if(session.isSolo()) evaluateSolo();
@@ -189,7 +195,7 @@ public class SessionRound {
 	
 	private void evaluateSolo() {
 
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 			@Override
 			public void run() {
 				for(Player p : session.getPlayers()) {

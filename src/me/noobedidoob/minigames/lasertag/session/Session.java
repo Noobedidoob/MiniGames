@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
@@ -21,6 +22,7 @@ import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.MgUtils;
 import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Pair;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -86,7 +88,7 @@ public class Session implements Listener{
 	public void start(boolean countdown) {
 		if(!round.tagging()) {
 			if(setSessionMap()){
-				map.setUsed(true, this);
+				map.setUsed(true);
 				round.preparePlayers();
 				if(!countdown) round.start();
 				else {
@@ -133,7 +135,7 @@ public class Session implements Listener{
 				round.stop(external);
 			} 
 		}
-		map.setUsed(false, null);
+		map.setUsed(false);
 		setAllPlayersWaitingInv();
 		
 		if(votedBefore) mapState = MapState.VOTING;
@@ -153,16 +155,18 @@ public class Session implements Listener{
 		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
 			@Override
 			public void run() {
-				for(Player p : players) {
-					playerPoints.put(p, 0);
+				try {
+					for (Player p : players) {
+						playerPoints.put(p, 0);
+					} 
+					for (SessionTeam t : teams) {
+						t.setPoints(0);
+					} 
+					refreshScoreboard();
+				} catch (Exception e) {
 				}
-				for(SessionTeam t : teams) {
-					t.setPoints(0);
-				}
-				refreshScoreboard();
 			}
 		}, 20*10);
-		
 		if(closeSession) close();
 	}
 	public void close() {
@@ -418,6 +422,10 @@ public class Session implements Listener{
 	private HashMap<Player, LasertagColor> playerColor = new HashMap<Player, LasertagColor>();
 	public void setPlayerColor(Player p, LasertagColor color) {
 		playerColor.put(p, color);
+		try { scoreboard.board.getTeam(color.name()).unregister(); } catch (NullPointerException e) { 	}
+		Team t = scoreboard.board.registerNewTeam(color.name());
+		t.setColor(color.getChatColor());
+		t.addEntry(p.getName());
 		refreshScoreboard();
 	}
 	public LasertagColor getPlayerColor(Player p) {
@@ -545,46 +553,47 @@ public class Session implements Listener{
 		Lasertag.setPlayersLobbyInv(p);
 //		round.refreshPlayerTeams();
 		
-		if(tagging()) {
-			if(players.size() < 2) stop(true, false);
-		}
+//		if(tagging()) {
+//			if(players.size() < 2) stop(true, false);
+//		}
 	}
 	
-	public HashMap<UUID, LasertagColor> disconnectedPlayers = new HashMap<UUID, LasertagColor>();
+	public HashMap<UUID, Pair> disconnectedPlayers = new HashMap<UUID, Pair>();
 	public void disconnectPlayer(Player p) {
 		broadcast("§e"+p.getName()+" §cdisconnected!", p);
-		disconnectedPlayers.put(p.getUniqueId(), getPlayerColor(p));
+		int points = 0;
+		if(tagging()) points = getPlayerPoints(p);
+		disconnectedPlayers.put(p.getUniqueId(), new Pair(getPlayerColor(p), points));
 		removePlayer(p);
 	}
 	
 	public void reconnectPlayer(Player p) {
 		if(disconnectedPlayers.get(p.getUniqueId()) != null) {
-			LasertagColor color = disconnectedPlayers.get(p.getUniqueId()); 
+			LasertagColor color = (LasertagColor) disconnectedPlayers.get(p.getUniqueId()).get1();
+			int points = (int) disconnectedPlayers.get(p.getUniqueId()).get2();
 			disconnectedPlayers.put(p.getUniqueId(), null);
+			playerSession.put(p, this);
 			
-			broadcast("§b"+p.getName()+" §aReturned to the session!");
-
-			playerPoints.put(p, 0);
+			players.add(p);
+			playerPoints.put(p, points);
 			hasPlayerVoted.put(p, false);
 			
 			if(isTeams()) {
 				addPlayerToTeam(p, color);
 			} else {
-				refreshSoloPlayerColors();
+				setPlayerColor(p, color);
 			}
 			
-			setPlayerSession(p, this);
-			players.add(p);
-			sendMessage(p, "§aWelcome back, §b"+p.getName()+"§r§a!");
 			setPlayerInv(p);
 			
-			Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
+			new BukkitRunnable() {
 				@Override
 				public void run() {
-					scoreboard.refresh();
+					broadcast("§b"+p.getName()+" §aReturned to the session!", p);
+					sendMessage(p, "§aWelcome back, §b"+p.getName()+"§r§a!");
 				}
-			}, 5);
-//			round.refreshPlayerTeams();
+			}.runTaskLater(Minigames.minigames, 10);
+			
 		}
 	}
 
