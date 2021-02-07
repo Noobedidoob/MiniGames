@@ -40,6 +40,7 @@ public class HitListener implements Listener {
 						if (Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
 						if (Lasertag.isProtected.get(p)) {
 							damager.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+							Lasertag.drawPlayerProtectionSphere(p);
 							e.setCancelled(true);
 						} else {
 							if (!session.withMultiweapons()) {

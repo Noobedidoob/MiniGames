@@ -59,6 +59,7 @@ public class LaserShooter{
 					for (Coordinate coord : session.getMap().getBaseCoords()) {
 						if (p.getLocation().distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
+							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 							return;
 						}
 					} 
@@ -87,9 +88,10 @@ public class LaserShooter{
 					spawnProjectile(p, loc);
 					
 					if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-							for(Coordinate coord : session.getMap().getBaseCoords()) {
+						for(Coordinate coord : session.getMap().getBaseCoords()) {
 							if(loc.distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+								session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 								return;
 							}
 						}
@@ -100,6 +102,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								if(Lasertag.isProtected.get(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+									Lasertag.drawPlayerProtectionSphere(hitP);
 									return;
 								}
 								boolean fromTeam = false;
@@ -161,6 +164,7 @@ public class LaserShooter{
 					for(Coordinate coord : session.getMap().getBaseCoords()) {
 						if(p.getLocation().distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
+							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 							return;
 						}
 					}
@@ -215,6 +219,7 @@ public class LaserShooter{
 								for (Location loc : locs) {
 									if (loc.distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+										session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 										warned = true;
 									}
 								}
@@ -227,6 +232,7 @@ public class LaserShooter{
 								if(isLaserInsideEntity(hitP, loc)) {
 									if(Lasertag.isProtected.get(hitP)) {
 										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+										Lasertag.drawPlayerProtectionSphere(hitP);
 										return;
 									}
 									boolean fromTeam = false;
@@ -286,6 +292,7 @@ public class LaserShooter{
 					for(Coordinate coord : session.getMap().getBaseCoords()) {
 						if(p.getLocation().distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
+							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 							return;
 						}
 					}
@@ -321,6 +328,7 @@ public class LaserShooter{
 						for(Coordinate coord : session.getMap().getBaseCoords()) {
 							if(loc.distance(coord.getLoc()) < session.getMap().getProtectionRaduis()) {
 								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+								session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 								return;
 							}
 						}
@@ -332,6 +340,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								if(Lasertag.isProtected.get(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+									Lasertag.drawPlayerProtectionSphere(hitP);
 									return;
 								}
 								boolean fromTeam = false;
@@ -441,7 +450,8 @@ public class LaserShooter{
 		Block b = loc.getBlock();
 		Material fm = b.getType();
 		if(fm.name().contains("STAINED")) {
-			b.setType(Material.AIR);
+			b.breakNaturally();
+//			b.setType(Material.AIR);
 			loc.getWorld().playSound(loc, Sound.BLOCK_GLASS_BREAK, 1.1f, 1);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
 				@Override

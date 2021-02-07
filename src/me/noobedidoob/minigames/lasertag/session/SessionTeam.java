@@ -47,7 +47,6 @@ public class SessionTeam {
 	
 	public void addPlayer(Player p) {
 		if (!players.contains(p)) {
-			System.out.println("Adding player! "+colorName.name());
 			players.add(p);
 			playerTeam.put(p, this);
 			scoreboardTeam.addEntry(p.getName());

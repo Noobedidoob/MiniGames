@@ -46,9 +46,10 @@ public class MoveListener implements Listener {
 			if(session.tagging()) {
 				if(session.getMap().withBaseSpawn() && ((session.isSolo() && !session.getMap().withRandomSpawn()) | session.isTeams())) {
 					for(Coordinate coord : session.getMap().baseCoords) { 
-						if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p).getChatColor()) {
+						if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p)) {
 							if(coord.getLocation(Minigames.world).distance(p.getLocation()) < session.getMap().getProtectionRaduis()) {
 								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You aren't allowed to be here!"));
+								session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
 								damagePlayer(p);
 							}
 						}

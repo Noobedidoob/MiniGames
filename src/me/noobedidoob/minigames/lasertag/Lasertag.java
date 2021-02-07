@@ -25,6 +25,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
@@ -43,6 +44,7 @@ import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
+import me.noobedidoob.minigames.utils.BaseSphere;
 import me.noobedidoob.minigames.utils.Coordinate;
 import me.noobedidoob.minigames.utils.Map;
 
@@ -149,7 +151,7 @@ public class Lasertag implements Listener{
 				ConfigurationSection subCs = cs.getConfigurationSection(name+".basespawn");
 				for(String colorName : subCs.getKeys(false)) {
 					if(!colorName.equalsIgnoreCase("enabled") && !colorName.equalsIgnoreCase("protectionradius")) {
-						ChatColor baseColor = ChatColor.valueOf(colorName.toUpperCase().replace("ORANGE", "GOLD").replace("PURPLE", "LIGHT_PURPLE"));
+						LasertagColor baseColor = LasertagColor.getFromString(colorName);
 						Coordinate baseCoord = new Coordinate(subCs.getInt(colorName+".x"), subCs.getInt(colorName+".y"), subCs.getInt(colorName+".z"));
 						map.setTeamSpawnCoords(baseColor, baseCoord);
 					}
@@ -198,10 +200,9 @@ public class Lasertag implements Listener{
 		} else if(reloadedBefore.exists()) reloadedBefore.delete();
 	}
 	
-	private static int repeater;
 	public static void animateExpBar(Player p, long ticks) {
 		p.setExp(0);
-		repeater = Bukkit.getScheduler().scheduleSyncRepeatingTask(minigames, new Runnable() {
+		new BukkitRunnable() {
 			float funit = 1f/ticks;
 			float f = 0f;
 			float t = 0;
@@ -212,11 +213,11 @@ public class Lasertag implements Listener{
 					f = f + funit;
 					p.setExp(f);
 				} else {
-					Bukkit.getScheduler().cancelTask(repeater);
+					cancel();
 					p.setExp(1f);
 				}
 			}
-		}, 0, 1);
+		}.runTaskTimer(minigames, 0, 1);
 	}
 	
 	public static void setPlayersLobbyInv(Player p) {
@@ -323,6 +324,11 @@ public class Lasertag implements Listener{
 			}
 			return null;
 		}
+	}
+	
+	public static void drawPlayerProtectionSphere(Player p) {
+		if(Session.getPlayerSession(p) == null) return;
+		BaseSphere.drawProtSphere(p.getLocation().add(0, 1D, 0), 0.9D, 0.4D, 0.6f, Session.getPlayerSession(p).getPlayerColor(p).getColor());
 	}
 	
 	

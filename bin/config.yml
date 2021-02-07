@@ -1,6 +1,6 @@
 world: Minigames_world
 reset-world: true
-disable-other-worlds: true
+disable-other-worlds: false
 Lasertag:
   maps:
     town:

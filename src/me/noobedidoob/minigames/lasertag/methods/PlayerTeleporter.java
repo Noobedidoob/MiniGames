@@ -17,13 +17,13 @@ public class PlayerTeleporter {
 		if(session == null) return Minigames.spawn;
 		if(session.isTeams()) {
 			if(session.getMap().withBaseSpawn()) {
-				return session.getMap().getTeamSpawnLoc(session.getTeamColor(session.getPlayerTeam(p)).getChatColor());
+				return session.getMap().getTeamSpawnLoc(session.getTeamColor(session.getPlayerTeam(p)));
 			} else {
 				return session.getMap().getRandomSpawnLocation();
 			}
 		} else {
 			if(!session.getMap().withRandomSpawn()) {
-				return session.getMap().getTeamSpawnLoc(session.getPlayerColor(p).getChatColor());
+				return session.getMap().getTeamSpawnLoc(session.getPlayerColor(p));
 			} else {
 				return session.getMap().getRandomSpawnLocation();
 			}

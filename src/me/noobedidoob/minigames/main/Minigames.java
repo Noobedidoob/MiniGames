@@ -56,32 +56,21 @@ public class Minigames extends JavaPlugin implements Listener{
 	public boolean waitingForName = false;
 	
 	public List<String> exceptionStackTraces = new ArrayList<String>();
-	
-//	public static HashMap<String, Boolean> isPlayerMoving = new HashMap<String, Boolean>();
-//	HashMap<String, Location> pLastLocation = new HashMap<String, Location>();
-//	HashMap<Player, Boolean> wasMoving = new HashMap<Player, Boolean>();
-	
 
 	public static Minigames minigames;
 	public void onEnable() {
 		minigames = this;
 		reloadConfig();
 		
-//		new GUI(Bukkit.getServer().getName());
 		
-//		Thread.setDefaultUncaughtExceptionHandler((Thread t, Throwable e) -> {
-//			StringWriter stackTraceWriter = new StringWriter();
-//        	e.printStackTrace(new PrintWriter(stackTraceWriter));
-//			String stackTrace = stackTraceWriter.toString();
-//			Bukkit.broadcastMessage(stackTrace);
-//		});
-		
-		lasertag = new Lasertag(this);
 		Commands commands = new Commands(this);
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
 		getCommand("lobby").setExecutor(commands);
 		getCommand("lobby").setTabCompleter(commands);
+		getCommand("test").setExecutor(new Test());
+		new Listeners(this);
+		
 		reloadConfig();
 		if (!(new File(this.getDataFolder(), "config.yml").exists())) {
 			inform("config.yml was not found! Creating config.yml...");
@@ -103,18 +92,21 @@ public class Minigames extends JavaPlugin implements Listener{
 		setWorld();
 		setServerResourcepack();
 		
+		lasertag = new Lasertag(this);
 		lasertag.enable();
-//		hideAndSeek.enable();
+		hideAndSeek = new HideAndSeek(this);
+		hideAndSeek.enable();
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
 		}
 		
+		
 	}
 	public void onDisable() {
 		reloadConfig();
 		lasertag.disable();
-//		hideAndSeek.disable();
+		hideAndSeek.disable();
 		
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
 		

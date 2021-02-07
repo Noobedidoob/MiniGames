@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
+
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 
 public class Map {
 	
@@ -24,10 +26,11 @@ public class Map {
 	
 	private int baseAmount = 0;
 	
-	private HashMap<ChatColor, Coordinate> teamSpawCoords = new HashMap<ChatColor, Coordinate>();
-	private HashMap<ChatColor, Boolean> hasColor = new HashMap<ChatColor, Boolean>();
+	private HashMap<LasertagColor, Coordinate> teamSpawCoords = new HashMap<LasertagColor, Coordinate>();
+	private HashMap<LasertagColor, Boolean> hasColor = new HashMap<LasertagColor, Boolean>();
 	public List<Coordinate> baseCoords = new ArrayList<Coordinate>();
-	public HashMap<Coordinate, ChatColor> baseColor = new HashMap<Coordinate, ChatColor>();
+	public HashMap<Coordinate, LasertagColor> baseColor = new HashMap<Coordinate, LasertagColor>();
+	public HashMap<LasertagColor, BaseSphere> baseSphere = new HashMap<LasertagColor, BaseSphere>();
 	
 	private int protectionRaduis;
 	
@@ -38,7 +41,7 @@ public class Map {
 		this.area = area;
 		this.world = world;
 		
-		for(ChatColor color : ChatColor.values()) hasColor.put(color, false);
+		for(LasertagColor color : LasertagColor.values()) hasColor.put(color, false);
 	}
 	
 	
@@ -69,11 +72,11 @@ public class Map {
 		return this.baseSpawn;
 	}
 	
-	public void setTeamSpawnCoords(ChatColor color, Coordinate coordinate) {
+	public void setTeamSpawnCoords(LasertagColor color, Coordinate coordinate) {
 		this.teamSpawCoords.put(color, coordinate);
 		this.hasColor.put(color, true);
 		int amount = 0;
-		for(ChatColor c : ChatColor.values()) {
+		for(LasertagColor c : LasertagColor.values()) {
 			if(this.hasColor(c)) amount++;
 		}
 		this.baseAmount = amount;
@@ -84,14 +87,16 @@ public class Map {
 	public Coordinate[] getBaseCoords() {
 		return baseCoords.toArray(new Coordinate[baseCoords.size()]);
 	}
-	public boolean hasColor(ChatColor color) {
+	public boolean hasColor(LasertagColor color) {
 		return this.hasColor.get(color);
 	}
-	public Coordinate getTeamSpawnCoord(ChatColor color) {
+	public Coordinate getTeamSpawnCoord(LasertagColor color) {
 		if(hasColor(color)) return teamSpawCoords.get(color);
 		else return centerCoord;
 	}
-	
+	public void drawBaseSphere(LasertagColor color, Player... players) {
+		baseSphere.get(color).draw(players);
+	}
 	public int getBaseAmount() {
 		return this.baseAmount;
 	}
@@ -111,6 +116,10 @@ public class Map {
 	}
 	public void setProtectionRaduis(int protectionRaduis) {
 		this.protectionRaduis = protectionRaduis;
+		
+		for(Coordinate coord : baseCoords) {
+			baseSphere.put(baseColor.get(coord), new BaseSphere(coord, protectionRaduis, baseColor.get(coord).getColor(), area));
+		}
 	}
 
 
@@ -125,7 +134,7 @@ public class Map {
 	}
 	
 	
-	public Location getTeamSpawnLoc(ChatColor color) {
+	public Location getTeamSpawnLoc(LasertagColor color) {
 		if(hasColor(color)) return teamSpawCoords.get(color).getLocation(world);
 		else return centerCoord.getLocation(world);
 	}

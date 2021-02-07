@@ -1,6 +1,7 @@
 name: MiniGames
 version: 4.2
-author: Noobedidoob
+author: Noobedidoob 
+depends: [ProtocolLib, LibsDisguises]
 main: me.noobedidoob.minigames.main.Minigames
 api-version: 1.16
 
@@ -21,3 +22,5 @@ commands:
       description: teleport to lobby
       usage: /lobby | /lb | /spawn
       aliases: [lb, spawn, sp]
+   test:
+      aliases: [t]
