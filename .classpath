@@ -2,8 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resrc"/>
-	<classpathentry kind="lib" path="S:/OneDrive/Developing/Minecraft/API&apos;s/Disguise/LibsDisguises-10.0.23-Premium.jar"/>
-	<classpathentry kind="lib" path="S:/OneDrive/Developing/Minecraft/API&apos;s/ProtocolLib.jar"/>
 	<classpathentry kind="lib" path="S:/OneDrive/Developing/Minecraft/API&apos;s/spigot-1.16.5.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
