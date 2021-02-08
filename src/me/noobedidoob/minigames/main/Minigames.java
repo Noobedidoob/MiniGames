@@ -128,21 +128,21 @@ public class Minigames extends JavaPlugin implements Listener{
 					if (Minigames.world == null) throw new NullPointerException("World not found after loading!");
 					inform("Sucessfully loaded minigame world");
 				}
-				spawn = new Location(world, 220.5, 7, -139.5);
-				world.setSpawnLocation(spawn);
-				Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "setworldspawn 220 7 -139");
-				winnerPodium = new Location(world, 220.5, 7, -139.5);
-				try {
-					world.setGameRuleValue("keepInventory", "true");
-				} catch (NullPointerException nexp) {
-				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				severe("An error occured while trying to get the Minigames world \"" + worldName + "\"! Please set the world manually or try again! Disabeling...");
 				Bukkit.getPluginManager().disablePlugin(this);
 			} 
-		} else world = Bukkit.getWorld(worldName);
-		
+		} 
+		world = Bukkit.getWorld(worldName);
+		spawn = new Location(world, 220.5, 7, -139.5);
+		world.setSpawnLocation(spawn);
+		Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), "setworldspawn 220 7 -139");
+		winnerPodium = new Location(world, 220.5, 7, -139.5);
+		try {
+			world.setGameRuleValue("keepInventory", "true");
+		} catch (NullPointerException nexp) {
+		}
 	}
 	
 	public void setServerResourcepack() {
