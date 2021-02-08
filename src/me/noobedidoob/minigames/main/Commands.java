@@ -12,6 +12,11 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
 public class Commands implements CommandExecutor, TabCompleter{
 	
 	private Minigames m;
@@ -22,6 +27,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 	String opCommands = "§egetworlds §7— \n"
 						+ "§esetworld <name> §7— \n";
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 		if(cmd.getName().equalsIgnoreCase("lobby")){
@@ -29,17 +35,30 @@ public class Commands implements CommandExecutor, TabCompleter{
 			return true;
 		} else if(args.length == 0) {
 			if(sender.isOp()) sender.sendMessage(opCommands);
+			return true;
 		} else if(args.length == 1) {
-			if(args[0].equalsIgnoreCase("getworlds")) {
+			if(args[0].equalsIgnoreCase("getworlds") && sender.isOp()) {
 				sender.sendMessage("\n§aThere are the following overworlds:");
 				for(World w : Bukkit.getWorlds()) {
 					if(w.getEnvironment() == Environment.NORMAL) {
 						sender.sendMessage("§d"+w.getName());
 					}
 				}
+				return true;
+			} else if(args[0].equalsIgnoreCase("setTexturepack") && sender instanceof Player) {
+				TextComponent msg = new TextComponent("§eYou can either click ");
+				TextComponent linkMsg = new TextComponent("here");
+				linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
+				linkMsg.setUnderlined(true);
+				linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.texturepackURL));
+				linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Download the texturepack").create()));
+				msg.addExtra(linkMsg);
+				msg.addExtra(new TextComponent(" §eto download the txturepack or activate server resourcepacks in the server-settings before joining!"));
+				((Player)sender).spigot().sendMessage(msg);
+				return true;
 			}
 		} else if(args.length == 2) {
-			if(args[0].equalsIgnoreCase("setworld")) {
+			if(args[0].equalsIgnoreCase("setworld") && sender.isOp()) {
 				if(m.waitingForName) {
 					String n = args[1];
 					World newWorld;
@@ -51,7 +70,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 							Minigames.world = newWorld;
 							m.waitingForName = false;
 							m.worldFound = true;
-							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the MiniGames to §b"+newWorld.getName()+"§a! Use §e/mg getworlds §ato get all worlds and §e/mg setworld <worldname> §ato change the main world for MiniGames");
+							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the Minigames to §b"+newWorld.getName()+"§a! Use §e/mg getworlds §ato get all worlds and §e/mg setworld <worldname> §ato change the main world for Minigames");
 							return true;
 						} else {
 							sender.sendMessage("§cThis world is not an overworld! Please select an overworld");
@@ -73,7 +92,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 							Minigames.world = newWorld;
 							m.waitingForName = false;
 							m.worldFound = true;
-							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the MiniGames to §b"+newWorld.getName()+"§a! Use §e/mg getworlds §ato get all worlds and §e/mg setworld <worldname> §ato change the main world for MiniGames");
+							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the Minigames to §b"+newWorld.getName()+"§a! Use §e/mg getworlds §ato get all worlds and §e/mg setworld <worldname> §ato change the main world for Minigames");
 							return true;
 						} else {
 							sender.sendMessage("§cThis world is not an overworld! Please select an overworld");
@@ -89,7 +108,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 							m.getConfig().set("world", newWorld.getName());
 							m.saveConfig();
 							Minigames.world = newWorld;
-							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the MiniGames to §b"+newWorld.getName()+"§a!");
+							Bukkit.broadcastMessage("§aSuccessfully changed the main world for the Minigames to §b"+newWorld.getName()+"§a!");
 							return true;
 						} else {
 							sender.sendMessage("§cThis world is not an overworld! Please select an overworld");
@@ -102,30 +121,28 @@ public class Commands implements CommandExecutor, TabCompleter{
 			}
 		}
 		
-		return false;
+		sender.sendMessage("§cSyntax error! Use §e/minigames §cto see all commands!");
+		return true;
 	}
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		List<String> list = new ArrayList<String>();
-		if(cmd.getName().equals("minigames")) {
-			if(args.length == 0) {
+		if(args.length == 0) {
+			if (sender.isOp()) {
 				list.add("setworld");
 				list.add("getworlds");
-				list.add("resetworld");
-			} else if(args.length == 1) {
-				if(args[0].equalsIgnoreCase("setworld")) {
-					for(World w : Bukkit.getWorlds()) {
-						if(w.getEnvironment() == Environment.NORMAL) {
-							list.add(w.getName());
-						}
-					}
-				} else if(args[0].equalsIgnoreCase("resetworld")) {
-					list.add("true");
-					list.add("false");
-				}
-				
 			}
+			list.add("settexturepack");
+		} else if(args.length == 1) {
+			if(args[0].equalsIgnoreCase("setworld") && sender.isOp()) {
+				for(World w : Bukkit.getWorlds()) {
+					if(w.getEnvironment() == Environment.NORMAL) {
+						list.add(w.getName());
+					}
+				}
+			}
+			
 		}
 		
 		return list;

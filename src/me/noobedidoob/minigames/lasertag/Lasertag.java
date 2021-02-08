@@ -29,7 +29,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
-import me.noobedidoob.minigames.lasertag.listeners.ClickInventoryListener;
 import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.listeners.DropSwitchItemListener;
@@ -38,13 +37,12 @@ import me.noobedidoob.minigames.lasertag.listeners.InteractListener;
 import me.noobedidoob.minigames.lasertag.listeners.JoinQuitListener;
 import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
 import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
-import me.noobedidoob.minigames.lasertag.listeners.UndefinedListener;
 import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Area;
-import me.noobedidoob.minigames.utils.BaseSphere;
 import me.noobedidoob.minigames.utils.Coordinate;
 import me.noobedidoob.minigames.utils.Map;
 
@@ -60,10 +58,7 @@ public class Lasertag implements Listener{
 		Lasertag.minigames = minigames;
 		lasertag = this;
 		
-//		new Game();
-		
 		new InteractListener(minigames);
-		new ClickInventoryListener(minigames);
 		new HitListener(minigames);
 		new DeathListener(minigames);
 		new MoveListener(minigames);
@@ -71,16 +66,21 @@ public class Lasertag implements Listener{
 		new DamageListener(minigames);
 		new DropSwitchItemListener(minigames);
 		new RespawnListener(minigames);
-		new UndefinedListener(minigames);
 		
 		
 	}
 	
 	
 	public void enable() {
-		laserCommands = new LaserCommands(minigames, new ModifierCommands(minigames), new SessionCommands(minigames));
+		laserCommands = new LaserCommands(minigames/*, new ModifierCommands(minigames), new SessionCommands(minigames)*/);
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
+		
+		modifierCommands = new ModifierCommands(minigames);
+		sessionCommands = new SessionCommands(minigames, modifierCommands);
+		minigames.getCommand("session").setExecutor(sessionCommands);
+		minigames.getCommand("session").setTabCompleter(sessionCommands);
+		
 		Bukkit.getPluginManager().registerEvents(this, minigames);
 		
 		for(Player p : Bukkit.getOnlinePlayers()) {
@@ -92,6 +92,9 @@ public class Lasertag implements Listener{
 		
 		registerMaps();
 		Weapons.registerWeapons();
+		Mod.registerMods(minigames);
+		
+		
 	}
 	public void disable() {
 		for(Player p : Bukkit.getOnlinePlayers()) {
@@ -100,7 +103,6 @@ public class Lasertag implements Listener{
 //		Session.closeAllSessions();
 	}
 	
-	//TODO: wait for players to be ready
 	//TODO: Capture the Flag Mode
 	
 	//-----------------misc-----------------//
@@ -200,6 +202,43 @@ public class Lasertag implements Listener{
 		} else if(reloadedBefore.exists()) reloadedBefore.delete();
 	}
 	
+	
+	public enum LasertagColor {
+		Red(ChatColor.RED, 255, 0, 0),
+		Blue(ChatColor.BLUE, 0, 160, 255),
+		Green(ChatColor.GREEN, 100, 255, 0),
+		Yellow(ChatColor.YELLOW, 255, 255, 0),
+		Purple(ChatColor.LIGHT_PURPLE, 150, 0, 255),
+		Gray(ChatColor.GRAY, 150, 150, 150),
+		Orange(ChatColor.GOLD, 255, 150, 0),
+		White(ChatColor.WHITE, 255, 255, 255);
+		
+		private Color color;
+		private ChatColor chatColor;
+		
+		LasertagColor(ChatColor chatColor, int r, int g, int b) {
+			this.chatColor = chatColor;
+			this.color = Color.fromRGB(r, g, b);
+		}
+
+		public ChatColor getChatColor() {
+			return chatColor;
+		}
+		public Color getColor() {
+			return color;
+		}
+		
+		public String getName() {
+			return this.name();
+		}
+		
+		public static LasertagColor getFromString(String s) {
+			for(LasertagColor name : LasertagColor.values()) {
+				if(name.name().equalsIgnoreCase(s)) return name;
+			}
+			return null;
+		}
+	}
 	public static void animateExpBar(Player p, long ticks) {
 		p.setExp(0);
 		new BukkitRunnable() {
@@ -289,47 +328,6 @@ public class Lasertag implements Listener{
 	
 	
 	
-	public enum LasertagColor {
-		Red(ChatColor.RED, 255, 0, 0),
-		Blue(ChatColor.BLUE, 0, 160, 255),
-		Green(ChatColor.GREEN, 100, 255, 0),
-		Yellow(ChatColor.YELLOW, 255, 255, 0),
-		Purple(ChatColor.LIGHT_PURPLE, 150, 0, 255),
-		Gray(ChatColor.GRAY, 150, 150, 150),
-		Orange(ChatColor.GOLD, 255, 150, 0),
-		White(ChatColor.WHITE, 255, 255, 255);
-		
-		private Color color;
-		private ChatColor chatColor;
-		
-		LasertagColor(ChatColor chatColor, int r, int g, int b) {
-			this.chatColor = chatColor;
-			this.color = Color.fromRGB(r, g, b);
-		}
-
-		public ChatColor getChatColor() {
-			return chatColor;
-		}
-		public Color getColor() {
-			return color;
-		}
-		
-		public String getName() {
-			return this.name();
-		}
-		
-		public static LasertagColor getFromString(String s) {
-			for(LasertagColor name : LasertagColor.values()) {
-				if(name.name().equalsIgnoreCase(s)) return name;
-			}
-			return null;
-		}
-	}
-	
-	public static void drawPlayerProtectionSphere(Player p) {
-		if(Session.getPlayerSession(p) == null) return;
-		BaseSphere.drawProtSphere(p.getLocation().add(0, 1D, 0), 0.9D, 0.4D, 0.6f, Session.getPlayerSession(p).getPlayerColor(p).getColor());
-	}
 	
 	
 	

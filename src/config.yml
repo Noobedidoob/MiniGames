@@ -1,7 +1,39 @@
 world: Minigames_world
 reset-world: true
-disable-other-worlds: false
+set-server-texturepack: true
 Lasertag:
+  mods:
+    points: 1
+    normal-kill-extra-points: 0
+    sniper-kill-extra-points: 1
+    headshot-extra-points: 1
+    backstab-extra-points: 0
+    pvp-kill-extra-points: 0
+    streak-extra-points: 2
+    streak-shutdown-extra-points: 2
+    multikills-extra-points: 2
+    minimal-snipe-distance: 30
+    sktreak-shutdown-points: 2
+    minimal-kills-for-streak: 5
+    spawnprotection-seconds: 10
+    width-addon: 0
+    height-addon: 0
+    shoot-through-blocks: false
+    highlight-players: false
+    highlight-power: 255
+    lasergun-cooldown-ticks: 12
+    lasergun-multiweapons-cooldown-ticks: 2
+    sniper-cooldown-ticks: 100
+    shotgun-cooldown-ticks: 40
+    sniper-ammo-before-cooldown: 2
+    lasergun-normal-damage: 100
+    lasergun-multiweapons-damage: 9
+    lasergun-pvp-damage: 10
+    shotgun-damage: 11
+    sniper-damage: 100
+    stabber-damage: 10
+    headshot-multiplikator: 1.5
+    sniper-shot-multiplikator: 1.5
   maps:
     town:
       center:

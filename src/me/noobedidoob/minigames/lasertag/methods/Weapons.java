@@ -81,6 +81,13 @@ public class Weapons {
 		public ItemStack getItem() {
 			return item;
 		}
+		public ItemStack getTestItem() {
+			ItemStack newItem = item;
+			ItemMeta meta = newItem.getItemMeta();
+			meta.setDisplayName(meta.getDisplayName()+" Test");
+			newItem.setItemMeta(meta);
+			return newItem;
+		}
 		public ItemStack getColoredItem(LasertagColor color) {
 			ItemStack item = this.item;
 			ItemMeta meta = item.getItemMeta();

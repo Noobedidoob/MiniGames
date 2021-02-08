@@ -18,20 +18,18 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
-import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
-import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.methods.Flag;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class LaserCommands implements CommandExecutor, TabCompleter {
 
 	private Minigames m;
-	private ModifierCommands modifierCommands;
-	private SessionCommands sessionCommands;
-	public LaserCommands(Minigames minigames, ModifierCommands modifierCommands, SessionCommands sessionCommands) {
+//	private ModifierCommands modifierCommands;
+//	private SessionCommands sessionCommands;
+	public LaserCommands(Minigames minigames/*, ModifierCommands modifierCommands, SessionCommands sessionCommands*/) {
 		this.m = minigames;
-		this.modifierCommands = modifierCommands;
-		this.sessionCommands = sessionCommands;
+//		this.modifierCommands = modifierCommands;
+//		this.sessionCommands = sessionCommands;
 	}
 	
 	
@@ -44,7 +42,6 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					  + "§e/lt cancel — §7cancel the registrated session\n"
 					  + "§e/lt start — §7start the registrated session\n"
 					  + "§e/lt stop — §7stop the ongoing game\n"
-					  + "§e/lt loadtexturepack — §7stop the ongoing game\n"
 					  + "\n————————————————————————————————\n";
 	
 	
@@ -111,17 +108,17 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					return true;
 				}
 				
-				if(args.length >= 1) {
-					if(args[0].toLowerCase().contains("modifier")/* | args[0].equalsIgnoreCase("withmultiweapons")*/) {
-						modifierCommands.perform(sender, args);
-						return true;
-					}
-					
-					if(SessionCommands.commandArgs.contains(args[0]) | SessionCommands.adminCommandArgs.contains(args[0])) {
-						sessionCommands.perform(sender, args);
-						return true;
-					}
-				}
+//				if(args.length >= 1) {
+//					if(args[0].toLowerCase().contains("modifier")/* | args[0].equalsIgnoreCase("withmultiweapons")*/) {
+//						modifierCommands.perform(sender, args);
+//						return true;
+//					}
+//					
+//					if(SessionCommands.commandArgs.contains(args[0].toLowerCase()) | SessionCommands.adminCommandArgs.contains(args[0].toLowerCase())) {
+//						sessionCommands.perform(sender, args);
+//						return true;
+//					}
+//				}
 				
 				if(args.length == 0) {
 					if(sender.isOp()) sender.sendMessage("§e"+opCommands);
@@ -156,17 +153,10 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 						return true;
 					} 
 					
-					else if(args[0].equalsIgnoreCase("loadtexturepack")) {
-						if(sender instanceof Player) {
-							sender.sendMessage("Loading texturepack...");
-							((Player) sender).setResourcePack("[URL]"+Minigames.texturepackURL+"[/URL]");
-						} else sender.sendMessage("You may only perform ths command as a player");
-						return true;
-					} 
 				}
 			}
 		} else {
-			sender.sendMessage("§cMain world for MiniGames still not found! Please define the main world first to continue!");
+			sender.sendMessage("§cMain world for Minigames still not found! Please define the main world first to continue!");
 			return true;
 		}
 		sender.sendMessage("§cSyntax ERROR! Please use §e/lt §cto see all commands and their arguments");
@@ -179,8 +169,8 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 		if(m.worldFound) {
 			if(cmd.getName().equalsIgnoreCase("lasertag")) {
 				
-				list = modifierCommands.getTabComplete(list, sender, args);
-				list = sessionCommands.getTabComplete(list, sender, args);
+//				list = modifierCommands.getTabComplete(list, sender, args);
+//				list = sessionCommands.getTabComplete(list, sender, args);
 				
 				if(args.length == 1) {
 					

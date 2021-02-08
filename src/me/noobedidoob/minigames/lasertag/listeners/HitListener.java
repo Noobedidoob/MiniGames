@@ -12,6 +12,7 @@ import me.noobedidoob.minigames.lasertag.listeners.DeathListener.KillType;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.utils.BaseSphere;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -40,7 +41,7 @@ public class HitListener implements Listener {
 						if (Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
 						if (Lasertag.isProtected.get(p)) {
 							damager.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-							Lasertag.drawPlayerProtectionSphere(p);
+							BaseSphere.drawPlayerProtectionSphere(p);
 							e.setCancelled(true);
 						} else {
 							if (!session.withMultiweapons()) {

@@ -1,14 +1,11 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.PluginManager;
 
@@ -58,34 +55,13 @@ public class InteractListener implements Listener {
 				} catch (Exception e2) {
 					return;
 				}
-//				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) {
-//					LaserShooter.fire(p, Weapon.LASERGUN);
-//					e.setCancelled(true);
-//				} else if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("MINIGUN")) {
-//					LaserShooter.fire(p, Weapon.MINIGUN);
-//					e.setCancelled(true);
-//				} else if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
-//					LaserShooter.fire(p, Weapon.SNIPER);
-//					e.setCancelled(true);
-//				} else if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SHOTGUN")) {
-//					LaserShooter.fire(p, Weapon.SHOTGUN);
-//					e.setCancelled(true);
-//				}
 			} else if(e.getAction() == Action.LEFT_CLICK_AIR | e.getAction() == Action.LEFT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
-				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")/* | e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")*/) {
+				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER") | (session.withMultiweapons() && e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN"))) {
 					PlayerZoomer.toggleZoom(p);
 				}
 			}
 		}
 		
-	}
-	
-	@EventHandler
-	public void playerInteractAtEntity(PlayerInteractEntityEvent e) {
-		Entity entity = e.getRightClicked();
-		if(entity instanceof ItemFrame) {
-			e.setCancelled(true);
-		}
 	}
 }

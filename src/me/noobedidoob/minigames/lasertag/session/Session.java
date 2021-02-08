@@ -67,6 +67,7 @@ public class Session implements Listener{
 		
 		if(teamsAmount < 2) {
 			solo = true;
+			this.teamAmountSet = true;
 		} else {
 			solo = false;
 			setTeamsAmount(teamsAmount);
@@ -88,7 +89,6 @@ public class Session implements Listener{
 	public void start(boolean countdown) {
 		if(!round.tagging()) {
 			if(setSessionMap()){
-				map.setUsed(true);
 				round.preparePlayers();
 				if(!countdown) round.start();
 				else {
@@ -128,8 +128,9 @@ public class Session implements Listener{
 		}
 	}
 	
-	
+	public boolean justStopped = false;
 	public void stop(boolean external, boolean closeSession) {
+		justStopped = true;
 		if (external) {
 			if (round.tagging()) {
 				round.stop(external);
@@ -167,6 +168,14 @@ public class Session implements Listener{
 				}
 			}
 		}, 20*10);
+		
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				justStopped = false;
+			}
+		}.runTaskLater(Minigames.minigames, 20*5);
+		
 		if(closeSession) close();
 	}
 	public void close() {
@@ -287,6 +296,7 @@ public class Session implements Listener{
 			}
 			
 			broadcast("§ePlaying with in the map §b"+map.getName());
+			map.setUsed(true);
 			mapState = MapState.SET;
 			refreshScoreboard();
 		}
@@ -603,7 +613,7 @@ public class Session implements Listener{
 	public List<Player> hasTeamChooseInvOpen = new ArrayList<Player>();
 	private int teamsAmount;
 	
-	public void addTeam(Player[] players, LasertagColor color) {
+	public void addTeam(LasertagColor color, Player... players) {
 		SessionTeam team = new SessionTeam(this, color, players);
 		teams.add(team);
 		for(Player p : players) {
@@ -650,14 +660,64 @@ public class Session implements Listener{
 	}
 	private boolean teamAmountSet = false;
 	public void setTeamsAmount(int amount) {
-		if(round.tagging()) return;
-		teamsAmount = amount;
-		teamAmountSet = true;
-		
-		for(int i = 0; i < amount; i++) {
-			if(i == 0) addTeam(new Player[] {owner}, LasertagColor.Red);
-			else addTeam(new Player[] {}, LasertagColor.values()[i]);
+		System.out.println("Setting teams amount to "+amount);
+		if (round.tagging()) return;
+		if (!teamAmountSet) {
+			teamAmountSet = true;
+			
+			for (int i = 0; i < amount; i++) {
+				if (i == 0) addTeam(LasertagColor.Red, owner);
+				else addTeam(LasertagColor.values()[i]);
+			} 
+		} else {
+			if(amount < 2) {
+				if (!solo) {
+					solo = true;
+					refreshSoloPlayerColors();
+					for(SessionTeam t : teams) {
+						for(Player p : t.getPlayers()) {
+							t.removePlayer(p);
+						}
+					}
+					teams = new ArrayList<SessionTeam>();
+					broadcast(" §bUpdated mode to §dsolo!");
+					for(Player p : players) {
+						p.getInventory().clear();
+						setPlayerInv(p);
+					}
+				}
+			} else {
+				if(solo) {
+					solo = false;
+					teams = new ArrayList<SessionTeam>();
+					for (int i = 0; i < amount; i++) {
+						teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
+					}
+					for(Player p : players) {
+						p.getInventory().clear();
+						setPlayerInv(p);
+						generatePlayerTeam(p);
+					}
+					broadcast(" §bUpdated mode to §d"+amount+" teams!");
+				} else if(amount > teamsAmount) {
+					for(int i = amount-1; i < amount-1; i++) {
+						addTeam(LasertagColor.values()[i]);
+					}
+				} else if(amount < teamsAmount) {
+					teams = new ArrayList<SessionTeam>();
+					for (int i = 0; i < amount; i++) {
+						if (i == 0) teams.add(new SessionTeam(this, LasertagColor.Red, new Player[] {owner}));
+						else teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
+					} 
+					for(Player p : players) {
+						p.getInventory().clear();
+						setPlayerInv(p);
+						generatePlayerTeam(p);
+					}
+				}
+			}
 		}
+		teamsAmount = amount;
 	}
 	public boolean isTeamsAmountSet() {
 		return teamAmountSet;

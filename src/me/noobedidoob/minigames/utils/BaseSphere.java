@@ -8,6 +8,7 @@ import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
+import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 
 public class BaseSphere {
@@ -20,7 +21,7 @@ public class BaseSphere {
 	public BaseSphere(Coordinate coord, double radius, Color color, Area mapArea) {
 		this.coord = coord;
 		
-		this.offsets = getSphereOffsets(radius, radius, radius, 0.5f, false);
+		this.offsets = getSphereOffsets(radius, radius, radius, 0.5f);
 		
 		this.color = color;
 		this.limitedArea = mapArea;
@@ -49,7 +50,7 @@ public class BaseSphere {
 	}
 	
 
-	private static ArrayList<Vector> getSphereOffsets(double radiusX, double radiusY, double radiusZ, double dotsDistance, boolean filled) {
+	public static ArrayList<Vector> getSphereOffsets(double radiusX, double radiusY, double radiusZ, double dotsDistance) {
         ArrayList<Vector> pos = new ArrayList<Vector>();
 
         radiusX += 0.5;
@@ -87,10 +88,8 @@ public class BaseSphere {
                         break forZ;
                     }
 
-                    if (!filled) {
-                        if (lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1) {
-                            continue;
-                        }
+                    if (lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1) {
+                        continue;
                     }
 
                     pos.add(new Vector(x, y, z));
@@ -112,11 +111,13 @@ public class BaseSphere {
     }
 	
 	
+	public static ArrayList<Vector> playerProtSphereOffsets = getSphereOffsets(0.6, 0.9, 0.6, 0.3);
 	
-	public static void drawProtSphere(Location loc, double radius, double dotsDistance, float dotsSize, Color color) {
-		ArrayList<Vector> offsets = getSphereOffsets(radius, radius, radius, dotsDistance, false);
-		for(Vector v : offsets) {
-			loc.getWorld().spawnParticle(Particle.COMPOSTER, loc.getX()+v.getX(), loc.getY()+v.getY(), loc.getZ()+v.getZ(), 0, 0, 0, 0, 1);
+	
+	public static void drawPlayerProtectionSphere(Player p) {
+		Color c = Session.getPlayerSession(p) != null ? Session.getPlayerSession(p).getPlayerColor(p).getColor() : Color.RED;
+		for(Vector v : playerProtSphereOffsets) {
+			p.getLocation().getWorld().spawnParticle(Particle.REDSTONE, p.getLocation().getX()+v.getX(), p.getLocation().getY()+1+v.getY(), p.getLocation().getZ()+v.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.8f));
 		}
 	}
 

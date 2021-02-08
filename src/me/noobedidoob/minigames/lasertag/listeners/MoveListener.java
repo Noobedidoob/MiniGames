@@ -3,26 +3,17 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerToggleFlightEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.util.Vector;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.main.Minigames;
 import me.noobedidoob.minigames.utils.Coordinate;
-import me.noobedidoob.minigames.utils.Pair;
+
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -34,8 +25,6 @@ public class MoveListener implements Listener {
 		pluginManeger.registerEvents(this, minigames);
 	}
 	
-	private HashMap<Player, ItemStack[]> playerStoredInv = new HashMap<>();
-	  
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
 		
@@ -68,12 +57,7 @@ public class MoveListener implements Listener {
 				}
 			}
 		} else {
-			if(e.getTo().getY() < 0) {
-				Location spawnLoc = Minigames.world.getSpawnLocation();
-				spawnLoc.setPitch(p.getLocation().getPitch());
-				spawnLoc.setYaw(p.getLocation().getYaw());
-				p.teleport(spawnLoc);
-			}
+			
 //			if(!p.isSprinting() && p.getInventory().getItemInHand().getType().equals(Material.DIAMOND_SWORD)) {
 //				for(Player target : Bukkit.getOnlinePlayers()) {
 //					if (p.getLocation().distance(target.getLocation()) < 3) {
@@ -86,67 +70,7 @@ public class MoveListener implements Listener {
 //				}
 //			}
 		}
-		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
-		
-		if (session != null && session.tagging()) return;
-		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
-		if (!Lasertag.playerTesting.get(p)) {
-			if(Lasertag.testArea.isInside(e.getTo())) {
-				Lasertag.playerTesting.put(p, true);
-				playerStoredInv.put(p, p.getInventory().getContents());
-				p.getInventory().setItem(0, Weapon.LASERGUN.getItem());
-				p.getInventory().setItem(1, Weapon.SHOTGUN.getItem());
-				p.getInventory().setItem(2, Weapon.SNIPER.getItem());
-				p.getInventory().getItem(2).setAmount(2);
-			}
-		} else if (Lasertag.playerTesting.get(p) && !Lasertag.testArea.isInside(e.getTo())) {
-			Lasertag.playerTesting.put(p, false);
-			p.getInventory().setContents(playerStoredInv.get(p));
-			PlayerZoomer.zoomPlayerOut(p);
-		} 
 	}
-	
-	HashMap<Player, Pair> playersLastLocation = new HashMap<Player, Pair>();
-	
-	@EventHandler
-	public void onPlayerFly(PlayerToggleFlightEvent e) {
-		Player p = e.getPlayer();
-		if(p.getGameMode() == GameMode.ADVENTURE && p.getAllowFlight()) {
-			e.setCancelled(true);
-			p.setAllowFlight(false);
-			p.setFlying(false);
-			
-//			Vector direction = p.getLocation().getDirection();
-			Vector direction = ((Location) playersLastLocation.get(p).get1()).subtract((Location) playersLastLocation.get(p).get1()).toVector();
-	        direction.setY(0.8);
-	        p.setVelocity(direction);
-	        p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1, 1);
-	        Lasertag.animateExpBar(p, 20*3);
-	        Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-				@Override
-				public void run() {
-					p.setAllowFlight(true);
-				}
-			}, 20*3);
-		} else if(p.getGameMode() != GameMode.CREATIVE && p.getGameMode() != GameMode.SPECTATOR) {
-			e.setCancelled(true);
-			p.setFlying(false);
-		}
-	}
-	
-	@EventHandler
-	public void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
-		Player p = e.getPlayer();
-		Session session = Session.getPlayerSession(p);
-		if(session == null) return;
-		if(session.tagging()) {
-			Lasertag.isProtected.put(e.getPlayer(), false);
-		} else if(p == Bukkit.getPlayer("Noobedidoob")) {
-//			FallingBlock b = world.spawnFallingBlock(p.getLocation(), Material.BLACK_BANNER, (byte) 0x0);
-//			FallingBlock d = world.spawnFallingBlock(p.getLocation(), Material.DIRT, (byte) 0x0);
-		}
-	}
-	
 	
 	HashMap<Player , Boolean> openForDamage = new HashMap<Player, Boolean>();
 	public void damagePlayer(Player p) {
@@ -162,6 +86,7 @@ public class MoveListener implements Listener {
 			}, 20);
 		}
 	}
+	
 }
 
 //walking:  		 ->  a: 0.21581024677994573    max: 0.2159   min: 0.2158

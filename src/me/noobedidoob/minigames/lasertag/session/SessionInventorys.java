@@ -91,7 +91,7 @@ public class SessionInventorys implements Listener{
 			}
 		} else {
 			if(session.tagging()) return;
-			if(session.getOwner() == p) {
+			if(session.isAdmin(p)) {
 				try {
 					/*if(inv.getItem(4).getType() == Material.LIME_STAINED_GLASS_PANE) {
 						try {
@@ -160,7 +160,7 @@ public class SessionInventorys implements Listener{
 					} 
 					
 					
-					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
+					else if(inv.getItem(4) != null && (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE | inv.getItem(4).getType() == Material.BARRIER)) {
 						if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
 							if(inv.getItem(4).getAmount() > 1) {
 								inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
@@ -211,7 +211,7 @@ public class SessionInventorys implements Listener{
 				} catch (NullPointerException e1) {
 					e1.printStackTrace();
 				}
-			}
+			} else if(session.isAdmin(p))
 			
 			
 			if(session.hasTeamChooseInvOpen.contains(p)) {
@@ -332,7 +332,7 @@ public class SessionInventorys implements Listener{
 								}
 								if(teamsWithPlayers < 2) enoughTeams = false;
 							} 
-							if(enoughTeams) session.start(true);
+							if(enoughTeams && !session.justStopped) session.start(true);
 							else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
 						} else Session.sendMessage(p, "§cNot enough players!");
 					}
@@ -343,6 +343,8 @@ public class SessionInventorys implements Listener{
 					} else if(session.isAdmin(p)) openMapInv(p);
 				} else if(item.getType() == Material.LEATHER_CHESTPLATE) {
 					openTeamChooseInv(p);
+				} else if(item.getType() == Material.END_CRYSTAL) {
+					openTeamsInv(p);
 				} else if(item.getType() == Material.DIAMOND_HELMET) {
 					openAddAdminInv(p);
 				} else if(item.getType() == Material.CLOCK) {
@@ -354,8 +356,11 @@ public class SessionInventorys implements Listener{
 							session.leavePlayer(p);
 						}
 					}, 1);
-				} else if(item.getType() == Material.DIAMOND_SWORD || item.getType() == Material.DIAMOND_SHOVEL || item.getType() == Material.DIAMOND_PICKAXE) {
+				} else if(session.withMultiweapons() && (item.getType() == Material.DIAMOND_SWORD || item.getType() == Material.DIAMOND_SHOVEL || item.getType() == Material.DIAMOND_PICKAXE)) {
 					openSecondaryWeaponChooserInv(p);
+				} else if(!session.withMultiweapons() && item.getType() == Material.DIAMOND_SWORD) {
+					Session.sendMessage(p, "§aEnabled §bmultiweapons!");
+					session.setWithMultiWeapons(true);
 				}
 			}
 		}
@@ -465,15 +470,28 @@ public class SessionInventorys implements Listener{
 	public static void openTeamsInv(Player p) {
 		Inventory inv = Bukkit.createInventory(null, 9*1, "§5Set amount of teams");
 		
-		ItemStack amount = new ItemStack(Material.LEATHER_CHESTPLATE, 2);
-		LeatherArmorMeta aMeta = (LeatherArmorMeta) amount.getItemMeta();
-		aMeta.setColor(LasertagColor.Red.getColor());
-		aMeta.setDisplayName("§aTeams: §b2");
-		aMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE);
-		amount.setItemMeta(aMeta);
+		if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).getTeamsAmount() == 2) {
+			ItemStack amount = new ItemStack(Material.BARRIER);
+			ItemMeta aMeta = amount.getItemMeta();
+			aMeta.setDisplayName("§cNo Teams -> §7(§bSOLO§7)");
+			aMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+			amount.setItemMeta(aMeta);
+			
+			inv.setItem(4, amount);
+		} else {
+			ItemStack amount = new ItemStack(Material.LEATHER_CHESTPLATE, 2);
+			LeatherArmorMeta aMeta = (LeatherArmorMeta) amount.getItemMeta();
+			aMeta.setColor(LasertagColor.Red.getColor());
+			aMeta.setDisplayName("§aTeams: §b2");
+			aMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE);
+			amount.setItemMeta(aMeta);
+			
+			inv.setItem(4, amount);
+		}
+		
+		
 		
 		inv.setItem(2, getSubstractionItem("§c§l-1 §r§bTeam"));
-		inv.setItem(4, amount);
 		inv.setItem(6, getAdditionItem("§a§l+1 §r§bTeam"));
 		inv.setItem(8, getNextItem());
 		
@@ -547,7 +565,6 @@ public class SessionInventorys implements Listener{
 				}
 			}
 		}
-		
 		if(session.isAdmin(p)) {
 			ItemStack go = new ItemStack(Material.DIAMOND_HOE);
 			ItemMeta goMeta = go.getItemMeta();
@@ -556,11 +573,26 @@ public class SessionInventorys implements Listener{
 			go.setItemMeta(goMeta);
 			p.getInventory().setItem(0, go);
 			
+			if(!session.withMultiweapons()) {
+				ItemStack weapon = new ItemStack(Material.DIAMOND_SWORD);
+				ItemMeta wMeta = weapon.getItemMeta();
+				wMeta.setDisplayName("§aWith Multiweapons");
+				wMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+				weapon.setItemMeta(wMeta);
+				p.getInventory().setItem(3, weapon);
+			}
+			
 			ItemStack setTimeItem = new ItemStack(Material.CLOCK);
 			ItemMeta setTimeMeta = setTimeItem.getItemMeta();
 			setTimeMeta.setDisplayName("§bChange time");
 			setTimeItem.setItemMeta(setTimeMeta);
-			p.getInventory().setItem(5, setTimeItem);
+			p.getInventory().setItem(4, setTimeItem);
+			
+			ItemStack setTeamsAmountItem = new ItemStack(Material.END_CRYSTAL);
+			ItemMeta taMeta = setTeamsAmountItem.getItemMeta();
+			taMeta.setDisplayName("§rChange mode");
+			setTeamsAmountItem.setItemMeta(taMeta);
+			p.getInventory().setItem(5, setTeamsAmountItem);
 			
 			ItemStack addAdminItem = new ItemStack(Material.DIAMOND_HELMET);
 			ItemMeta addAdminMeta = addAdminItem.getItemMeta();

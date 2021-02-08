@@ -33,6 +33,7 @@ import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.utils.BaseSphere;
 import me.noobedidoob.minigames.utils.Coordinate;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -102,7 +103,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								if(Lasertag.isProtected.get(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-									Lasertag.drawPlayerProtectionSphere(hitP);
+									BaseSphere.drawPlayerProtectionSphere(hitP);
 									return;
 								}
 								boolean fromTeam = false;
@@ -129,7 +130,7 @@ public class LaserShooter{
 													else killedPlayersNames += ", "+session.getPlayerColor(kp).getChatColor()+kp.getName();
 													i++;
 												}
-												int points =modifiers.getInt(Mod.MULTIKILLS_EXTRA)*alreadyKilledPlayers.size();
+												int points =modifiers.getInt(Mod.MULTIKILLS_EXTRA_POINTS)*alreadyKilledPlayers.size();
 												String pAddon = "";
 												if(points > 1) pAddon = "s";
 												for(Player ap : session.getPlayers()) {
@@ -232,7 +233,7 @@ public class LaserShooter{
 								if(isLaserInsideEntity(hitP, loc)) {
 									if(Lasertag.isProtected.get(hitP)) {
 										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-										Lasertag.drawPlayerProtectionSphere(hitP);
+										BaseSphere.drawPlayerProtectionSphere(hitP);
 										return;
 									}
 									boolean fromTeam = false;
@@ -257,7 +258,7 @@ public class LaserShooter{
 														else killedPlayersNames += ", "+session.getPlayerColor(kp).getChatColor()+kp.getName();
 														i++;
 													}
-													int points = modifiers.getInt(Mod.MULTIKILLS_EXTRA)*alreadyKilledPlayers.size();
+													int points = modifiers.getInt(Mod.MULTIKILLS_EXTRA_POINTS)*alreadyKilledPlayers.size();
 													String pAddon = "";
 													if(points > 1) pAddon = "s";
 													for(Player ap : session.getPlayers()) {
@@ -340,7 +341,7 @@ public class LaserShooter{
 							if(isLaserInsideEntity(hitP, loc)) {
 								if(Lasertag.isProtected.get(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-									Lasertag.drawPlayerProtectionSphere(hitP);
+									BaseSphere.drawPlayerProtectionSphere(hitP);
 									return;
 								}
 								boolean fromTeam = false;
@@ -367,7 +368,7 @@ public class LaserShooter{
 													else killedPlayersNames += ", "+session.getPlayerColor(kp).getChatColor()+kp.getName();
 													i++;
 												}
-												int points = modifiers.getInt(Mod.MULTIKILLS_EXTRA)*alreadyKilledPlayers.size();
+												int points = modifiers.getInt(Mod.MULTIKILLS_EXTRA_POINTS)*alreadyKilledPlayers.size();
 												String pAddon = "";
 												if(points > 1) pAddon = "s";
 												for(Player ap : session.getPlayers()) {
@@ -495,8 +496,8 @@ public class LaserShooter{
 	
 	public static void spawnProjectile(Player p, Location loc) {
 		Session session = Session.getPlayerSession(p);
-		if(session.getPlayerColor(p).getColor() != Color.BLUE) p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(session.getPlayerColor(p).getColor(), 0.5f));
-		else p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(Color.fromRGB(0, 183, 255), 0.5f));
+		if(session.getPlayerColor(p).getColor() != Color.BLUE) p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(session.getPlayerColor(p).getColor(), 0.8f));
+		else p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(Color.fromRGB(0, 183, 255), 0.8f));
 	}
 	
 	

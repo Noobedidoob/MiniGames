@@ -1,7 +1,6 @@
-name: MiniGames
-version: 4.2
-author: Noobedidoob 
-depends: [ProtocolLib, LibsDisguises]
+name: Minigames
+version: 4.2.1
+author: Noobedidoob
 main: me.noobedidoob.minigames.main.Minigames
 api-version: 1.16
 
@@ -10,6 +9,10 @@ commands:
       description: Prefix for all LaserTag commands
       usage: use '/lasertag' for all commands
       aliases: [lt, laser]
+   session:
+      description: Prefix for all session commands
+      usdage: use '/session' to see all commands
+      aliases: [s, ssn, sss]
    hideandseek:
       description: Prefix for all HideAndSeek commands
       usage: use '/hideandseek' for all commands

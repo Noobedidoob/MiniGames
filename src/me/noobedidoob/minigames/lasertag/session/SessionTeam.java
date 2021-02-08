@@ -30,6 +30,7 @@ public class SessionTeam {
 		this.colorName = colorName;
 		points = 0;
 		getTeamByCooserSlot.put(getTeamChooserSlot(), this);
+		try{ session.scoreboard.board.getTeam(colorName.name()).unregister();} catch (NullPointerException e) {}
 		scoreboardTeam = session.scoreboard.board.registerNewTeam(colorName.name());
 		scoreboardTeam.setColor(colorName.getChatColor());
 
@@ -70,7 +71,10 @@ public class SessionTeam {
 		if (players.contains(p)) {
 			players.remove(p);
 			playerTeam.put(p, null);
-			scoreboardTeam.removeEntry(p.getName());
+			try {
+				scoreboardTeam.removeEntry(p.getName());
+			} catch (Exception e) {
+			}
 			p.getInventory().setChestplate(new ItemStack(Material.AIR));
 			p.getInventory().setLeggings(new ItemStack(Material.AIR));
 			p.getInventory().setBoots(new ItemStack(Material.AIR));

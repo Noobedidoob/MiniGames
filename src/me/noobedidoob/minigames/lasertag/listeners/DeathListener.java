@@ -47,33 +47,33 @@ public class DeathListener implements Listener {
 				int headshotExtra = 0;
 				String headshotAddon = "";
 				if(headshot) {
-					headshotExtra = session.getIntMod(Mod.HEADSHOT_EXTRA);
+					headshotExtra = session.getIntMod(Mod.HEADSHOT_EXTRA_POINTS);
 					headshotAddon = " §7[§d§nHEADSHOT§r§7] ";
 				}
 				
 				int backstabExtra = 0;
 				String backstabAddon = "";
 				if(backstab) {
-					backstabExtra = session.getIntMod(Mod.BACKSTAB_EXTRA);
+					backstabExtra = session.getIntMod(Mod.BACKSTAB_EXTRA_POINTS);
 					backstabAddon = " §7[§d§nBACKSTAB§r§7] ";
 				}
 				
 				int snipeExra = 0;
 				String shotOrSnipe = "shot";
 				if(snipe) {
-					snipeExra = session.getIntMod(Mod.SNIPER_SHOT_EXTRA);
+					snipeExra = session.getIntMod(Mod.SNIPER_KILL_EXTRA_POINTS);
 					shotOrSnipe = "sniped";
 				}
 				
 				switch (type) {
 				case SHOT:
-					points += session.getIntMod(Mod.NORMAL_SHOT_EXTRA)+headshotExtra+snipeExra;
+					points += session.getIntMod(Mod.NORMAL_KILL_EXTRA_POINTS)+headshotExtra+snipeExra;
 					session.addPoints(killer, points);
 					if(points > 1) addon = "s";
 					deathMessage.put(victim, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+shotOrSnipe+" §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+headshotAddon+" §7(§a+"+points+" Point"+addon+"§7)");
 					break;
 				case PVP:
-					points += session.getIntMod(Mod.PVP_EXTRA)+backstabExtra;
+					points += session.getIntMod(Mod.PVP_KILL_EXTRA_POINTS)+backstabExtra;
 					session.addPoints(killer, points);
 					if(points > 1) addon = "s";
 					deathMessage.put(victim, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§okilled §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+backstabAddon+" §7(§a+"+points+" Point"+addon+"§7)");
@@ -84,7 +84,7 @@ public class DeathListener implements Listener {
 				}
 
 				if (streakedPlayers.get(victim) == null) streakedPlayers.put(victim, 0);
-				if (streakedPlayers.get(victim) >= session.getIntMod(Mod.MIN_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
+				if (streakedPlayers.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
 				victim.damage(100);
 				new BukkitRunnable() {
 					@Override
@@ -127,17 +127,17 @@ public class DeathListener implements Listener {
 		if(session == null) return;
 		if(streakedPlayers.get(p) == null) streakedPlayers.put(p, 0);
 		streakedPlayers.put(p, streakedPlayers.get(p)+1);
-		if(streakedPlayers.get(p) >= session.getIntMod(Mod.MIN_KILLS_FOR_STREAK)) {
+		if(streakedPlayers.get(p) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) {
 			int streak = streakedPlayers.get(p);
 			String pName = session.getPlayerColor(p).getChatColor()+p.getName();
 			String pAddon = "";
-			if(session.getIntMod(Mod.STREAK_EXTRA) > 1) pAddon = "s";
+			if(session.getIntMod(Mod.STREAK_EXTRA_POINTS) > 1) pAddon = "s";
 			for(Player ap : session.getPlayers()) {
 				ap.sendMessage("§e——————————————————");
-				ap.sendMessage(pName+" §dHas a streak of §a"+streak+"§d! §7(§a+"+session.getIntMod(Mod.STREAK_EXTRA)+" extra Point"+pAddon+"§7)");
+				ap.sendMessage(pName+" §dHas a streak of §a"+streak+"§d! §7(§a+"+session.getIntMod(Mod.STREAK_EXTRA_POINTS)+" extra Point"+pAddon+"§7)");
 				ap.sendMessage("§e——————————————————"); 
 			}
-			session.addPoints(p, session.getIntMod(Mod.STREAK_EXTRA));
+			session.addPoints(p, session.getIntMod(Mod.STREAK_EXTRA_POINTS));
 		}
 	}
 	public static void streakShutdown(Player killer, Player victim) {
@@ -145,13 +145,13 @@ public class DeathListener implements Listener {
 		if(session == null) return;
 		streakedPlayers.put(victim, 0);
 		String pAddon = "";
-		if(session.getIntMod(Mod.STREAK_SHUTDOWN) > 1) pAddon = "s";
+		if(session.getIntMod(Mod.STREAK_SHUTDOWN_EXTRA_POINTS) > 1) pAddon = "s";
 		for(Player ap : session.getPlayers()) {
 			ap.sendMessage("§e——————————————————");
-			ap.sendMessage(session.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the streak of "+session.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+session.getIntMod(Mod.STREAK_EXTRA)+" extra Point"+pAddon+"§7)");
+			ap.sendMessage(session.getPlayerColor(killer).getChatColor()+killer.getName()+" §dended the streak of "+session.getPlayerColor(victim).getChatColor()+victim.getName()+"§d! §7(§a+"+session.getIntMod(Mod.STREAK_EXTRA_POINTS)+" extra Point"+pAddon+"§7)");
 			ap.sendMessage("§e——————————————————");
 		}
-		session.addPoints(killer, session.getIntMod(Mod.STREAK_SHUTDOWN));
+		session.addPoints(killer, session.getIntMod(Mod.STREAK_SHUTDOWN_EXTRA_POINTS));
 	}
 	
 }

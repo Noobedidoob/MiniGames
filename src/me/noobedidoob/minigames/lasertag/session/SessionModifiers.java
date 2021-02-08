@@ -2,6 +2,8 @@ package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.HashMap;
 
+import me.noobedidoob.minigames.main.Minigames;
+
 public class SessionModifiers {
 	
 	public SessionModifiers() {
@@ -43,7 +45,7 @@ public class SessionModifiers {
     }
     
     public void set(Mod m, Object value) {
-    	if(value.getClass() == m.getOg().getClass()) {
+    	if(value.getClass() == m.getOg().getClass() | (value instanceof Integer && m.getOg() instanceof Double)) {
         	modValues.put(m, value);
     	} else {
     		System.out.println("Error at setting mod! Value types are not the same!");
@@ -55,22 +57,22 @@ public class SessionModifiers {
     
 	public enum Mod{
 		POINTS(1, "Normal amount of points a player gets"),
-		SNIPER_SHOT_EXTRA(1, "Extra points when killing with snipe-shot"),
-		NORMAL_SHOT_EXTRA(0, "Extra points when a player shot normal"),
-		BACKSTAB_EXTRA(0, "Extra points when backstabbing"),
-		PVP_EXTRA(0, "Extra ponts when killed at melee"),
-		HEADSHOT_EXTRA(1, "Extra ponts when killing with headshot"),
-		STREAK_EXTRA(2, "Extra points when having a streak"),
-		MULTIKILLS_EXTRA(2, "Extra points when killing multiple players at once"),
+		NORMAL_KILL_EXTRA_POINTS(0, "Extra points when a player shot normal"),
+		SNIPER_KILL_EXTRA_POINTS(1, "Extra points when killing with snipe-shot"),
+		HEADSHOT_EXTRA_POINTS(1, "Extra ponts when killing with headshot"),
+		BACKSTAB_EXTRA_POINTS(0, "Extra points when backstabbing"),
+		PVP_KILL_EXTRA_POINTS(0, "Extra ponts when killed at melee"),
+		STREAK_EXTRA_POINTS(2, "Extra points when having a streak"),
+		STREAK_SHUTDOWN_EXTRA_POINTS(2, "Extra points when shutting down a streak"),
+		MULTIKILLS_EXTRA_POINTS(2, "Extra points when killing multiple players at once"),
 		
 		MINIMAL_SNIPE_DISTANCE(30, "Minimal distance of a shot to be a sniper shot"),
 		
-		STREAK_SHUTDOWN(2, "Extra points when shutting down a streak"),
-		MIN_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
+		MINIMAL_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
 		
 		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
 		
-		WIDTH_ADDON(0d, "Addon to a players hitbox width"),
+		WIDTH_ADDON(0D, "ADDON TO A PLAYERS HITBOX WIDTH"),
 		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
 		
 		SHOOT_THROUGH_BLOCKS(false, "Shoot through blocks"),
@@ -130,7 +132,14 @@ public class SessionModifiers {
 			}
         }
         
-        
+        public void setOgValue(Object value) {
+        	if(value == null) return;
+        	if(value.getClass() == this.getOg().getClass() | (value instanceof Integer && ogValue instanceof Double)) {
+            	ogValue = value;
+        	} else {
+        		System.out.println("Error at setting mod! Value types are not the same!");
+        	}
+        }
         
         
         public String getDescription() {
@@ -145,6 +154,14 @@ public class SessionModifiers {
         		if(m.name().equalsIgnoreCase(name.replace(" ", ""))) return m;
         	}
         	return null;
+        }
+        
+        
+        
+        public static void registerMods(Minigames minigames) {
+        	for(Mod m : Mod.values()) {
+				m.setOgValue(minigames.getConfig().get("Lasertag.mods."+m.name().toLowerCase().replace("_", "-")));
+        	}
         }
 	}
 }

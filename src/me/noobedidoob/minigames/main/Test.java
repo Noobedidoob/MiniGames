@@ -21,7 +21,7 @@ public class Test implements CommandExecutor,Listener{
 	
 	
 	public void test(Player p) {
-		
+		BaseSphere.drawPlayerProtectionSphere(p);
 	}
 	
 	HashMap<Player, BaseSphere> playerSphere = new HashMap<>();

@@ -45,4 +45,5 @@ public class PlayerZoomer {
 		p.getInventory().setHelmet(new ItemStack(Material.AIR));
 		isPlayerZoomed.put(p, false);
 	}
+	
 }
