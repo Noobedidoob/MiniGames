@@ -18,7 +18,7 @@ import org.bukkit.event.Listener;
 //import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 //import me.libraryaddict.disguise.disguisetypes.MobDisguise;
 //import me.libraryaddict.disguise.disguisetypes.PlayerDisguise;
-//import me.noobedidoob.minigames.main.Minigames;
+//import me.noobedidoob.minigames.Minigames;
 
 public class Listeners implements Listener {
 

@@ -1,7 +1,7 @@
 name: Minigames 
 version: 4.2.1
 author: Noobedidoob
-main: me.noobedidoob.minigames.main.Minigames
+main: me.noobedidoob.minigames.Minigames
 api-version: 1.16
 
 commands:
@@ -11,8 +11,12 @@ commands:
       aliases: [lt, laser]
    session:
       description: Prefix for all session commands
-      usdage: use '/session' to see all commands
+      usage: use '/session' to see all commands
       aliases: [s, ssn, sss]
+   modifier:
+      description: Prefix for all modifier commands
+      usage: use '/modifier' to see all commands
+      aliases: [mod,mods]
    hideandseek:
       description: Prefix for all HideAndSeek commands
       usage: use '/hideandseek' for all commands

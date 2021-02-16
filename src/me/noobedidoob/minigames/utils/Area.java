@@ -29,13 +29,13 @@ public class Area {
 	
 	public Area(Coordinate coord1, Coordinate coord2) {
 		super();
-		this.maxX = coord2.getX();
-		this.minX = coord1.getX();
-		this.maxY = coord2.getY();
-		this.minY = coord1.getY();
-		this.maxZ = coord2.getZ();
-		this.minZ = coord1.getZ();
-		
+		this.maxX = coord2.getBlockX();
+		this.minX = coord1.getBlockX();
+		this.maxY = coord2.getBlockY();
+		this.minY = coord1.getBlockY();
+		this.maxZ = coord2.getBlockZ();
+		this.minZ = coord1.getBlockZ();
+
 		this.coord1 = coord1;
 		this.coord2 = coord2;
 	}

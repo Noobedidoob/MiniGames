@@ -1,47 +1,54 @@
 package me.noobedidoob.minigames.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import me.noobedidoob.minigames.lasertag.session.Session;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Map {
 	
-	public static List<Map> maps = new ArrayList<Map>(); 
+	public static List<Map> MAPS = new ArrayList<>();
 	
 	private String name;
 	
-	private Coordinate centerCoord;
-	private Area area;
+	private final Coordinate centerCoord;
+	private final Area area;
 	
-	private World world;
+	private final World world;
 	
-	private boolean randomSpawn = false;
-	private boolean baseSpawn = false;
+	private boolean randomSpawn;
+	private boolean baseSpawn;
+	private boolean captureTheFlag;
 	
 	private int baseAmount = 0;
 	
-	private HashMap<LasertagColor, Coordinate> teamSpawCoords = new HashMap<LasertagColor, Coordinate>();
-	private HashMap<LasertagColor, Boolean> hasColor = new HashMap<LasertagColor, Boolean>();
-	public List<Coordinate> baseCoords = new ArrayList<Coordinate>();
-	public HashMap<Coordinate, LasertagColor> baseColor = new HashMap<Coordinate, LasertagColor>();
-	public HashMap<LasertagColor, BaseSphere> baseSphere = new HashMap<LasertagColor, BaseSphere>();
+	private final HashMap<LasertagColor, Coordinate> teamSpawnCoords = new HashMap<>();
+	private final HashMap<LasertagColor, Boolean> hasColor = new HashMap<>();
+	private final List<Coordinate> baseCoords = new ArrayList<>();
+	private final HashMap<Coordinate, LasertagColor> baseColor = new HashMap<>();
+	private final HashMap<LasertagColor, BaseSphere> baseSphere = new HashMap<>();
+	private final HashMap<LasertagColor, Coordinate> baseFlagCoord = new HashMap<>();
+	private final HashMap<LasertagColor, Flag> baseFlag = new HashMap<>();
 	
 	private int protectionRaduis;
 	
-	public Map(String name, Coordinate centerCoordinate, Area area, /*Area gatherArea, */ World world) {
-		maps.add(this);
+	public Map(String name, Coordinate centerCoordinate, Area area,World world) {
+		MAPS.add(this);
 		this.name = name.substring(0, 1).toUpperCase()+name.substring(1);
 		this.centerCoord = centerCoordinate;
 		this.area = area;
 		this.world = world;
-		
 		for(LasertagColor color : LasertagColor.values()) hasColor.put(color, false);
+		
+		NAME_MAPS.put(name.toLowerCase(), this);
 	}
 	
 	
@@ -57,23 +64,33 @@ public class Map {
 	
 	
 
-	public void withRandomSpawn(boolean value) {
+	public void setWithRandomSpawn(boolean value) {
 		this.randomSpawn = value;
 	}
 	public boolean withRandomSpawn() {
 		return this.randomSpawn;
 	}
 
-
-	public void withBaseSpawn(boolean value) {
+	public void setWithBaseSpawn(boolean value) {
 		this.baseSpawn = value;
 	}
 	public boolean withBaseSpawn() {
 		return this.baseSpawn;
 	}
-	
-	public void setTeamSpawnCoords(LasertagColor color, Coordinate coordinate) {
-		this.teamSpawCoords.put(color, coordinate);
+
+	public void setWithCaptureTheFlag(boolean ctf){
+		this.captureTheFlag = ctf;
+	}
+	public boolean withCaptureTheFlag(){
+		return captureTheFlag;
+	}
+
+	public void setTeamSpawnCoords(LasertagColor color, Coordinate coordinate, Coordinate flagCoord) {
+		this.teamSpawnCoords.put(color, coordinate);
+        if(captureTheFlag && flagCoord != null) {
+        	baseFlag.put(color,new Flag(flagCoord,color));
+        	baseFlagCoord.put(color,flagCoord);
+		}
 		this.hasColor.put(color, true);
 		int amount = 0;
 		for(LasertagColor c : LasertagColor.values()) {
@@ -85,13 +102,13 @@ public class Map {
 		baseColor.put(coordinate, color);
 	}
 	public Coordinate[] getBaseCoords() {
-		return baseCoords.toArray(new Coordinate[baseCoords.size()]);
+		return baseCoords.toArray(new Coordinate[0]);
 	}
 	public boolean hasColor(LasertagColor color) {
 		return this.hasColor.get(color);
 	}
 	public Coordinate getTeamSpawnCoord(LasertagColor color) {
-		if(hasColor(color)) return teamSpawCoords.get(color);
+		if(hasColor(color)) return teamSpawnCoords.get(color);
 		else return centerCoord;
 	}
 	public void drawBaseSphere(LasertagColor color, Player... players) {
@@ -100,8 +117,25 @@ public class Map {
 	public int getBaseAmount() {
 		return this.baseAmount;
 	}
-	
-	
+
+
+	public LasertagColor getBaseColor(Coordinate baseCoord) {
+		return baseColor.get(baseCoord);
+	}
+	public BaseSphere getBaseSphere(LasertagColor color) {
+		return baseSphere.get(color);
+	}
+	public Flag getBaseFlag(LasertagColor color) {
+		return baseFlag.get(color);
+	}
+
+	public Coordinate getBaseFlagCoord(LasertagColor color){
+		if (captureTheFlag) {
+			return baseFlagCoord.get(color);
+		}
+		return null;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -122,7 +156,12 @@ public class Map {
 		}
 	}
 
-
+    public Coordinate getBaseCoord(LasertagColor color){
+	    for(Coordinate coordinate : baseCoords){
+	        if(baseColor.get(coordinate) == color) return coordinate;
+        }
+	    return null;
+    }
 
 	public Location getRandomSpawnLocation() {
 		int x = (int) (Math.random()*(((area.getMaxX()-1)-(area.getMinX()+1))+1))+area.getMinX();
@@ -135,8 +174,8 @@ public class Map {
 	
 	
 	public Location getTeamSpawnLoc(LasertagColor color) {
-		if(hasColor(color)) return teamSpawCoords.get(color).getLocation(world);
-		else return centerCoord.getLocation(world);
+		if(hasColor(color)) return teamSpawnCoords.get(color).getLocation();
+		else return centerCoord.getLocation();
 	}
 	
 	
@@ -155,5 +194,63 @@ public class Map {
 	public boolean isEnabled() {
 		return enabled;
 	}
+
+
+	public void enableCTF(Session session){
+		if(captureTheFlag) baseFlag.forEach((lasertagColor, flag) -> flag.enable(session));
+	}
+	public void disableCTF(){
+		if(captureTheFlag) baseFlag.forEach((lasertagColor, flag) -> flag.disable());
+	}
+
 	
+	private static final HashMap<String, Map> NAME_MAPS = new HashMap<>();
+	public static Map getMapByName(String name) {
+		return NAME_MAPS.get(name.toLowerCase());
+	}
+
+
+	public boolean checkLocPlayerShootingFrom(Player p){
+		Session session = Session.getPlayerSession(p); if(session == null) return true;
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return false;
+		for(Coordinate coord : baseCoords){
+			if(baseCoords.indexOf(coord) < baseAmount && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+				baseSphere.get(baseColor.get(coord)).draw(p);
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
+				return true;
+			}
+		}
+		return false;
+	}
+	public boolean checkPlayerLaserLoc(Location loc, Player p){
+		Session session = Session.getPlayerSession(p); if(session == null) return true;
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return false;
+		for(Coordinate coord : baseCoords){
+			if(baseCoords.indexOf(coord) < baseAmount && loc.distance(coord.getLocation()) < protectionRaduis){
+				baseSphere.get(baseColor.get(coord)).draw(p);
+				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private final HashMap<Player, Boolean> playerCoolingDownFromDamage = new HashMap<>();
+	public void checkPlayerPosition(Player p){
+		Session session = Session.getPlayerSession(p); if(session == null) return;
+		if(session.withCaptureTheFlag()) return;
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return;
+		playerCoolingDownFromDamage.putIfAbsent(p,false);
+		if(playerCoolingDownFromDamage.get(p)){
+			for(Coordinate coord : baseCoords){
+				if(baseCoords.indexOf(coord) < baseAmount && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+					baseSphere.get(baseColor.get(coord)).draw(p);
+					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+					playerCoolingDownFromDamage.put(p,true);
+					Utils.runLater(()->playerCoolingDownFromDamage.put(p,false), 25);
+					return;
+				}
+			}
+		}
+	}
 }

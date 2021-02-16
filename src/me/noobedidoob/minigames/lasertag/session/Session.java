@@ -1,9 +1,6 @@
 package me.noobedidoob.minigames.lasertag.session;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -18,10 +15,10 @@ import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.Map;
-import me.noobedidoob.minigames.utils.MgUtils;
-import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Utils;
+import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 import me.noobedidoob.minigames.utils.Pair;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -30,7 +27,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 public class Session implements Listener{
 	
-	public static SessionInventorys sessionInventorys = new SessionInventorys();
 	public SessionScoreboard scoreboard;
 	public SessionRound round;
 	public SessionModifiers modifiers;
@@ -38,10 +34,11 @@ public class Session implements Listener{
 	private Player owner;
 	private String code;
 	
-
-	public Session(Player owner, boolean solo) {
+	public final Minigames minigames;
+	public Session(Minigames minigames, Player owner, boolean solo) {
+		this.minigames = minigames;
 		scoreboard = new SessionScoreboard(this);
-		round = new SessionRound(this, scoreboard);
+		round = new SessionRound(this);
 		modifiers = new SessionModifiers();
 		
 		this.solo = solo;
@@ -50,17 +47,18 @@ public class Session implements Listener{
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
-		codeSession.put(code, this);
+		CODE_SESSION.put(code, this);
 		
-		SessionInventorys.openTimeInv(owner);
-		sessions.add(this);
+		SessionInventories.openTimeInv(owner);
+		SESSIONS.add(this);
 		
-		for(Map m : Map.maps) mapVotes.put(m, 0);
+		for(Map m : Map.MAPS) mapVotes.put(m, 0);
 		
 	}
-	public Session(Player owner, int teamsAmount) {
+	public Session(Minigames minigames, Player owner, int teamsAmount) {
+		this.minigames = minigames;
 		scoreboard = new SessionScoreboard(this);
-		round = new SessionRound(this, scoreboard);
+		round = new SessionRound(this);
 		modifiers = new SessionModifiers();
 		
 		this.owner = owner;
@@ -77,12 +75,12 @@ public class Session implements Listener{
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
-		codeSession.put(code, this);
+		CODE_SESSION.put(code, this);
 		
-		SessionInventorys.openTimeInv(owner);
-		sessions.add(this);
+		SessionInventories.openTimeInv(owner);
+		SESSIONS.add(this);
 		
-		for(Map m : Map.maps) mapVotes.put(m, 0);
+		for(Map m : Map.MAPS) mapVotes.put(m, 0);
 	}
 	
 	
@@ -93,35 +91,21 @@ public class Session implements Listener{
 				if(!countdown) round.start();
 				else {
 					for(Player p : players) p.sendTitle("§aStarting Lasetag in §d5","§eMap: §b"+map.getName(),5,30,5);
-					Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-						@Override
-						public void run() {
-							for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(), 0,30,5);
-							Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-								@Override
-								public void run() {
-									for(Player p : players) p.sendTitle("§aStarting Lasetag in §d3","§eMap: §b"+map.getName(),0,30,5);
-									Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-										@Override
-										public void run() {
-											for(Player p : players) p.sendTitle("§aStarting Lasetag in §d2","§eMap: §b"+map.getName(),0,30,5);
-											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-												@Override
-												public void run() {
-													for(Player p : players) p.sendTitle("§aStarting Lasetag in §d1","§eMap: §b"+map.getName(),0,20,5);
-													Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-														@Override
-														public void run() {
-															round.start();
-														}
-													}, 20);
-												}
-											}, 20);
-										}
-									}, 20);
-								}
+					Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+						for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(), 0,30,5);
+						Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+							for (Player p : players)
+								p.sendTitle("§aStarting Lasetag in §d3", "§eMap: §b" + map.getName(), 0, 30, 5);
+							Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+								for (Player p : players)
+									p.sendTitle("§aStarting Lasetag in §d2", "§eMap: §b" + map.getName(), 0, 30, 5);
+								Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+									for (Player p : players)
+										p.sendTitle("§aStarting Lasetag in §d1", "§eMap: §b" + map.getName(), 0, 20, 5);
+									Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> round.start(), 20);
+								}, 20);
 							}, 20);
-						}
+						}, 20);
 					}, 20);
 				}
 			}
@@ -133,7 +117,7 @@ public class Session implements Listener{
 		justStopped = true;
 		if (external) {
 			if (round.tagging()) {
-				round.stop(external);
+				round.stop(true);
 			} 
 		}
 		map.setUsed(false);
@@ -146,26 +130,24 @@ public class Session implements Listener{
 		for(Player p : players) {
 			hasPlayerVoted.put(p, false);
 		}
-		for(Map m : Map.maps) {
+		for(Map m : Map.MAPS) {
 			mapVotes.put(m, 0);
 		}
 		
 		this.time = 5*60;
 		setTime(ogTime, TimeFormat.SECONDS, false);
 		
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-			@Override
-			public void run() {
-				try {
-					for (Player p : players) {
-						playerPoints.put(p, 0);
-					} 
-					for (SessionTeam t : teams) {
-						t.setPoints(0);
-					} 
-					refreshScoreboard();
-				} catch (Exception e) {
+		Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+			try {
+				for (Player p : players) {
+					playerPoints.put(p, 0);
 				}
+				for (SessionTeam t : teams) {
+					t.setPoints(0);
+				}
+				refreshScoreboard();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}, 20*10);
 		
@@ -174,31 +156,28 @@ public class Session implements Listener{
 			public void run() {
 				justStopped = false;
 			}
-		}.runTaskLater(Minigames.minigames, 20*5);
+		}.runTaskLater(minigames, 20*5);
 		
 		if(closeSession) close();
 	}
 	public void close() {
 		if(tagging()) stop(true, false);
-		Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-			@Override
-			public void run() {
-				for(Player p : players) {
-					DeathListener.streakedPlayers.put(p, 0);
-					setPlayerSession(p, null);
-					playerSession.put(p, null);
-					p.getInventory().clear();
-					removePlayer(p);
-				}
-				removePlayerSessinos();
-				modifiers.reset();
-				codeSession.put(code, null);
-				players = null;
-				owner = null;
-				admins = null;
-				removeThisSession();
-				System.out.println("Closed the session from "+code);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+			for(Player p : players) {
+				DeathListener.resetPlayerStreak(p);
+				setPlayerSession(p, null);
+				PLAYER_SESSION.put(p, null);
+				p.getInventory().clear();
+				removePlayer(p);
 			}
+			removePlayerSessinos();
+			modifiers.reset();
+			CODE_SESSION.put(code, null);
+			players = null;
+			owner = null;
+			admins = null;
+			removeThisSession();
+			Minigames.inform("Closed the session from "+code);
 		}, 20);
 	}
 	
@@ -221,7 +200,7 @@ public class Session implements Listener{
 	public enum MapState{
 		SET,
 		VOTING,
-		NULL;
+		NULL
 	}
 	
 	private Map map;
@@ -230,7 +209,7 @@ public class Session implements Listener{
 		if(m == null) {
 			mapState = MapState.VOTING;
 			broadcast("§aMap vote enabled! You can vote the map for this round!");
-			for(Map am : Map.maps) {
+			for(Map am : Map.MAPS) {
 				mapVotes.put(am, 0);
 			}
 			for(Player p : players) {
@@ -256,9 +235,10 @@ public class Session implements Listener{
 		return mapState == MapState.NULL;
 	}
 
-	public HashMap<Map, Integer> mapVotes = new HashMap<Map, Integer>();
-	public HashMap<Player, Boolean> hasPlayerVoted = new HashMap<Player, Boolean>();
+	public HashMap<Map, Integer> mapVotes = new HashMap<>();
+	public HashMap<Player, Boolean> hasPlayerVoted = new HashMap<>();
 	public void playerVoteMap(Player p, Map m) {
+		hasPlayerVoted.putIfAbsent(p,false);
 		if(!hasPlayerVoted.get(p)) {
 			hasPlayerVoted.put(p, true);
 			mapVotes.put(m, mapVotes.get(m)+1);
@@ -271,10 +251,10 @@ public class Session implements Listener{
 	private boolean setSessionMap() {
 		if(mapState == MapState.VOTING) {
 			votedBefore = true;
-			Map m = Map.maps.get(0);
+			Map m = Map.MAPS.get(0);
 			if(map != null) m = map;
-			int maxVote = mapVotes.get(Map.maps.get(0));
-			for(Map am : Map.maps) {
+			int maxVote = mapVotes.get(Map.MAPS.get(0));
+			for(Map am : Map.MAPS) {
 				if(maxVote < mapVotes.get(am)) {
 					maxVote = mapVotes.get(am);
 					m = am;
@@ -283,19 +263,20 @@ public class Session implements Listener{
 			this.map = m;
 			
 			if(!isMapPlayable(map)) {
-				broadcast("§cThe map §6"+map.getName()+" §cis not playable. Please set the map again!");
-				for(Map am : Map.maps) {
+				broadcast("§cThe map §6"+map.getName()+" §cis not playable!");
+				for(Map am : Map.MAPS) {
 					mapVotes.put(am, 0);
 					refreshScoreboard();
 				}
 				return false;
 			}
 			if(m.isUsed()) {
-				broadcast("§cThis map is currently in use! Please try again later or choose another map!");
+				broadcast("§cThe map §6"+map.getName()+" §c currently in use!");
 				return false;
 			}
 			
 			broadcast("§ePlaying with in the map §b"+map.getName());
+			map.enableCTF(this);
 			map.setUsed(true);
 			mapState = MapState.SET;
 			refreshScoreboard();
@@ -307,13 +288,13 @@ public class Session implements Listener{
 					sendMessage(a, "§cAn error occured while setting the map! Please try again or choose another map!");
 				}
 			}
-			for(Map am : Map.maps) {
+			for(Map am : Map.MAPS) {
 				mapVotes.put(am, 0);
 				refreshScoreboard();
 			}
 			mapState = MapState.NULL;
 			refreshScoreboard();
-			SessionInventorys.openMapInv(owner);
+			SessionInventories.openMapInv(owner);
 			return false;
 		} else if(map.isUsed()) {
 			for(Player a : admins) {
@@ -325,8 +306,8 @@ public class Session implements Listener{
 	}
 	public boolean isMapPlayable(Map m) {
 		if(solo && !m.withRandomSpawn() && players.size() > m.getBaseAmount()) return false;
-		if(!solo && !m.withRandomSpawn() && teamsAmount > m.getBaseAmount()) return false;
-		return true;
+		if(withCaptureTheFlag && !m.withCaptureTheFlag()) return false;
+		return solo || m.withRandomSpawn() || teamsAmount <= m.getBaseAmount();
 	}
 	
 	
@@ -351,8 +332,8 @@ public class Session implements Listener{
 		timeSet = true;
 		scoreboard.refresh();
 		if(announce) {
-			if(format == TimeFormat.HOURS) broadcast("§aSession time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "h")+" §ehours");
-			else if(format == TimeFormat.MINUTES) broadcast("§aRound time was set to §b"+MgUtils.getTimeFormatFromLong(this.time, "m")+" §eminutes");
+			if(format == TimeFormat.HOURS) broadcast("§aSession time was set to §b"+Utils.getTimeFormatFromLong(this.time, "h")+" §ehours");
+			else if(format == TimeFormat.MINUTES) broadcast("§aRound time was set to §b"+Utils.getTimeFormatFromLong(this.time, "m")+" §eminutes");
 			else broadcast("§aRound time was set to §b"+this.time+" §eseconds");
 		}
 	}
@@ -374,7 +355,7 @@ public class Session implements Listener{
 	
 	
 
-	public List<Player> bannedPlayers = new ArrayList<Player>();
+	public List<Player> bannedPlayers = new ArrayList<>();
 	@SuppressWarnings("deprecation")
 	public void sendInvitation(Player p) {
 		sendMessage(p, "§eYou've been invited to the session of §b"+owner.getName());
@@ -385,7 +366,7 @@ public class Session implements Listener{
 		linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Join the session of "+owner.getName()).create()));
 		
 		p.spigot().sendMessage(linkMsg);
-		if(bannedPlayers.contains(p)) bannedPlayers.remove(p);
+		bannedPlayers.remove(p);
 	}
 	public boolean isPlayerBanned(Player p) {
 		return bannedPlayers.contains(p);
@@ -394,10 +375,9 @@ public class Session implements Listener{
 
 	
 
-	private ArrayList<Player> admins = new ArrayList<Player>();
+	private ArrayList<Player> admins = new ArrayList<>();
 	public boolean isAdmin(Player p) {
-		if(admins.contains(p)) return true;
-		return false;
+		return admins.contains(p);
 	}
 	public Player getOwner() {
 		return owner;
@@ -415,24 +395,47 @@ public class Session implements Listener{
 		}
 	}
 	public Player[] getAdmins() {
-		return admins.toArray(new Player[admins.size()]);
+		return admins.toArray(new Player[0]);
 	}
 	
 	
 	
 	
-	
-	
+	private boolean withCaptureTheFlag = false;
+	public void setWithCaptureTheFlag(boolean ctf){
+		if (withCaptureTheFlag != ctf) {
+			withCaptureTheFlag = ctf;
+			broadcast(((ctf)?"§aEnabled":"§rDisabled")+" §bcapture the flag mode!");
+			if(ctf){
+				if(mapState == MapState.SET && !map.withCaptureTheFlag()) {
+					map = null;
+					SessionInventories.openMapInv(owner);
+				} else if(mapState == MapState.VOTING){
+					mapVotes.clear();
+					hasPlayerVoted.forEach((player, map1) -> {
+						sendMessage(player, "§rPlease re-vote your map!");
+						hasPlayerVoted.put(player,false);
+					});
+					refreshScoreboard();
+				}
+			}
+		}
+	}
+	public boolean withCaptureTheFlag(){
+		return withCaptureTheFlag;
+	}
 	
 	
 	
 	
 
-	private HashMap<Player, Integer> playerPoints = new HashMap<Player, Integer>();
-	private HashMap<Player, LasertagColor> playerColor = new HashMap<Player, LasertagColor>();
+	private final HashMap<Player, Integer> playerPoints = new HashMap<>();
+	private final HashMap<Player, LasertagColor> playerColor = new HashMap<>();
 	public void setPlayerColor(Player p, LasertagColor color) {
 		playerColor.put(p, color);
-		try { scoreboard.board.getTeam(color.name()).unregister(); } catch (NullPointerException e) { 	}
+		if(scoreboard.board.getTeam(color.name()) != null) {
+			Objects.requireNonNull(scoreboard.board.getTeam(color.name())).unregister();
+		}
 		Team t = scoreboard.board.registerNewTeam(color.name());
 		t.setColor(color.getChatColor());
 		t.addEntry(p.getName());
@@ -447,7 +450,7 @@ public class Session implements Listener{
 				int ordinal = players.indexOf(p);
 				if (ordinal > LasertagColor.values().length - 1) ordinal -= LasertagColor.values().length;
 				playerColor.put(p, LasertagColor.values()[ordinal]);
-				try { scoreboard.board.getTeam(LasertagColor.values()[ordinal].name()).unregister(); } catch (NullPointerException e) { 	}
+				if(scoreboard.board.getTeam(LasertagColor.values()[ordinal].name()) != null) Objects.requireNonNull(scoreboard.board.getTeam(LasertagColor.values()[ordinal].name())).unregister();
 				Team t = scoreboard.board.registerNewTeam(LasertagColor.values()[ordinal].name());
 				t.setColor(LasertagColor.values()[ordinal].getChatColor());
 				t.addEntry(p.getName());
@@ -462,9 +465,9 @@ public class Session implements Listener{
 		playerPoints.put(p, playerPoints.get(p)+points);
 		if(!solo) getPlayerTeam(p).addPoints(points);
 	}
-	private List<Player> players = new ArrayList<Player>();
+	private List<Player> players = new ArrayList<>();
 	public Player[] getPlayers() {
-		return this.players.toArray(new Player[this.players.size()]);
+		return this.players.toArray(new Player[0]);
 	}
 	public boolean isInSession(Player p) {
 		return players.contains(p);
@@ -488,7 +491,7 @@ public class Session implements Listener{
 		
 		refreshScoreboard();
 		
-		if(withMultiWeapons) SessionInventorys.openSecondaryWeaponChooserInv(p);
+		if(withMultiWeapons) Utils.runLater(()->SessionInventories.openSecondaryWeaponChooserInv(p), 20);
 	}
 	public void banPlayer(Player p, Player admin) {
 		bannedPlayers.add(p);
@@ -502,7 +505,7 @@ public class Session implements Listener{
 		sendMessage(p, "§cYou left the session!");
 	}
 	public void removePlayer(Player p) {
-		try {if(isSolo()) {scoreboard.board.getTeam(getPlayerColor(p).name()).unregister();}} catch (NullPointerException e) {}
+		if(isSolo() && scoreboard.board.getTeam(getPlayerColor(p).name()) != null) Objects.requireNonNull(scoreboard.board.getTeam(getPlayerColor(p).name())).unregister();
 		p.getInventory().clear();
 		Lasertag.setPlayersLobbyInv(p);
 		try {
@@ -511,26 +514,24 @@ public class Session implements Listener{
 			e.printStackTrace();
 		}
 		players.remove(p);
-		if(admins.contains(p)) admins.remove(p);
+		admins.remove(p);
 		if(p == owner) {
 			if(players.size() == 0) {
 				close();
 			} else if(admins.size() == 0) {
-				for(Player ap : players) {
-					admins.add(ap);
-				}
-				codeSession.put(code, null);
+				admins.addAll(players);
+				CODE_SESSION.put(code, null);
 				owner = admins.get(0);
 				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
-				codeSession.put(code, this);
+				CODE_SESSION.put(code, this);
 				setPlayerInv(owner);
 			} else {
-				codeSession.put(code, null);
+				CODE_SESSION.put(code, null);
 				owner = admins.get(0);
 				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
-				codeSession.put(code, this);
+				CODE_SESSION.put(code, this);
 				setPlayerInv(owner);
 			}
 		}
@@ -557,7 +558,7 @@ public class Session implements Listener{
 				}
 			}
 		}
-		try { p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard()); } catch (NullPointerException e) { }
+		try { p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard()); } catch (NullPointerException e) { }
 		scoreboard.refresh();
 		setPlayerSession(p, null);
 		Lasertag.setPlayersLobbyInv(p);
@@ -568,7 +569,7 @@ public class Session implements Listener{
 //		}
 	}
 	
-	public HashMap<UUID, Pair> disconnectedPlayers = new HashMap<UUID, Pair>();
+	public HashMap<UUID, Pair> disconnectedPlayers = new HashMap<>();
 	public void disconnectPlayer(Player p) {
 		broadcast("§e"+p.getName()+" §cdisconnected!", p);
 		int points = 0;
@@ -582,7 +583,7 @@ public class Session implements Listener{
 			LasertagColor color = (LasertagColor) disconnectedPlayers.get(p.getUniqueId()).get1();
 			int points = (int) disconnectedPlayers.get(p.getUniqueId()).get2();
 			disconnectedPlayers.put(p.getUniqueId(), null);
-			playerSession.put(p, this);
+			PLAYER_SESSION.put(p, this);
 			
 			players.add(p);
 			playerPoints.put(p, points);
@@ -602,15 +603,15 @@ public class Session implements Listener{
 					broadcast("§b"+p.getName()+" §aReturned to the session!", p);
 					sendMessage(p, "§aWelcome back, §b"+p.getName()+"§r§a!");
 				}
-			}.runTaskLater(Minigames.minigames, 10);
+			}.runTaskLater(minigames, 10);
 			
 		}
 	}
 
 	
 	
-	private List<SessionTeam> teams = new ArrayList<SessionTeam>();
-	public List<Player> hasTeamChooseInvOpen = new ArrayList<Player>();
+	private List<SessionTeam> teams = new ArrayList<>();
+	public List<Player> hasTeamChooseInvOpen = new ArrayList<>();
 	private int teamsAmount;
 	
 	public void addTeam(LasertagColor color, Player... players) {
@@ -627,7 +628,7 @@ public class Session implements Listener{
 		if (getPlayerTeam(p) != team) {
 			if(getPlayerTeam(p) != null) getPlayerTeam(p).removePlayer(p);
 			team.addPlayer(p);
-			playerColor.put(p, team.getColorName());
+			playerColor.put(p, team.getLasertagColor());
 			refreshScoreboard();
 //			round.refreshPlayerTeams();
 		}
@@ -644,10 +645,10 @@ public class Session implements Listener{
 		addPlayerToTeam(p, sTeam);
 	}
 	public SessionTeam[] getTeams(){
-		return teams.toArray(new SessionTeam[teams.size()]);
+		return teams.toArray(new SessionTeam[0]);
 	}
 	public LasertagColor getTeamColor(SessionTeam team) {
-		return team.getColorName();
+		return team.getLasertagColor();
 	}
 	public int getTeamPoints(SessionTeam team) {
 		return team.getPoints();
@@ -660,7 +661,6 @@ public class Session implements Listener{
 	}
 	private boolean teamAmountSet = false;
 	public void setTeamsAmount(int amount) {
-		System.out.println("Setting teams amount to "+amount);
 		if (round.tagging()) return;
 		if (!teamAmountSet) {
 			teamAmountSet = true;
@@ -679,7 +679,7 @@ public class Session implements Listener{
 							t.removePlayer(p);
 						}
 					}
-					teams = new ArrayList<SessionTeam>();
+					teams = new ArrayList<>();
 					broadcast(" §bUpdated mode to §dsolo!");
 					for(Player p : players) {
 						p.getInventory().clear();
@@ -689,7 +689,7 @@ public class Session implements Listener{
 			} else {
 				if(solo) {
 					solo = false;
-					teams = new ArrayList<SessionTeam>();
+					teams = new ArrayList<>();
 					for (int i = 0; i < amount; i++) {
 						teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
 					}
@@ -704,9 +704,9 @@ public class Session implements Listener{
 						addTeam(LasertagColor.values()[i]);
 					}
 				} else if(amount < teamsAmount) {
-					teams = new ArrayList<SessionTeam>();
+					teams = new ArrayList<>();
 					for (int i = 0; i < amount; i++) {
-						if (i == 0) teams.add(new SessionTeam(this, LasertagColor.Red, new Player[] {owner}));
+						if (i == 0) teams.add(new SessionTeam(this, LasertagColor.Red, owner));
 						else teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
 					} 
 					for(Player p : players) {
@@ -740,7 +740,7 @@ public class Session implements Listener{
 	
 	
 	
-	
+
 	public Inventory teamChooseInv = Bukkit.createInventory(null,  9, "§1Choose Team:");
 	
 	
@@ -757,7 +757,11 @@ public class Session implements Listener{
 	public void broadcast(String s, Player... excludedPlayers) {
 		for(Player p : players) {
 			boolean notExcluded = true;
-			for(Player ep : excludedPlayers) if(ep == p) notExcluded = false;
+			for(Player ep : excludedPlayers)
+				if (ep == p) {
+					notExcluded = false;
+					break;
+				}
 			if(notExcluded) sendMessage(p, s);
 		}
 	}
@@ -778,7 +782,7 @@ public class Session implements Listener{
 		}
 	}
 	public void setPlayerWaitingInv(Player p) {
-		SessionInventorys.setPlayerSessionWaitingInv(p);
+		SessionInventories.setPlayerSessionWaitingInv(p);
 	}
 	
 	
@@ -809,18 +813,17 @@ public class Session implements Listener{
     	return withMultiWeapons;
     }
     
-    private HashMap<Player, Boolean> isPlayerReady = new HashMap<Player, Boolean>();
+    private final HashMap<Player, Boolean> isPlayerReady = new HashMap<>();
     public boolean isPlayerReady(Player p) {
-    	if(withMultiWeapons) {
-    		if(isPlayerReady.get(p) == null) isPlayerReady.put(p, false);
-    		return isPlayerReady.get(p);
-    	} else return true;
+    	if(!withMultiWeapons) return true;
+		isPlayerReady.putIfAbsent(p, false);
+		return isPlayerReady.get(p);
     }
     public void setPlayerReady(Player p, boolean ready) {
     	isPlayerReady.put(p, ready);
     }
     public List<Player> getNotReadyPlayers(){
-    	List<Player> list = new ArrayList<Player>();
+    	List<Player> list = new ArrayList<>();
     	for(Player p : players) {
     		if(!isPlayerReady(p)) list.add(p);
     	}
@@ -835,7 +838,7 @@ public class Session implements Listener{
     }
     
     
-    private HashMap<UUID, Weapon> playersSecondaryWeapon = new HashMap<UUID, Weapon>();
+    private final HashMap<UUID, Weapon> playersSecondaryWeapon = new HashMap<>();
     public Weapon getPlayerSecondaryWeapon(Player p) {
     	return playersSecondaryWeapon.get(p.getUniqueId());
     }
@@ -861,13 +864,14 @@ public class Session implements Listener{
         			this.withMultiWeapons = true;
         			for(Player p : players) {
         				setPlayerReady(p, false);
-        				SessionInventorys.openSecondaryWeaponChooserInv(p);
+        				SessionInventories.openSecondaryWeaponChooserInv(p);
         				setPlayerInv(p);
         			}
 				}
-        			
         	} else {
         		this.withMultiWeapons = false;
+        		setAllPlayersInv();
+        		playersSecondaryWeapon.clear();
         	}
     	}
     }
@@ -878,39 +882,42 @@ public class Session implements Listener{
 	
 	
 	public void removePlayerSessinos() {
-		playerSession.forEach((p, s) ->{
-			if(s == this) playerSession.put(p, null);
+		PLAYER_SESSION.forEach((p, s) ->{
+			if(s == this) PLAYER_SESSION.put(p, null);
 		});
 	}
 	public void removeThisSession() {
-		sessions.remove(this);
+		SESSIONS.remove(this);
 	}
 
-	private static HashMap<OfflinePlayer, Session> playerSession = new HashMap<OfflinePlayer, Session>();
+	private static final HashMap<OfflinePlayer, Session> PLAYER_SESSION = new HashMap<>();
 	public static Session getPlayerSession(OfflinePlayer p) {
-		return playerSession.get(p);
+		return PLAYER_SESSION.get(p);
 	}
 	public static void setPlayerSession(OfflinePlayer p, Session s) {
-		playerSession.put(p, s);
+		PLAYER_SESSION.put(p, s);
 	}
 	
 	
-	private static HashMap<String, Session> codeSession = new HashMap<String, Session>();
+	private static final HashMap<String, Session> CODE_SESSION = new HashMap<>();
 	public static Session getSessionFromCode(String code) {
-		return codeSession.get(code);
+		return CODE_SESSION.get(code);
 	}
 	
 	public static void sendMessage(Player p, String s) {
 		p.sendMessage( "§o§7[§6Session§7] §r§a"+s);
 	}
+	public static void sendMessage(String s,Player... players) {
+		for(Player p : players){
+			p.sendMessage( "§o§7[§6Session§7] §r§a"+s);
+		}
+	}
 	
-	private static List<Session> sessions = new ArrayList<Session>();
+	private static final List<Session> SESSIONS = new ArrayList<>();
 	public static void closeAllSessions() {
-		sessions.forEach(s ->{
-			s.close();
-		});
+		SESSIONS.forEach(Session::close);
 	}
 	public static Session[] getAllSessions() {
-		return sessions.toArray(new Session[sessions.size()]);
+		return SESSIONS.toArray(new Session[0]);
 	}
 }

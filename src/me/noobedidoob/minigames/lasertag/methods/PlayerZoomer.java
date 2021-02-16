@@ -10,11 +10,11 @@ import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 
 public class PlayerZoomer {
 	
-	static HashMap<Player, Boolean> isPlayerZoomed = new HashMap<Player, Boolean>();
+	private static HashMap<Player, Boolean> IS_PLAYER_ZOOMED = new HashMap<>();
 	public static void toggleZoom(Player p) {
 		ItemStack visor = new ItemStack(Material.CARVED_PUMPKIN); 
-		if(isPlayerZoomed.get(p) == null) isPlayerZoomed.put(p, false);
-		boolean zoomed = isPlayerZoomed.get(p);
+		if(IS_PLAYER_ZOOMED.get(p) == null) IS_PLAYER_ZOOMED.put(p, false);
+		boolean zoomed = IS_PLAYER_ZOOMED.get(p);
 		if(zoomed) {
 			p.setWalkSpeed(0.2f);
 			p.getInventory().setHelmet(new ItemStack(Material.AIR));
@@ -22,7 +22,7 @@ public class PlayerZoomer {
 			p.setWalkSpeed(-0.5f);
 			p.getInventory().setHelmet(visor);
 		}
-		isPlayerZoomed.put(p, !zoomed);
+		IS_PLAYER_ZOOMED.put(p, !zoomed);
 	}
 	
 	public static void zoomPlayerIn(Player p, Weapon w) {
@@ -38,12 +38,12 @@ public class PlayerZoomer {
 			break;
 		}
 		p.getInventory().setHelmet(visor);
-		isPlayerZoomed.put(p, true);
+		IS_PLAYER_ZOOMED.put(p, true);
 	}
 	public static void zoomPlayerOut(Player p) {
 		p.setWalkSpeed(0.2f);
 		p.getInventory().setHelmet(new ItemStack(Material.AIR));
-		isPlayerZoomed.put(p, false);
+		IS_PLAYER_ZOOMED.put(p, false);
 	}
 	
 }

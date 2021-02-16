@@ -12,7 +12,6 @@ Lasertag:
     streak-extra-points: 2
     streak-shutdown-extra-points: 2
     multikills-extra-points: 2
-    capture-the-flag-points: 2
     minimal-snipe-distance: 30
     sktreak-shutdown-points: 2
     minimal-kills-for-streak: 5
@@ -26,11 +25,11 @@ Lasertag:
     lasergun-multiweapons-cooldown-ticks: 2
     sniper-cooldown-ticks: 100
     shotgun-cooldown-ticks: 40
-    sniper-ammo-before-cooldown: 2
+    sniper-ammo-before-cooldown: 3
     lasergun-normal-damage: 100
     lasergun-multiweapons-damage: 9
     lasergun-pvp-damage: 10
-    shotgun-damage: 11
+    shotgun-damage: 7
     sniper-damage: 100
     stabber-damage: 10
     headshot-multiplikator: 1.5
@@ -74,22 +73,39 @@ Lasertag:
           max: -111
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 252.5
           y: 4
           z: -206.5
+          flag:
+            x: 260
+            y: 4
+            z: -198
         blue:
           x: 345.5
           y: 4
           z: -113.5
+          flag:
+            x: 337
+            y: 4
+            z: -122
         green:
           x: 252.5
           y: 4
           z: -113.5
+          flag:
+            x: 260
+            y: 4
+            z: -122
         yellow:
           x: 345.5
           y: 4
           z: -206.5
+          flag:
+            x: 337
+            y: 4
+            z: -199
         protectionradius: 7
     duel:
       center:
@@ -110,14 +126,23 @@ Lasertag:
           max: -67
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 260.5
           y: 4
           z: -86.5
+          flag:
+            x: 271
+            y: 4
+            z: -87
         blue:
           x: 316.5
           y: 4
           z: -86.5
+          flag:
+            x: 305
+            y: 4
+            z: -87
         protectionradius: 5
     bridges:
       center:
@@ -138,21 +163,30 @@ Lasertag:
           max: -35
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 338.5
           y: 13
           z: -35.5
+          flag:
+            x: 339
+            y: 10
+            z: -42
         blue:
           x: 348.5
           y: 13
           z: -107.5
-        protectionradius: 6
+          flag:
+            x: 348
+            y: 10
+            z: -100
+        protectionradius: 3
     skyhigh:
       center:
         x: 746
-        y: 107
+        y: 101
         z: -410
-        block: spruce_planks
+        block: spruce_slab
       area:
         randomspawn: false
         x:
@@ -162,26 +196,28 @@ Lasertag:
           min: 74
           max: 116
         z:
-          min: -450
+          min: -450x
           max: -370
-      gather:
-        x:
-          max: 755
-          min: 737
-        z:
-          max: -400
-          min: -418
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 814.5
           y: 98
           z: -421.5
+          flag:
+            x: 800
+            y: 87
+            z: -427
         blue:
           x: 678.5
           y: 98
           z: -398.5
-        protectionradius: 15
+          flag:
+            x: 692
+            y: 87
+            z: -393
+        protectionradius: 7
     big8:
       center:
         x: 298
@@ -201,6 +237,7 @@ Lasertag:
           max: -214
       basespawn:
         enabled: true
+        capture-the-flag: false
         red:
           x: 295.5
           y: 4
@@ -253,22 +290,39 @@ Lasertag:
           max: -316
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 323.5
           y: 4
           z: -413.5
+          flag:
+            x: 316
+            y: 4
+            z: -406
         blue:
           x: 228.5
           y: 4
           z: -318.5
+          flag:
+            x: 235
+            y: 4
+            z: -327
         green:
           x: 323.5
           y: 4
           z: -318.5
+          flag:
+            x: 315
+            y: 4
+            z: -326
         yellow:
           x: 228.5
           y: 4
           z: -413.5
+          flag:
+            x: 236
+            y: 4
+            z: -407
         protectionradius: 10
     darkduel:
       center:
@@ -289,14 +343,23 @@ Lasertag:
           max: -316
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 345
           y: 4
           z: -317
+          flag:
+            x: 340
+            y: 4
+            z: -329
         blue:
           x: 345
           y: 4
           z: -364
+          flag:
+            x: 337
+            y: 4
+            z: -354
         protectionradius: 5
     retro:
       center:
@@ -336,12 +399,21 @@ Lasertag:
           max: -106
       basespawn:
         enabled: true
+        capture-the-flag: true
         red:
           x: 150.5
           y: 14
           z: -152,5
+          flag:
+            x: 143
+            y: 9
+            z: -153
         blue:
           x: 69.5
           y: 8
           z: -126.5
+            flag:
+              x: 70
+              y: 6
+              z: -157
         protectionradius: 4

@@ -1,9 +1,6 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -12,17 +9,9 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.PluginManager;
 
-import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
+import me.noobedidoob.minigames.Minigames;
 
 @SuppressWarnings("unused")
 public class JoinQuitListener implements Listener {

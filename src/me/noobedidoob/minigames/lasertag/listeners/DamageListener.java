@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class DamageListener implements Listener {
 	

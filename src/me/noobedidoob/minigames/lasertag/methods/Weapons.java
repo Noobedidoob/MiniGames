@@ -1,59 +1,19 @@
 package me.noobedidoob.minigames.lasertag.methods;
 
-import java.util.HashMap;
-
-import org.bukkit.Bukkit;
+import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 
 public class Weapons {
 
-//	public static ItemStack lasergunItem = new ItemStack(Material.DIAMOND_HOE);
-////	public static ItemStack minigunItem = new ItemStack(Material.DIAMOND_AXE);
-//	public static ItemStack daggerItem = new ItemStack(Material.DIAMOND_SWORD);
-//	public static ItemStack shotgunItem = new ItemStack(Material.DIAMOND_SHOVEL);
-//	public static ItemStack sniperItem = new ItemStack(Material.DIAMOND_PICKAXE);
-//	public static HashMap<Player, Boolean> hasChoosenWeapon = new HashMap<Player, Boolean>();
-	public static void registerWeapons() {
-//		ItemMeta lasergunItemMeta = lasergunItem.getItemMeta();
-//		lasergunItemMeta.setDisplayName("§b§lLasergun");
-//		lasergunItemMeta.setUnbreakable(true);
-//		lasergunItem.setItemMeta(lasergunItemMeta);
-//		lasergunItem.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 20);
-//		
-//		ItemMeta daggerItemMeta = daggerItem.getItemMeta();
-//		daggerItemMeta.setDisplayName("§a§lDagger");
-//		daggerItemMeta.setUnbreakable(true);
-//		daggerItem.setItemMeta(daggerItemMeta);
-//		daggerItem.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, 20);
-//		
-//		ItemMeta shotgunItemMeta = shotgunItem.getItemMeta();
-//		shotgunItemMeta.setUnbreakable(true);
-//		shotgunItemMeta.setDisplayName("§e§lShotgun");
-//		shotgunItem.setItemMeta(shotgunItemMeta);
-//		
-//		ItemMeta sniperItemMeta = sniperItem.getItemMeta();
-//		sniperItemMeta.setUnbreakable(true);
-//		sniperItemMeta.setDisplayName("§d§lSniper rifle");
-//		sniperItem.setItemMeta(sniperItemMeta);
-		
-		Bukkit.getOnlinePlayers().forEach(p -> {
-//			playerCoolingdown.put(p, false);
-			lasergunCoolingdown.put(p, false);
-			shotgunCoolingdown.put(p, false);
-			sniperCoolingdown.put(p, false);
-		});
-	}
-	
-	
 	
 	public enum Weapon {
 		LASERGUN(Material.DIAMOND_HOE, "§bLasergun"),
@@ -83,6 +43,7 @@ public class Weapons {
 		}
 		public ItemStack getTestItem() {
 			ItemStack newItem = item;
+			if(this == SNIPER) newItem.setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
 			ItemMeta meta = newItem.getItemMeta();
 			meta.setDisplayName(meta.getDisplayName()+" Test");
 			newItem.setItemMeta(meta);
@@ -105,58 +66,51 @@ public class Weapons {
 			else if(type.equals(Material.DIAMOND_PICKAXE) && name.toUpperCase().contains("SNIPER")) return Weapon.SNIPER;
 			else return null;
 		}
-	}
-	
-	public static HashMap<Player, Boolean> lasergunCoolingdown = new HashMap<Player, Boolean>();
-	public static HashMap<Player, Integer> lasergunCountDownTime = new HashMap<Player, Integer>();
-	public static HashMap<Player, Integer> lasergunCountdown = new HashMap<Player, Integer>();
-	public static HashMap<Player, Boolean> shotgunCoolingdown = new HashMap<Player, Boolean>();
-	public static HashMap<Player, Integer> shotgunCountdown = new HashMap<Player, Integer>();
-	public static HashMap<Player, Integer> shotgunCountdownTime = new HashMap<Player, Integer>();
-	public static HashMap<Player, Boolean> sniperCoolingdown = new HashMap<Player, Boolean>();
-	public static HashMap<Player, Integer> sniperCountdown = new HashMap<Player, Integer>();
-	public static HashMap<Player, Integer> sniperCountdownTime = new HashMap<Player, Integer>();
-	public static void cooldownPlayer(Player p, Weapon weapon, boolean testing) {
-		Session session = Session.getPlayerSession(p);
-		if(session != null) {
-			if(weapon == Weapon.LASERGUN) {
-				lasergunCoolingdown.put(p, true);
-				int cooldown = session.getIntMod(Mod.LASERGUN_COOLDOWN_TICKS);
-				if(session.withMultiweapons()) cooldown = session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS);
-				p.setCooldown(Material.DIAMOND_HOE, cooldown);
-				Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-					@Override
-					public void run() {
-						lasergunCoolingdown.put(p, false);
-					}
-				}, cooldown);
-			} else if(weapon == Weapon.SNIPER) {
-				sniperCoolingdown.put(p, true);
-				p.setCooldown(Material.DIAMOND_PICKAXE, session.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
-				Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-					@Override
-					public void run() {
-						sniperCoolingdown.put(p, false);
-						if(!testing) p.getInventory().getItem(2).setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
-						else {
-							p.getInventory().getItem(3).setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
-							LaserShooter.playersSnipershots.put(p, 0);
-						}
-					}
-				}, session.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
-			} else if(weapon == Weapon.SHOTGUN) {
-				shotgunCoolingdown.put(p, true);
-				p.setCooldown(Material.DIAMOND_SHOVEL, session.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS));
-				Bukkit.getScheduler().scheduleSyncDelayedTask(Lasertag.minigames, new Runnable() {
-					@Override
-					public void run() {
-						shotgunCoolingdown.put(p, false);
-					}
-				}, session.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS));
+		
+		public boolean hasCooldown(Player p) {
+			return p.hasCooldown(material);
+		}
+		public void setCooldown(Player p) {
+			Session s = Session.getPlayerSession(p);
+			int cooldown = Mod.LASERGUN_COOLDOWN_TICKS.getOgInt();
+			if(s != null){
+				switch (this) {
+				case LASERGUN:
+					cooldown = (s.withMultiweapons())? s.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE) : s.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE);
+					break;
+				case SNIPER:
+					cooldown = s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS);
+					Utils.runLater(() -> {
+						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?3:2).setAmount(s.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
+						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?4:3).setType(Material.AIR);
+						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?5:4).setType(Material.AIR);
+					}, s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
+					break;
+				case SHOTGUN:
+					cooldown = s.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS);
+					break;
+				default:
+					break;
+				}
+			} else {
+				switch (this) {
+				case SHOTGUN:
+					cooldown = Mod.SHOTGUN_COOLDOWN_TICKS.getOgInt();
+					break;
+				case SNIPER:
+					cooldown = Mod.SNIPER_COOLDOWN_TICKS.getOgInt();
+					Utils.runLater(() -> {
+						p.getInventory().getItem(3).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
+						p.getInventory().getItem(4).setAmount(0);
+						p.getInventory().getItem(5).setAmount(0);
+					}, Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
+					break;
+				default:
+					break;
+				}
 			}
-		} 
+			p.setCooldown(material, cooldown);
+		}
 	}
 	
-	
-
 }

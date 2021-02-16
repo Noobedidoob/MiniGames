@@ -11,7 +11,7 @@ package me.noobedidoob.minigames.hideandseek;
 //import org.bukkit.scheduler.BukkitRunnable;
 //
 //import me.libraryaddict.disguise.DisguiseAPI;
-//import me.noobedidoob.minigames.main.Minigames;
+//import me.noobedidoob.minigames.Minigames;
 
 public class HideAndSeek {
 //	

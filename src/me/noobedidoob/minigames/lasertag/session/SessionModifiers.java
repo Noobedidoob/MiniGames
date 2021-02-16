@@ -2,7 +2,7 @@ package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.HashMap;
 
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class SessionModifiers {
 	
@@ -17,7 +17,7 @@ public class SessionModifiers {
 		}
 	}
 	
-	public HashMap<Mod, Object> modValues = new HashMap<Mod, Object>();
+	public HashMap<Mod, Object> modValues = new HashMap<>();
 	
 	public Object get(Mod m) {
 		return modValues.get(m);
@@ -52,9 +52,6 @@ public class SessionModifiers {
     	}
     }
 
-//    public boolean withMultiweapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
-//    public boolean multiWeapons() { return getBoolean(Mod.WITH_MULTIWEAPONS); }
-    
 	public enum Mod{
 		POINTS(1, "Normal amount of points a player gets"),
 		NORMAL_KILL_EXTRA_POINTS(0, "Extra points when a player shot normal"),
@@ -71,7 +68,9 @@ public class SessionModifiers {
 		MINIMAL_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
 		
 		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
-		
+
+		CAPTURE_THE_FLAG_POINTS(2, "Points a player gets when delivering an enemys flag"),
+
 		WIDTH_ADDON(0D, "ADDON TO A PLAYERS HITBOX WIDTH"),
 		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
 		
@@ -88,7 +87,7 @@ public class SessionModifiers {
 		LASERGUN_NORMAL_DAMAGE(100, "Normal lasergun shot damage"),
 		LASERGUN_MULTIWEAPONS_DAMAGE(9, "lasergun shot damage when playing with multiple weapons"),
 		LASERGUN_PVP_DAMAGE(10, "Lasergun melee damage (only without multiweapons"),
-		SHOTGUN_DAMAGE(11, "Shotgun shot damage"),
+		SHOTGUN_DAMAGE(5, "Shotgun shot damage"),
 		SNIPER_DAMAGE(100, "Sniper shot damage"),
 		STABBER_DAMAGE(10, "Stabber melee damage"),
 		
@@ -96,8 +95,8 @@ public class SessionModifiers {
 		SNIPER_SHOT_MULTIPLIKATOR(1.5d, "Extra damage when sniping");
 		
 		private Object ogValue;
-		private String description;
-		private String valueTypeName;
+		private final String description;
+		private final String valueTypeName;
 		Mod(Object value, String description) {
             this.ogValue = value;
             this.description = description;
@@ -160,7 +159,9 @@ public class SessionModifiers {
         
         public static void registerMods(Minigames minigames) {
         	for(Mod m : Mod.values()) {
-				m.setOgValue(minigames.getConfig().get("Lasertag.mods."+m.name().toLowerCase().replace("_", "-")));
+        		String configModName = "Lasertag.mods."+m.name().toLowerCase().replace("_", "-");
+				if(minigames.getConfig().contains(configModName)) m.setOgValue(minigames.getConfig().get(configModName));
+				else minigames.getConfig().set(configModName,m.ogValue);
         	}
         }
 	}

@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class BaseSphere {
 	
@@ -17,6 +17,7 @@ public class BaseSphere {
 	private Color color;
 	private Area limitedArea;
 	private ArrayList<Vector> offsets;
+	private Minigames minigames = Minigames.INSTANCE;
 	
 	public BaseSphere(Coordinate coord, double radius, Color color, Area mapArea) {
 		this.coord = coord;
@@ -32,7 +33,7 @@ public class BaseSphere {
 	public void draw(Player... players) {
 		if(players == null | players.length == 0) {
 			for(Vector v : offsets) {
-				Location newLoc = new Location(Minigames.world, coord.getX()+v.getX(), coord.getY()+v.getY(), coord.getZ()+v.getZ());
+				Location newLoc = new Location(minigames.world, coord.getX()+v.getX(), coord.getY()+v.getY(), coord.getZ()+v.getZ());
 				if(limitedArea.isInside(newLoc)) {
 					newLoc.getWorld().spawnParticle(Particle.REDSTONE, newLoc.getX(), newLoc.getY(), newLoc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(color, 1.5f));
 				}
@@ -40,7 +41,7 @@ public class BaseSphere {
 		} else {
 			for(Player p : players) {
 				for(Vector v : offsets) {
-					Location newLoc = new Location(Minigames.world, coord.getX()+v.getX(), coord.getY()+v.getY(), coord.getZ()+v.getZ());
+					Location newLoc = new Location(minigames.world, coord.getX()+v.getX(), coord.getY()+v.getY(), coord.getZ()+v.getZ());
 					if(limitedArea.isInside(newLoc)) {
 						p.spawnParticle(Particle.REDSTONE, newLoc.getX(), newLoc.getY(), newLoc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(color, 1.5f));
 					}
@@ -51,7 +52,7 @@ public class BaseSphere {
 	
 
 	public static ArrayList<Vector> getSphereOffsets(double radiusX, double radiusY, double radiusZ, double dotsDistance) {
-        ArrayList<Vector> pos = new ArrayList<Vector>();
+        ArrayList<Vector> pos = new ArrayList<>();
 
         radiusX += 0.5;
         radiusY += 0.5;

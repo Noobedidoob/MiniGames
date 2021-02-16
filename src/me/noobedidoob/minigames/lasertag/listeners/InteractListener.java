@@ -14,7 +14,7 @@ import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class InteractListener implements Listener {
 	
@@ -26,8 +26,7 @@ public class InteractListener implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player p  = e.getPlayer();
-		if (Lasertag.playerTesting.get(p) == null) Lasertag.playerTesting.put(p, false);
-		if(Lasertag.playerTesting.get(p)) {
+		if(Lasertag.isPlayerTesting(p)) {
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {
@@ -47,7 +46,7 @@ public class InteractListener implements Listener {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
 		if(session.tagging()) {
-			Lasertag.isProtected.put(p, false);
+			Lasertag.setPlayerTesting(p, false);
 			if(e.getAction() == Action.RIGHT_CLICK_AIR | e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
 				try {

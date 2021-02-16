@@ -7,9 +7,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
-
-import me.noobedidoob.minigames.main.Minigames;
 
 @SuppressWarnings("unused")
 public class Commands implements CommandExecutor, TabCompleter {
@@ -45,7 +42,7 @@ public class Commands implements CommandExecutor, TabCompleter {
 	}
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		if(args.length == 0) {
 			list.add("test");
 		}

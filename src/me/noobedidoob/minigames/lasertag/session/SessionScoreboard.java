@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -16,8 +17,8 @@ import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.utils.Map;
-import me.noobedidoob.minigames.utils.MgUtils;
-import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.utils.Utils;
+import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 
 public class SessionScoreboard {
 	
@@ -36,8 +37,8 @@ public class SessionScoreboard {
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		long time = session.getTime(TimeFormat.SECONDS);
 		if(session.tagging()) time++;
-		if(time < 3600) obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "m")).setScore(0);
-		else obj.getScore("§eTime:  §c§l"+MgUtils.getTimeFormatFromLong(time, "h")).setScore(0);
+		if(time < 3600) obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "m")).setScore(0);
+		else obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "h")).setScore(0);
 		obj.getScore(" ").setScore(1);
 		
 		
@@ -47,9 +48,9 @@ public class SessionScoreboard {
 		
 		if(!session.isMapNull()){
 			if(session.votingMap()) {
-				for(int j = Map.maps.size(); j-- > 0;) {
-					Map m = Map.maps.get(j);
-					if(session.mapVotes.get(m) > 0 && j == Map.maps.size()-1) obj.getScore("  §n§6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+				for(int j = Map.MAPS.size(); j-- > 0;) {
+					Map m = Map.MAPS.get(j);
+					if(session.mapVotes.get(m) > 0 && j == Map.MAPS.size()-1) obj.getScore("  §n§6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
 					else if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
 				}
 				obj.getScore("§eMap:  §o§aVoting...").setScore(i++);
@@ -62,11 +63,11 @@ public class SessionScoreboard {
 		
 		if(session.isSolo()) {
 			
-			HashMap<Integer, List<Player>> playersInSorted = new HashMap<Integer, List<Player>>();
+			HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
 			
 			int maxScore = 0;
 			for(Player p : session.getPlayers()) {
-				List<Player> newList = new ArrayList<Player>();
+				List<Player> newList = new ArrayList<>();
 				if(playersInSorted.get(session.getPlayerPoints(p)) == null) {
 					newList.add(p);
 					playersInSorted.put(session.getPlayerPoints(p), newList);
@@ -77,7 +78,7 @@ public class SessionScoreboard {
 				}
 				if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
 			}
-			List<Player> sortedInRanks = new ArrayList<Player>();
+			List<Player> sortedInRanks = new ArrayList<>();
 			for(int c = 0; c <= maxScore; c++) {
 				if(playersInSorted.get(c) != null) {
 					List<Player> rankList = playersInSorted.get(c);
@@ -101,19 +102,18 @@ public class SessionScoreboard {
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
 				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
-					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
+					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
-				if(Lasertag.isProtected.get(p) == null) Lasertag.isProtected.put(p, false);
-				else if(Lasertag.isProtected.get(p)) {
+				else if(Lasertag.isPlayerProtected(p)) {
 					p.spawnParticle(Particle.COMPOSTER, p.getLocation().subtract(0, 1, 0), 1, 2,2,2);
 				}
 			}
 		} else {
 			
-			HashMap<Integer, List<SessionTeam>> teamsInSorted = new HashMap<Integer, List<SessionTeam>>();
+			HashMap<Integer, List<SessionTeam>> teamsInSorted = new HashMap<>();
 			int maxTeamScore = 0;
 			for(SessionTeam team : session.getTeams()) {
-				List<SessionTeam> newList = new ArrayList<SessionTeam>();
+				List<SessionTeam> newList = new ArrayList<>();
 				if(teamsInSorted.get(session.getTeamPoints(team)) == null) {
 					newList.add(team);
 					teamsInSorted.put(session.getTeamPoints(team), newList);
@@ -124,7 +124,7 @@ public class SessionScoreboard {
 				}
 				if(session.getTeamPoints(team) > maxTeamScore) maxTeamScore = session.getTeamPoints(team);
 			}
-			List<SessionTeam> teamsSortedInRanks = new ArrayList<SessionTeam>();
+			List<SessionTeam> teamsSortedInRanks = new ArrayList<>();
 			for(int c = 0; c <= maxTeamScore; c++) {
 				if(teamsInSorted.get(c) != null) {
 					List<SessionTeam> rankTeamsList = teamsInSorted.get(c);
@@ -139,10 +139,10 @@ public class SessionScoreboard {
 				for(int j = 0; j < i; j++) spaces += " ";
 				obj.getScore(spaces).setScore(i++);
 				
-				HashMap<Integer, List<Player>> playersInSorted = new HashMap<Integer, List<Player>>();
+				HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
 				int maxScore = 0;
 				for(Player p : team.getPlayers()) {
-					List<Player> newList = new ArrayList<Player>();
+					List<Player> newList = new ArrayList<>();
 					if(playersInSorted.get(session.getPlayerPoints(p)) == null) {
 						newList.add(p);
 						playersInSorted.put(session.getPlayerPoints(p), newList);
@@ -153,7 +153,7 @@ public class SessionScoreboard {
 					}
 					if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
 				}
-				List<Player> sortedInRanks = new ArrayList<Player>();
+				List<Player> sortedInRanks = new ArrayList<>();
 				for(int c = 0; c <= maxScore; c++) {
 					if(playersInSorted.get(c) != null) {
 						List<Player> rankList = playersInSorted.get(c);
@@ -172,11 +172,11 @@ public class SessionScoreboard {
 			for(Player p : session.getPlayers()) {
 				p.setScoreboard(board);
 				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
-					if(!p.hasPotionEffect(Lasertag.glowingEffect)) p.addPotionEffect(new PotionEffect(Lasertag.glowingEffect, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
+					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
-				//if(isProtected.get(p) == null) isProtected.put(p, false);
+				//if(isPlayerProtected(p) == null) isProtected.put(p, false);
 				try{
-					if(Lasertag.isProtected.get(p)) p.spawnParticle(Particle.COMPOSTER, p.getLocation().add(0, 3, 0), 1, 2,2,2);
+					if(Lasertag.isPlayerProtected(p)) p.spawnParticle(Particle.COMPOSTER, p.getLocation().add(0, 3, 0), 1, 2,2,2);
 				} catch (NullPointerException e) {
 					
 				}
@@ -185,14 +185,14 @@ public class SessionScoreboard {
 	}
 	
 	public String[] getMapNamesSorted() {
-		Map longest = Map.maps.get(0);
+		Map longest = Map.MAPS.get(0);
 		
-		for(Map m : Map.maps) {
+		for(Map m : Map.MAPS) {
 			if(m.getName().length() > longest.getName().length()) longest = m;
 		}
 		
 		List<String> list = new ArrayList<>();
-		for(Map m : Map.maps) {
+		for(Map m : Map.MAPS) {
 			int difference = longest.getName().length() - m.getName().length();
 			
 			String name = "§6"+m.getName()+":";

@@ -1,9 +1,9 @@
 package me.noobedidoob.minigames.lasertag.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -11,24 +11,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.lasertag.session.SessionInventorys;
+import me.noobedidoob.minigames.lasertag.session.SessionInventories;
 import me.noobedidoob.minigames.lasertag.session.SessionTeam;
-import me.noobedidoob.minigames.main.Minigames;
-import me.noobedidoob.minigames.utils.MgUtils.TimeFormat;
+import me.noobedidoob.minigames.Minigames;
+import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 
 public class SessionCommands implements CommandExecutor, TabCompleter{
 	
 	
-	@SuppressWarnings("unused")
 	private Minigames minigames;
 	private ModifierCommands modifierCommands;
 	public SessionCommands(Minigames minigames, ModifierCommands modifierCommands) {
 		this.minigames = minigames;
 		this.modifierCommands = modifierCommands;
 	}
-	
-	public static List<String> commandArgs = Arrays.asList(new String[] {"leave","new","join"});
-	public static List<String> adminCommandArgs = Arrays.asList(new String[] {"start","stop","close","settime","setsolo","setteams","setteamAmount","setteamsAmount","addadmin","setadmin","removeadmin","demoteadmin","kick", "end", "withmultiweapons"});
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
@@ -48,7 +44,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 			if (args.length == 1) {
 				if(s == null) {
 					if (args[0].equalsIgnoreCase("new")) {
-						SessionInventorys.openNewSessionInv(p);
+						SessionInventories.openNewSessionInv(p);
 						return true;
 					}
 				} else {
@@ -92,7 +88,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					
 					else if(args[0].equalsIgnoreCase("setTime")) {
 						if(s.isAdmin(p)) {
-							SessionInventorys.openTimeInv(p);
+							SessionInventories.openTimeInv(p);
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return true;
 					} 
@@ -100,7 +96,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					else if(args[0].equalsIgnoreCase("addAdmin") | args[0].equalsIgnoreCase("setAdmin")) {
 						if(s.isAdmin(p)) {
 							if (!s.tagging()) {
-								SessionInventorys.openAddAdminInv(p);
+								SessionInventories.openAddAdminInv(p);
 							} else Session.sendMessage(p, "§cYou can't promote players while the game is running!");
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return true;
@@ -128,7 +124,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					}
 					else if(args[0].equalsIgnoreCase("setTeamAmount") | args[0].equalsIgnoreCase("setTeamsAmount")) {
 						if (s.isAdmin(p)) {
-							SessionInventorys.openTeamsInv(p);
+							SessionInventories.openTeamsInv(p);
 						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
 						return true;
 					}
@@ -142,7 +138,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 							return true;
 						}
 						Session.sendMessage(p, "§aRegistered new Session!");
-						new Session(p, (!args[1].equalsIgnoreCase("teams")));
+						new Session(minigames, p, (!args[1].equalsIgnoreCase("teams")));
 						return true;
 					}
 				} 
@@ -264,6 +260,17 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return true;
 				}
+
+				else if(args[0].equalsIgnoreCase("ctf") | args[0].equalsIgnoreCase("capturetheflag")){
+					if(s != null) {
+						if(s.isAdmin(p)) {
+							if(!s.tagging()){
+								s.setWithCaptureTheFlag(Boolean.parseBoolean(args[1]));
+							} else Session.sendMessage(p,"§cYou can't perform this command while tagging!");
+						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
+					} else Session.sendMessage(p, "§cYou're not in a session!");
+					return true;
+				}
 			} else {
 				if(args[0].equalsIgnoreCase("setTime")) {
 					System.out.println(args.length);
@@ -275,7 +282,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 								if(args.length == 3) format = TimeFormat.getFromString(args[2]);
 								s.setTime(time, format, true);
 							} catch (NumberFormatException e) {
-								sender.sendMessage("§cThe given argument §e"+e.getMessage().replace("For input string: ","")+" §cis not a Number!");
+								sender.sendMessage("§cThe given argument §e"+StringUtils.replace(e.getMessage(), "For input string: ","")+" §cis not a Number!");
 								return true;
 							} catch (Exception e) {
 								sender.sendMessage("§cSyntax error: "+e.getMessage());
@@ -299,7 +306,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 	
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		if(!(sender instanceof Player)) return list;
 		
 		list = modifierCommands.getTabComplete(list, sender, args);
@@ -320,6 +327,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 						list.add("setSolo");
 						list.add("setTeams");
 						list.add("setTeamsAmount");
+						list.add("captureTheFlag");
 					}
 					list.add("stop");
 					list.add("close");
@@ -358,6 +366,9 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					for(Player op : Bukkit.getOnlinePlayers()) {
 						if(Session.getPlayerSession(op) == null) list.add(op.getName());
 					}
+				} else if(args[0].equalsIgnoreCase("ctf") | args[0].equalsIgnoreCase("capturetheflag")){
+					list.add("true");
+					list.add("false");
 				}
 			}
 		} else if(args.length == 3){

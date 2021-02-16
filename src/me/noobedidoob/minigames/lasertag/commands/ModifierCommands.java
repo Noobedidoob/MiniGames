@@ -2,11 +2,12 @@ package me.noobedidoob.minigames.lasertag.commands;
 
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class ModifierCommands  {
 	
@@ -50,7 +51,7 @@ public class ModifierCommands  {
 			Session session = Session.getPlayerSession(p);
 			
 			if(args[0].equalsIgnoreCase("setmodifier") && args.length == 3) {
-				Mod m = Mod.getMod(args[1].toUpperCase().replace("-", "_"));
+				Mod m = Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_"));
 				String valString = args[2];
 				Object value = valString;
 				
@@ -105,8 +106,8 @@ public class ModifierCommands  {
 		} else if(sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("setmodifier") && Session.getPlayerSession((Player) sender).isAdmin((Player) sender)) {
 			if(args.length == 2) {
 				for(Mod m : Mod.values()) list.add(m.name().toLowerCase());
-			} else if(args.length == 3 && Mod.getMod(args[1].toUpperCase().replace("-", "_")) != null) {
-				if(Mod.getMod(args[1].toUpperCase().replace("-", "_")).getValueTypeName() == "true/false") {
+			} else if(args.length == 3 && Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_")) != null) {
+				if(Mod.getMod(StringUtils.replace(args[1].toUpperCase(),"-", "_")).getValueTypeName() == "true/false") {
 					list.add("true");
 					list.add("false");
 				}

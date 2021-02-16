@@ -12,7 +12,7 @@ import org.bukkit.plugin.PluginManager;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.main.Minigames;
+import me.noobedidoob.minigames.Minigames;
 
 public class DropSwitchItemListener implements Listener {
 	
@@ -35,7 +35,7 @@ public class DropSwitchItemListener implements Listener {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
 				}
-			} else if(Lasertag.playerTesting.get(p) != null && Lasertag.playerTesting.get(p)) {
+			} else if(Lasertag.isPlayerTesting(p)) {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
 				}
