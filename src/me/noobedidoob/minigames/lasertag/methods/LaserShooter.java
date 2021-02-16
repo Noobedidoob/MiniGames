@@ -18,7 +18,6 @@ import org.bukkit.block.data.type.Slab;
 import org.bukkit.block.data.type.Slab.Type;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -72,13 +71,12 @@ public class LaserShooter{
 					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
 					direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
 				}
-				Location loc = l1.clone().add(direction);
 
 				int range = 100;
 //				if(session.withMultiweapons()) range = 35;
 				for(double d = 0; d<range; d += 0.1) {
 					if(d==0) w.setCooldown(p);
-					loc = l1.add(direction);
+					Location loc = l1.add(direction);
 
 
 					spawnProjectile(p, loc);
@@ -195,7 +193,6 @@ public class LaserShooter{
 				}
 
 
-				boolean warned = false;
 				for(double d = 0; d<6; d += 0.1) {
 					if(d==0) {
 						w.setCooldown(p);
@@ -311,8 +308,7 @@ public class LaserShooter{
 				l1.setY(l1.getY()+p.getHeight()-0.225);
 				Vector direction = l1.getDirection();
 				direction.multiply(1);
-				Location loc = l1.clone().add(direction);
-				
+
 				for(double d = 0; d<100; d += 1) {
 					if(d==0) {
 						if(p.getInventory().getItem(2).getAmount() > 1) {
@@ -333,7 +329,7 @@ public class LaserShooter{
 //						}
 						
 					}
-					loc = l1.add(direction);
+					Location loc = l1.add(direction);
 					
 					spawnProjectile(p, loc);
 
@@ -413,11 +409,10 @@ public class LaserShooter{
 		
 		double width = p.getWidth();
 		double height = p.getHeight()+0.15;
-		
-		try {
+
+		if (p instanceof Player && Session.getPlayerSession((Player)p) != null) {
 			width += Session.getPlayerSession((Player) p).modifiers.getDouble(Mod.WIDTH_ADDON);
 			height += Session.getPlayerSession((Player) p).modifiers.getDouble(Mod.HEIGHT_ADDON);
-		} catch (Exception e) {
 		}
 
 		double minX = p.getLocation().getX()-(width/2);
@@ -471,8 +466,6 @@ public class LaserShooter{
 		return false;
 	}
 	
-	static Particle coloredLaser = Particle.REDSTONE;
-	
 	public static void spawnProjectile(Player p, Location loc) {
 		Session session = Session.getPlayerSession(p);
 		if(session.getPlayerColor(p).getColor() != Color.BLUE) p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(session.getPlayerColor(p).getColor(), 0.8f));
@@ -494,10 +487,9 @@ public class LaserShooter{
 				
 				Vector direction = startLoc.getDirection();
 				direction.multiply(0.1);
-				Location loc = startLoc.clone().add(direction);
-				
+
 				for(double d = 0; d<100; d += 0.1) {
-					loc = startLoc.add(direction);
+					Location loc = startLoc.add(direction);
 					spawnTestProjectile(p, loc, Color.fromRGB(0, 170, 255));
 
 					if(!checkloc(p, loc)) return;
@@ -559,7 +551,6 @@ public class LaserShooter{
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
 				Vector direction1 = startLoc.getDirection();
 				direction1.multiply(1);
-				Location loc1 = startLoc.clone().add(direction1);
 
 				for(double d = 0; d<100; d += 1) {
 					
@@ -579,21 +570,9 @@ public class LaserShooter{
 								}.runTaskLater(Minigames.INSTANCE, Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
 							}
 							
-							
-//							if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
-//							int shots = playersSnipershots.get(p);
-//							if(shots == Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1) {
-//								Weapons.cooldownPlayer(p, Weapon.SNIPER, true);
-//								playersSnipershots.put(p, 0);
-//								p.getInventory().getItem(2).setAmount(1);
-//							} else {
-//								playersSnipershots.put(p, shots+1);
-//								p.getInventory().getItem(2).setAmount((Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()-1)-shots);
-//							}
-
 						}
-						
-						loc1 = startLoc.add(direction1);
+
+						Location loc1 = startLoc.add(direction1);
 						spawnTestProjectile(p, loc1, Color.PURPLE);
 						
 						if(!checkloc(p, loc1)) return;
@@ -615,14 +594,9 @@ public class LaserShooter{
 		if(isInBlock(null, loc)) return false;
 		for(Entity entity : loc.getWorld().getNearbyEntities(loc, 2, 2, 2)) {
 			if (entity != p) {
-				if (entity instanceof ItemFrame) {
-					if(isLaserInsideEntity(entity, loc)) {
-						p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-					}
-				} else
 				if(isLaserInsideEntity(entity, loc)) {
 					p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
-				} 
+				}
 			}
 		}
 		return true;

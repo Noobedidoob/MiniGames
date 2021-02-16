@@ -81,6 +81,7 @@ public class Map {
 	public void setWithCaptureTheFlag(boolean ctf){
 		this.captureTheFlag = ctf;
 	}
+
 	public boolean withCaptureTheFlag(){
 		return captureTheFlag;
 	}

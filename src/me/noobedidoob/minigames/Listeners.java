@@ -40,7 +40,6 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
-@SuppressWarnings("deprecation")
 public class Listeners implements Listener{
 	
 	private final Minigames minigames;
@@ -70,6 +69,7 @@ public class Listeners implements Listener{
 		linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		linkMsg.setUnderlined(true);
 		linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.TEXTUREPACK_URL));
+		//noinspection deprecation
 		linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Download the texturepack").create()));
 		msg1.addExtra(linkMsg);
 
@@ -102,7 +102,7 @@ public class Listeners implements Listener{
 		p.getInventory().clear();
 	}
 	
-	private HashMap<Player, ItemStack[]> playerStoredInv = new HashMap<>();
+	private final HashMap<Player, ItemStack[]> playerStoredInv = new HashMap<>();
 	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
@@ -135,8 +135,8 @@ public class Listeners implements Listener{
 		} 
 	}
 	
-	private HashMap<Player, Pair> playersLastLocation = new HashMap<>();
-	
+	private final HashMap<Player, Pair> playersLastLocation = new HashMap<>();
+
 	@EventHandler
 	public void onPlayerFly(PlayerToggleFlightEvent e) {
 		Player p = e.getPlayer();
@@ -185,7 +185,7 @@ public class Listeners implements Listener{
 		if(!e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
 	}
 	@EventHandler
-	public void onPlayerItemPickup(PlayerPickupItemEvent e) {
+	public void onPlayerItemPickup(@SuppressWarnings("deprecation") PlayerPickupItemEvent e) {
 		if(!e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
 	}
 	

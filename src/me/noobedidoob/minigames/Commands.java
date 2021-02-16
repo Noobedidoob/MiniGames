@@ -10,13 +10,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
 
 public class Commands implements CommandExecutor, TabCompleter{
 
-	private Minigames minigames;
+//	private Minigames minigames;
 	public Commands(Minigames minigames) {
-		this.minigames = minigames;
+//		this.minigames = minigames;
 	}
 	
 	String opCommands = "§egetworlds §7— \n"
@@ -25,7 +24,7 @@ public class Commands implements CommandExecutor, TabCompleter{
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
 		if(cmd.getName().equalsIgnoreCase("lobby")){
-			Minigames.teleportPlayersToSpawn((Player) sender);
+//			Minigames.teleportPlayersToSpawn((Player) sender);
 			return true;
 		} else if(args.length == 0) {
 			if(sender.isOp()) sender.sendMessage(opCommands);

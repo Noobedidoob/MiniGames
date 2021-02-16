@@ -3,7 +3,6 @@ package me.noobedidoob.minigames.lasertag.session;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.ChatColor;
@@ -30,7 +29,7 @@ public class SessionTeam {
 		this.lasertagColor = colorName;
 		points = 0;
 		getTeamByCooserSlot.put(getTeamChooserSlot(), this);
-		try{ Objects.requireNonNull(session.scoreboard.board.getTeam(colorName.name())).unregister();} catch (NullPointerException e) {}
+		if(session.scoreboard.board.getTeam(colorName.name()) != null) session.scoreboard.board.getTeam(colorName.name()).unregister();
 		scoreboardTeam = session.scoreboard.board.registerNewTeam(colorName.name());
 		scoreboardTeam.setColor(colorName.getChatColor());
 
@@ -62,10 +61,7 @@ public class SessionTeam {
 		if (players.contains(p)) {
 			players.remove(p);
 			playerTeam.put(p, null);
-			try {
-				scoreboardTeam.removeEntry(p.getName());
-			} catch (Exception e) {
-			}
+			scoreboardTeam.removeEntry(p.getName());
 			p.getInventory().setChestplate(new ItemStack(Material.AIR));
 			p.getInventory().setLeggings(new ItemStack(Material.AIR));
 			p.getInventory().setBoots(new ItemStack(Material.AIR));
@@ -129,9 +125,9 @@ public class SessionTeam {
 //		return item;
 		return Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE,getChatColor()+""+ getLasertagColor()+" Team", lasertagColor.getColor(), lore);
 	}
-	
-	
-	private static HashMap<Player, SessionTeam> playerTeam = new HashMap<>();
+
+
+	private static final HashMap<Player, SessionTeam> playerTeam = new HashMap<>();
 	public static SessionTeam getPlayerTeam(Player p) {
 		return playerTeam.get(p);
 	}

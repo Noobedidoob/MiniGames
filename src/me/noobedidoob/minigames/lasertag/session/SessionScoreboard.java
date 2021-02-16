@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import me.noobedidoob.minigames.utils.BaseSphere;
 import org.bukkit.Bukkit;
 import org.bukkit.Particle;
 import org.bukkit.entity.Player;
@@ -22,7 +23,7 @@ import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 
 public class SessionScoreboard {
 	
-	private Session session;
+	private final Session session;
 	public SessionScoreboard(Session session) {
 		this.session = session;
 	}
@@ -54,11 +55,10 @@ public class SessionScoreboard {
 					else if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
 				}
 				obj.getScore("§eMap:  §o§aVoting...").setScore(i++);
-				obj.getScore("  ").setScore(i++);
 			} else {
 				obj.getScore("§eMap:  §r§b"+session.getMap().getName()).setScore(i++);
-				obj.getScore("  ").setScore(i++);
 			}
+			obj.getScore("  ").setScore(i++);
 		}
 		
 		if(session.isSolo()) {
@@ -68,23 +68,18 @@ public class SessionScoreboard {
 			int maxScore = 0;
 			for(Player p : session.getPlayers()) {
 				List<Player> newList = new ArrayList<>();
-				if(playersInSorted.get(session.getPlayerPoints(p)) == null) {
-					newList.add(p);
-					playersInSorted.put(session.getPlayerPoints(p), newList);
-				} else {
+				if (playersInSorted.get(session.getPlayerPoints(p)) != null) {
 					newList = playersInSorted.get(session.getPlayerPoints(p));
-					newList.add(p);
-					playersInSorted.put(session.getPlayerPoints(p), newList);
 				}
+				newList.add(p);
+				playersInSorted.put(session.getPlayerPoints(p), newList);
 				if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
 			}
 			List<Player> sortedInRanks = new ArrayList<>();
 			for(int c = 0; c <= maxScore; c++) {
 				if(playersInSorted.get(c) != null) {
 					List<Player> rankList = playersInSorted.get(c);
-					for(Player p : rankList) {
-						sortedInRanks.add(p);
-					}
+					sortedInRanks.addAll(rankList);
 				}
 			}
 			
@@ -94,7 +89,7 @@ public class SessionScoreboard {
 				if(playersInSorted.get(maxScore).contains(p)) underline = "§n";
 				LasertagColor color = session.getPlayerColor(p);
 				if(color == null) System.out.println("Color = null from player "+p.getName());
-				Integer pp = session.getPlayerPoints(p);
+				int pp = session.getPlayerPoints(p);
 				obj.getScore(underline+color.getChatColor()+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
 			}
 			obj.getScore("   ").setScore(i);
@@ -114,52 +109,42 @@ public class SessionScoreboard {
 			int maxTeamScore = 0;
 			for(SessionTeam team : session.getTeams()) {
 				List<SessionTeam> newList = new ArrayList<>();
-				if(teamsInSorted.get(session.getTeamPoints(team)) == null) {
-					newList.add(team);
-					teamsInSorted.put(session.getTeamPoints(team), newList);
-				} else {
+				if (teamsInSorted.get(session.getTeamPoints(team)) != null) {
 					newList = teamsInSorted.get(session.getTeamPoints(team));
-					newList.add(team);
-					teamsInSorted.put(session.getTeamPoints(team), newList);
 				}
+				newList.add(team);
+				teamsInSorted.put(session.getTeamPoints(team), newList);
 				if(session.getTeamPoints(team) > maxTeamScore) maxTeamScore = session.getTeamPoints(team);
 			}
 			List<SessionTeam> teamsSortedInRanks = new ArrayList<>();
 			for(int c = 0; c <= maxTeamScore; c++) {
 				if(teamsInSorted.get(c) != null) {
 					List<SessionTeam> rankTeamsList = teamsInSorted.get(c);
-					for(SessionTeam team : rankTeamsList) {
-						teamsSortedInRanks.add(team);
-					}
+					teamsSortedInRanks.addAll(rankTeamsList);
 				}
 			}
 			
 			for(SessionTeam team : teamsSortedInRanks) {
-				String spaces = "    ";
-				for(int j = 0; j < i; j++) spaces += " ";
-				obj.getScore(spaces).setScore(i++);
+				StringBuilder spaces = new StringBuilder("    ");
+				for(int j = 0; j < i; j++) spaces.append(" ");
+				obj.getScore(spaces.toString()).setScore(i++);
 				
 				HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
 				int maxScore = 0;
 				for(Player p : team.getPlayers()) {
 					List<Player> newList = new ArrayList<>();
-					if(playersInSorted.get(session.getPlayerPoints(p)) == null) {
-						newList.add(p);
-						playersInSorted.put(session.getPlayerPoints(p), newList);
-					} else {
+					if (playersInSorted.get(session.getPlayerPoints(p)) != null) {
 						newList = playersInSorted.get(session.getPlayerPoints(p));
-						newList.add(p);
-						playersInSorted.put(session.getPlayerPoints(p), newList);
 					}
+					newList.add(p);
+					playersInSorted.put(session.getPlayerPoints(p), newList);
 					if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
 				}
 				List<Player> sortedInRanks = new ArrayList<>();
 				for(int c = 0; c <= maxScore; c++) {
 					if(playersInSorted.get(c) != null) {
 						List<Player> rankList = playersInSorted.get(c);
-						for(Player p : rankList) {
-							sortedInRanks.add(p);
-						}
+						sortedInRanks.addAll(rankList);
 					}
 				}
 				
@@ -174,12 +159,7 @@ public class SessionScoreboard {
 				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
 					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
-				//if(isPlayerProtected(p) == null) isProtected.put(p, false);
-				try{
-					if(Lasertag.isPlayerProtected(p)) p.spawnParticle(Particle.COMPOSTER, p.getLocation().add(0, 3, 0), 1, 2,2,2);
-				} catch (NullPointerException e) {
-					
-				}
+				if(Lasertag.isPlayerProtected(p)) BaseSphere.drawPlayerProtectionSphere(p);
 			}
 		}
 	}
@@ -195,13 +175,13 @@ public class SessionScoreboard {
 		for(Map m : Map.MAPS) {
 			int difference = longest.getName().length() - m.getName().length();
 			
-			String name = "§6"+m.getName()+":";
+			StringBuilder name = new StringBuilder("§6" + m.getName() + ":");
 			while(difference > 0) {
-				name+=" ";
+				name.append(" ");
 				difference--;
 			}
 			list.add("  §6"+name+" §a"+session.mapVotes.get(m));
 		}
-		return list.toArray(new String[list.size()]);
+		return list.toArray(new String[0]);
 	}
 }

@@ -11,8 +11,11 @@ import java.util.List;
 
 public class LaserCommands implements CommandExecutor, TabCompleter {
 
-	public LaserCommands(Minigames minigames) {
+	@SuppressWarnings({"FieldCanBeLocal", "unused"})
+	private final Minigames minigames;
 
+	public LaserCommands(Minigames minigames) {
+		this.minigames = minigames;
 	}
 	
 	

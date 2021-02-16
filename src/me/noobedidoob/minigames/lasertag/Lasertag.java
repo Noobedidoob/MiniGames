@@ -157,7 +157,7 @@ public class Lasertag implements Listener{
 			if(blockName.equals("!air")) {
 				if(minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().isAir()) enabled = false;
 			} else if(blockName.equals("*")) {
-
+				continue;
 			} else if(blockName.contains("*")){
 				if(!minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().name().contains(blockName)) enabled = false;
 			} else {
@@ -297,21 +297,23 @@ public class Lasertag implements Listener{
 	}
 	@EventHandler
 	public void onPlayerClickInventory(InventoryClickEvent e) {
+		Player p = (Player) e.getWhoClicked();
 		try {
-			Player p = (Player) e.getWhoClicked();
-			if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
-				String code = e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", "");
-				Session s = Session.getSessionFromCode(code);
-				if(s != null) {
-					if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
-						if(!s.tagging()) {
-							p.closeInventory();
-							s.addPlayer((Player) e.getWhoClicked());
-						} else Session.sendMessage(p, "§cThe session is already running! Please wait!");
-					} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
-				} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
-			}
-		} catch (NullPointerException | ArrayIndexOutOfBoundsException e1) {
+			if(e.getClickedInventory().getItem(e.getSlot()) == null) return;
+		} catch (Exception exception){
+			return;
+		}
+		if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
+			String code = e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", "");
+			Session s = Session.getSessionFromCode(code);
+			if(s != null) {
+				if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
+					if(!s.tagging()) {
+						p.closeInventory();
+						s.addPlayer((Player) e.getWhoClicked());
+					} else Session.sendMessage(p, "§cThe session is already running! Please wait!");
+				} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
+			} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
 		}
 	}
 	

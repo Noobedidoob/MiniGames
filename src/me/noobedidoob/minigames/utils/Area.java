@@ -120,16 +120,13 @@ public class Area {
 		int x = (int) (Math.random()*((maxX-minX)+1))+minX;
 		int y = (int) (Math.random()*((maxY-minY)+1))+minY;
 		int z = (int) (Math.random()*((maxZ-minZ)+1))+minZ;
-		Coordinate coordinate = new Coordinate(x, y, z);
-		return coordinate;
+		return new Coordinate(x, y, z);
 	}
 	
 	public boolean isInside(Location loc) {
 		if(loc.getX() >= minX && loc.getX() <= maxX) {
 			if(loc.getY() >= minY && loc.getY() <= maxY) {
-				if(loc.getZ() >= minZ && loc.getZ() <= maxZ) {
-					return true;
-				}
+				return loc.getZ() >= minZ && loc.getZ() <= maxZ;
 			}
 		}
 		return false;

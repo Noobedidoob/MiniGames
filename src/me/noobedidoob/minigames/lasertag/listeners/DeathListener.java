@@ -3,6 +3,7 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import java.util.HashMap;
 
 import me.noobedidoob.minigames.utils.Flag;
+import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
@@ -11,7 +12,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
@@ -85,15 +85,12 @@ public class DeathListener implements Listener {
 				}
 
 				STREAKED_PLAYERS.putIfAbsent(victim, 0);
-				if (STREAKED_PLAYERS.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
 				victim.damage(100);
 				if(session.withCaptureTheFlag() && Flag.getPlayerFlag(victim) != null) Flag.getPlayerFlag(victim).drop(victim.getLocation());
-				new BukkitRunnable() {
-					@Override
-					public void run() {
-						addStreak(killer, victim);
-					}
-				}.runTaskLater(Minigames.INSTANCE, 5);
+				Utils.runLater(()->{
+					addStreak(killer);
+					if (STREAKED_PLAYERS.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
+				},5);
 				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.setPlayerProtected(victim, true);
 			} 
@@ -124,7 +121,7 @@ public class DeathListener implements Listener {
 	
 	
 	private static final HashMap<Player, Integer> STREAKED_PLAYERS = new HashMap<>();
-	private static void addStreak(Player p, Player victim) {
+	private static void addStreak(Player p) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
 		STREAKED_PLAYERS.putIfAbsent(p, 0);

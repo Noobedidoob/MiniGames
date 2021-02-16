@@ -13,7 +13,6 @@ import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.Minigames;
 
-@SuppressWarnings("unused")
 public class JoinQuitListener implements Listener {
 	
 	public JoinQuitListener(Minigames minigames) {
@@ -37,7 +36,7 @@ public class JoinQuitListener implements Listener {
 			}
 		}
 		
-		try {PlayerZoomer.zoomPlayerOut(p);} catch (Exception e2) {}
+		PlayerZoomer.zoomPlayerOut(p);
 		
 	}
 	

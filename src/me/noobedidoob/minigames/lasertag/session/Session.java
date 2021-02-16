@@ -6,7 +6,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.Team;
 
@@ -558,15 +557,10 @@ public class Session implements Listener{
 				}
 			}
 		}
-		try { p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard()); } catch (NullPointerException e) { }
+		try { p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard()); } catch (NullPointerException e) {Minigames.warn("Error occured when trying to remove players scoreboard!");}
 		scoreboard.refresh();
 		setPlayerSession(p, null);
 		Lasertag.setPlayersLobbyInv(p);
-//		round.refreshPlayerTeams();
-		
-//		if(tagging()) {
-//			if(players.size() < 2) stop(true, false);
-//		}
 	}
 	
 	public HashMap<UUID, Pair> disconnectedPlayers = new HashMap<>();
@@ -741,9 +735,6 @@ public class Session implements Listener{
 	
 	
 
-	public Inventory teamChooseInv = Bukkit.createInventory(null,  9, "§1Choose Team:");
-	
-	
 	public void broadcast(String s) {
 		for(Player p : players) {
 			sendMessage(p, s);

@@ -25,9 +25,7 @@ public class HitBox {
 	public boolean isInside(double x, double y, double z) {
 		if(minX <= x && x <= maxX) {
 			if(minY <= y && y <= maxY) {
-				if(minZ<= z && z <= maxZ) {
-					return true;
-				}
+				return minZ <= z && z <= maxZ;
 			}
 		}
 		return false;

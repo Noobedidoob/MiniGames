@@ -1,19 +1,18 @@
 package me.noobedidoob.minigames;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import me.noobedidoob.minigames.lasertag.Lasertag;
+import org.bukkit.*;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.net.URISyntaxException;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -21,32 +20,17 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.bukkit.*;
-import org.bukkit.entity.Player;
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import me.noobedidoob.minigames.hideandseek.HideAndSeek;
-import me.noobedidoob.minigames.lasertag.Lasertag;
-import org.bukkit.scheduler.BukkitRunnable;
-
 public class Minigames extends JavaPlugin implements Listener{
 	
 	public static String TEXTUREPACK_URL = "https://www.dropbox.com/s/d3l1ciaf58gvpbf/Laserguns.zip?dl=1";
 	public static String WORLD_NAME;
 	
 	public Lasertag lasertag;
-	public HideAndSeek hideAndSeek;
-	
+
 	public World world;
 	public Location spawn;
 	public Location winnerPodium;
-	public boolean worldFound = true;
-	public boolean waitingForName = false;
-	
-	public List<String> exceptionStackTraces = new ArrayList<>();
-	
+
 	public static Minigames INSTANCE;
 
 	public void onEnable() {
@@ -73,9 +57,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		
 		lasertag = new Lasertag(this);
 		lasertag.enable();
-//		hideAndSeek = new HideAndSeek(this);
-//		hideAndSeek.enable();
-		
+
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
 		}
@@ -85,8 +67,7 @@ public class Minigames extends JavaPlugin implements Listener{
 	public void onDisable() {
 		reloadConfig();
 		if(lasertag != null) lasertag.disable();
-		if(hideAndSeek != null) hideAndSeek.disable();
-		
+
 		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
 		
 		Bukkit.getOnlinePlayers().forEach(p ->{
@@ -197,14 +178,15 @@ public class Minigames extends JavaPlugin implements Listener{
 							File newFile = new File(destDir + File.separator + fileName);
 							System.out.println("Extracting file: "+ze.getName());
 							//create directories for sub directories in zip
-							new File(newFile.getParent()).mkdirs();
-							FileOutputStream fos = new FileOutputStream(newFile);
-							int len;
-							while ((len = zis.read(buffer)) > 0) {
-								fos.write(buffer, 0, len);
+							if(new File(newFile.getParent()).mkdirs()) {
+								FileOutputStream fos = new FileOutputStream(newFile);
+								int len;
+								while ((len = zis.read(buffer)) > 0) {
+									fos.write(buffer, 0, len);
+								}
+								fos.close();
+								//close this ZipEntry
 							}
-							fos.close();
-							//close this ZipEntry
 						} catch (FileNotFoundException e) {
 							System.out.println("Error occured!");
 						}
@@ -216,6 +198,7 @@ public class Minigames extends JavaPlugin implements Listener{
 					zis.close();
 					fis.close();
 				} catch (IOException e) {
+					//noinspection ResultOfMethodCallIgnored
 					tempFile.delete();
 					throw e;
 				}

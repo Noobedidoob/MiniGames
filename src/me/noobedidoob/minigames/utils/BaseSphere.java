@@ -13,11 +13,11 @@ import me.noobedidoob.minigames.Minigames;
 
 public class BaseSphere {
 	
-	private Coordinate coord;
-	private Color color;
-	private Area limitedArea;
-	private ArrayList<Vector> offsets;
-	private Minigames minigames = Minigames.INSTANCE;
+	private final Coordinate coord;
+	private final Color color;
+	private final Area limitedArea;
+	private final ArrayList<Vector> offsets;
+	private final Minigames minigames = Minigames.INSTANCE;
 	
 	public BaseSphere(Coordinate coord, double radius, Color color, Area mapArea) {
 		this.coord = coord;
@@ -75,7 +75,7 @@ public class BaseSphere {
                 final double yn = nextYn;
                 nextYn = (y + dotsDistance) * invRadiusY;
                 double nextZn = 0;
-                forZ: for (double z = 0; z <= ceilRadiusZ; z += dotsDistance) {
+                for (double z = 0; z <= ceilRadiusZ; z += dotsDistance) {
                     final double zn = nextZn;
                     nextZn = (z + dotsDistance) * invRadiusZ;
                     double distanceSq = lengthSq(xn, yn, zn);
@@ -86,7 +86,6 @@ public class BaseSphere {
                             }
                             break forY;
                         }
-                        break forZ;
                     }
 
                     if (lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1) {

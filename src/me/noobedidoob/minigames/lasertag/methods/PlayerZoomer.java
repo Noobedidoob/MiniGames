@@ -10,10 +10,10 @@ import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 
 public class PlayerZoomer {
 	
-	private static HashMap<Player, Boolean> IS_PLAYER_ZOOMED = new HashMap<>();
+	private static final HashMap<Player, Boolean> IS_PLAYER_ZOOMED = new HashMap<>();
 	public static void toggleZoom(Player p) {
-		ItemStack visor = new ItemStack(Material.CARVED_PUMPKIN); 
-		if(IS_PLAYER_ZOOMED.get(p) == null) IS_PLAYER_ZOOMED.put(p, false);
+		ItemStack visor = new ItemStack(Material.CARVED_PUMPKIN);
+		IS_PLAYER_ZOOMED.putIfAbsent(p, false);
 		boolean zoomed = IS_PLAYER_ZOOMED.get(p);
 		if(zoomed) {
 			p.setWalkSpeed(0.2f);

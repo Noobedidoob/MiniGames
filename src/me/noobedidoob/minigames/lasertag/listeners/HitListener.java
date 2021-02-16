@@ -1,6 +1,7 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -26,7 +27,6 @@ public class HitListener implements Listener {
 	
 	
 	
-	@SuppressWarnings("deprecation")
 	@EventHandler
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
 		if(e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
@@ -45,7 +45,7 @@ public class HitListener implements Listener {
 						} else {
 							if (!session.withMultiweapons()) {
 								double damage = e.getDamage();
-								if (p.getInventory().getItemInMainHand() != null) {
+								if (p.getInventory().getItemInMainHand().getType() != Material.AIR) {
 									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = session.getIntMod(Mod.LASERGUN_PVP_DAMAGE);
 								}
 								if(damage < p.getHealth()-1) {
@@ -54,7 +54,7 @@ public class HitListener implements Listener {
 								} else e.setCancelled(true);
 								DeathListener.hit(HitType.PVP, damager, p, damage, false, false, false);
 							} else {
-								if (damager.getItemInHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
+								if (damager.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
 									double damage = session.getIntMod(Mod.STABBER_DAMAGE);
 									if(damage < p.getHealth()-1) {
 										e.setDamage(1);

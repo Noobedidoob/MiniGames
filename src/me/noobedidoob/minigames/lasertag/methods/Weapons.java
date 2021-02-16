@@ -19,10 +19,10 @@ public class Weapons {
 		LASERGUN(Material.DIAMOND_HOE, "§bLasergun"),
 		DAGGER(Material.DIAMOND_SWORD, "§aDagger"),
 		SHOTGUN(Material.DIAMOND_SHOVEL, "§eShotgun"),
-		SNIPER(Material.DIAMOND_PICKAXE, "§dSniper rifle");
+		SNIPER(Material.DIAMOND_PICKAXE, "§dSniper");
 		
-		private Material material;
-		private ItemStack item;
+		private final Material material;
+		private final ItemStack item;
 		
 		Weapon(Material material, String displayName){
 			this.material = material;
@@ -60,11 +60,10 @@ public class Weapons {
 		public static Weapon getWeaponFromItem(ItemStack item) {
 			Material type = item.getType();
 			String name = item.getItemMeta().getDisplayName();
-			if(type.equals(Material.DIAMOND_HOE) && name.toUpperCase().contains("LASERGUN")) return Weapon.LASERGUN;
-			else if(type.equals(Material.DIAMOND_SWORD) && name.toUpperCase().contains("DAGGER")) return Weapon.DAGGER;
-			else if(type.equals(Material.DIAMOND_SHOVEL) && name.toUpperCase().contains("SHOTGUN")) return Weapon.SHOTGUN;
-			else if(type.equals(Material.DIAMOND_PICKAXE) && name.toUpperCase().contains("SNIPER")) return Weapon.SNIPER;
-			else return null;
+			for(Weapon w : values()){
+				if(w.getType() == type && name.toUpperCase().contains(w.name().substring(2))) return w;
+			}
+			return null;
 		}
 		
 		public boolean hasCooldown(Player p) {

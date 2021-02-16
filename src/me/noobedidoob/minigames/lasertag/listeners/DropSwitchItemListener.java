@@ -28,8 +28,7 @@ public class DropSwitchItemListener implements Listener {
 		e.setCancelled(true);
 		Player p = e.getPlayer();
 		Session session = Session.getPlayerSession(p);
-		@SuppressWarnings("deprecation")
-		ItemStack item = p.getItemInHand();
+		ItemStack item = e.getMainHandItem();
 		if(item != null) {
 			if(session != null && session.tagging()) {
 				if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {

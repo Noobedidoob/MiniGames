@@ -9,6 +9,7 @@ package me.noobedidoob.minigames.lasertag.methods;
 //import me.noobedidoob.minigames.lasertag.Lasertag;
 
 public class PointEvents {
+    //TODO: Enable PointsEvents
 //	
 //	private static Player[] allPlayers;
 //	private static int prepareTime = 10;

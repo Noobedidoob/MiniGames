@@ -34,7 +34,6 @@ public class SessionInventories implements Listener{
 		pluginManeger.registerEvents(this, minigames);
 	}
 	
-	int mapInvCounter = 0;
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerClickInventory(InventoryClickEvent e) {
 		try {
@@ -277,17 +276,14 @@ public class SessionInventories implements Listener{
 				new BukkitRunnable(){
 					@Override
 					public void run() {
-						try {
-							if (inv.getItem(4).getType() == Material.CLOCK) {
-								if (!session.isTimeSet()) openTimeInv(p);
-							} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-								if (session.isMapNull()) openMapInv(p);
-							} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
-								if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
-							} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
-								if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
-							}
-						} catch (NullPointerException e) {
+						if (inv.getItem(4).getType() == Material.CLOCK) {
+							if (!session.isTimeSet()) openTimeInv(p);
+						} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
+							if (session.isMapNull()) openMapInv(p);
+						} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
+							if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
+						} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
+							if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
 						}
 					}
 				}.runTaskLater(minigames,5);
