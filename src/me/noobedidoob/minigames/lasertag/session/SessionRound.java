@@ -226,7 +226,7 @@ public class SessionRound {
 			if(p.hasPotionEffect(PotionEffectType.GLOWING)) p.removePotionEffect(PotionEffectType.GLOWING);
 			p.sendMessage("\n§7—————§a§lPoints§r§7—————\n");
 			p.sendMessage(leaderboardString.toString());
-			p.sendMessage("\n§7——————————————\n");
+			p.sendMessage("§7——————————————\n");
 			
 			p.sendTitle("§b"+winnerTeamsString+" §awon", "§aScore: §d"+amount, 20, 20*5, 20);
 		}

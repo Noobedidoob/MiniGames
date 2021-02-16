@@ -276,14 +276,18 @@ public class SessionInventories implements Listener{
 				new BukkitRunnable(){
 					@Override
 					public void run() {
-						if (inv.getItem(4).getType() == Material.CLOCK) {
-							if (!session.isTimeSet()) openTimeInv(p);
-						} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-							if (session.isMapNull()) openMapInv(p);
-						} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
-							if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
-						} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
-							if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
+						try {
+							if (inv.getItem(4).getType() == Material.CLOCK) {
+								if (!session.isTimeSet()) openTimeInv(p);
+							} else if (inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
+								if (session.isMapNull()) openMapInv(p);
+							} else if (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE) {
+								if (session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
+							} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
+								if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
+							}
+						} catch (NullPointerException npe){
+							
 						}
 					}
 				}.runTaskLater(minigames,5);

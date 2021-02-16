@@ -49,7 +49,7 @@ public class DeathListener implements Listener {
 				switch (type) {
 				case SHOT:
 					points += session.getIntMod(Mod.SHOT_KILL_EXTRA_POINTS);
-					session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+((snipe)?"snipe":"shot")+" §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((headshot)?" §7[§d§nHEADSHOT§r§7] ": "")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
+					session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+((snipe)?"sniped":"shot")+" §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((headshot)?" §7[§d§nHEADSHOT§r§7] ": "")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
 					break;
 				case PVP:
 					points += session.getIntMod(Mod.PVP_KILL_EXTRA_POINTS);
@@ -59,9 +59,9 @@ public class DeathListener implements Listener {
 					break;
 				}
 
-				STREAKED_PLAYERS.putIfAbsent(victim, 0);
 				victim.damage(100);
 				if(session.withCaptureTheFlag() && Flag.getPlayerFlag(victim) != null) Flag.getPlayerFlag(victim).drop(victim.getLocation());
+				STREAKED_PLAYERS.putIfAbsent(victim, 0);
 				Utils.runLater(()->{
 					addStreak(killer);
 					if (STREAKED_PLAYERS.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
@@ -85,8 +85,8 @@ public class DeathListener implements Listener {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
 		STREAKED_PLAYERS.putIfAbsent(p, 0);
-		int streak = STREAKED_PLAYERS.get(p);
-		STREAKED_PLAYERS.put(p,streak++);
+		int streak = STREAKED_PLAYERS.get(p)+1;
+		STREAKED_PLAYERS.put(p,streak);
 		if(streak >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) {
 			session.addPoints(p, session.getIntMod(Mod.STREAK_EXTRA_POINTS),"——§e"+session.getPlayerColor(p).getChatColor()+p.getName()+" §dHas a streak of §a"+streak+"§d! §7(§a+"+session.getIntMod(Mod.STREAK_EXTRA_POINTS)+" extra Point"+((session.getIntMod(Mod.STREAK_EXTRA_POINTS) > 1)?"s":"")+"§7)§e——");
 		}

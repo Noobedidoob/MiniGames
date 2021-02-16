@@ -141,7 +141,7 @@ public class Lasertag implements Listener{
 				ConfigurationSection subCs = cs.getConfigurationSection(name+".basespawn");
 				assert subCs != null;
 				for(String colorName : subCs.getKeys(false)) {
-					if(!colorName.equalsIgnoreCase("enabled") && !colorName.equalsIgnoreCase("protectionradius")) {
+					if(!colorName.equalsIgnoreCase("enabled") && !colorName.equalsIgnoreCase("capture-the-flag") && !colorName.equalsIgnoreCase("protectionradius")) {
 						LasertagColor baseColor = LasertagColor.getFromString(colorName);
 						Coordinate baseCoord = new Coordinate(subCs.getDouble(colorName+".x"), subCs.getDouble(colorName+".y"), subCs.getDouble(colorName+".z"));
 						Coordinate baseFlagCoord = (withCTF)? new Coordinate(subCs.getDouble(colorName+".flag.x"),subCs.getDouble(colorName+".flag.y"),subCs.getDouble(colorName+".flag.z")):null;

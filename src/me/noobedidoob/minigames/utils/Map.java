@@ -210,27 +210,37 @@ public class Map {
 		return NAME_MAPS.get(name.toLowerCase());
 	}
 
-
+ 	//TODO: fix
+	private final HashMap<Player, Boolean> playerCoolingDownFromParticleEffect = new HashMap<>();
 	public boolean checkLocPlayerShootingFrom(Player p){
-		Session session = Session.getPlayerSession(p); if(session == null) return true;
-		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return false;
-		for(Coordinate coord : baseCoords){
-			if(baseCoords.indexOf(coord) < baseAmount && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
-				baseSphere.get(baseColor.get(coord)).draw(p);
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
-				return true;
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return true;
+		System.out.println(session.isSolo() && !session.getMap().withRandomSpawn());
+		System.out.println(session.isTeams() && session.getMap().withBaseSpawn());
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
+			playerCoolingDownFromParticleEffect.putIfAbsent(p,false);
+			if(!playerCoolingDownFromParticleEffect.get(p)){
+				for(Coordinate coord : baseCoords){
+					if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+						baseSphere.get(baseColor.get(coord)).draw(p);
+						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
+						Utils.runLater(()->playerCoolingDownFromParticleEffect.put(p,false), 25);
+						return true;
+					}
+				}
 			}
 		}
 		return false;
 	}
 	public boolean checkPlayerLaserLoc(Location loc, Player p){
 		Session session = Session.getPlayerSession(p); if(session == null) return true;
-		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return false;
-		for(Coordinate coord : baseCoords){
-			if(baseCoords.indexOf(coord) < baseAmount && loc.distance(coord.getLocation()) < protectionRaduis){
-				baseSphere.get(baseColor.get(coord)).draw(p);
-				p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
-				return true;
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
+			for(Coordinate coord : baseCoords){
+				if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && loc.distance(coord.getLocation()) < protectionRaduis){
+					baseSphere.get(baseColor.get(coord)).draw(p);
+					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+					return true;
+				}
 			}
 		}
 		return false;
@@ -240,16 +250,17 @@ public class Map {
 	public void checkPlayerPosition(Player p){
 		Session session = Session.getPlayerSession(p); if(session == null) return;
 		if(session.withCaptureTheFlag()) return;
-		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) return;
-		playerCoolingDownFromDamage.putIfAbsent(p,false);
-		if(playerCoolingDownFromDamage.get(p)){
-			for(Coordinate coord : baseCoords){
-				if(baseCoords.indexOf(coord) < baseAmount && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
-					baseSphere.get(baseColor.get(coord)).draw(p);
-					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
-					playerCoolingDownFromDamage.put(p,true);
-					Utils.runLater(()->playerCoolingDownFromDamage.put(p,false), 25);
-					return;
+		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
+			playerCoolingDownFromDamage.putIfAbsent(p,false);
+			if(playerCoolingDownFromDamage.get(p)){
+				for(Coordinate coord : baseCoords){
+					if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+						baseSphere.get(baseColor.get(coord)).draw(p);
+						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+						playerCoolingDownFromDamage.put(p,true);
+						Utils.runLater(()->playerCoolingDownFromDamage.put(p,false), 25);
+						return;
+					}
 				}
 			}
 		}

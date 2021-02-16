@@ -32,7 +32,7 @@ public class InteractListener implements Listener {
 				if(Weapon.getWeaponFromItem(e.getItem())!= null)  LaserShooter.fireTest(p, Weapon.getWeaponFromItem(e.getItem()));
 			} else if(e.getAction() == Action.LEFT_CLICK_AIR | e.getAction() == Action.LEFT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
-				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")/* | e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")*/) {
+				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
 					return;
 				}
@@ -48,7 +48,7 @@ public class InteractListener implements Listener {
 				if(Weapon.getWeaponFromItem(e.getItem()) != null) LaserShooter.fire(p, Weapon.getWeaponFromItem(e.getItem()));
 			} else if(e.getAction() == Action.LEFT_CLICK_AIR | e.getAction() == Action.LEFT_CLICK_BLOCK) {
 				if(e.getItem() == null) return;
-				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER") | (session.withMultiweapons() && e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN"))) {
+				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
 				}
 			}

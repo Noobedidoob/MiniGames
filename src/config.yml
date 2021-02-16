@@ -413,8 +413,8 @@ Lasertag:
           x: 69.5
           y: 8
           z: -126.5
-            flag:
-              x: 70
-              y: 6
-              z: -157
+          flag:
+            x: 70
+            y: 6
+            z: -157
         protectionradius: 4

@@ -2,6 +2,7 @@ package me.noobedidoob.minigames;
 
 import java.util.HashMap;
 
+import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -40,6 +41,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 
+@SuppressWarnings("deprecation")
 public class Listeners implements Listener{
 	
 	private final Minigames minigames;
@@ -69,7 +71,6 @@ public class Listeners implements Listener{
 		linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		linkMsg.setUnderlined(true);
 		linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.TEXTUREPACK_URL));
-		//noinspection deprecation
 		linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Download the texturepack").create()));
 		msg1.addExtra(linkMsg);
 
@@ -118,7 +119,7 @@ public class Listeners implements Listener{
 		}
 		
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
-		
+		//TODO: Fix "TEST TEST TEST" bug on testweaponsdisplayname
 		if (Session.getPlayerSession(p) != null && Session.getPlayerSession(p).tagging()) return;
 		if (!Lasertag.isPlayerTesting(p)) {
 			if(Lasertag.getTestAera().isInside(e.getTo())) {
@@ -181,11 +182,17 @@ public class Listeners implements Listener{
 	}
 
 	@EventHandler
-	public void onPlayerDropItem(PlayerDropItemEvent e) {
-		if(!e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
+	public void onPlayerDropItem(PlayerDropItemEvent e){
+		Player p = e.getPlayer();
+		ItemStack item = e.getItemDrop().getItemStack();
+		item.setAmount(p.getInventory().getItemInMainHand().getAmount()+1);
+		e.getItemDrop().remove();
+		int slot = p.getInventory().getHeldItemSlot();
+		Utils.runLater(()->p.getInventory().setItem(slot,item), 1);
 	}
+
 	@EventHandler
-	public void onPlayerItemPickup(@SuppressWarnings("deprecation") PlayerPickupItemEvent e) {
+	public void onPlayerItemPickup(PlayerPickupItemEvent e) {
 		if(!e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
 	}
 	

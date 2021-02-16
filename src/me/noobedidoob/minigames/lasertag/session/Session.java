@@ -470,7 +470,9 @@ public class Session implements Listener{
 	public void addPoints(Player p, int points, String message) {
 		playerPoints.put(p, playerPoints.get(p) + points);
 		if (!solo) getPlayerTeam(p).addPoints(points);
-		broadcast(message);
+		for(Player ap : players){
+			ap.sendMessage(message);
+		}
 	}
 	private List<Player> players = new ArrayList<>();
 	public Player[] getPlayers() {

@@ -1,5 +1,6 @@
 package me.noobedidoob.minigames.utils;
 
+import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
@@ -35,7 +36,7 @@ public class Flag implements Listener {
         this.baseLocation = baseLocation;
         this.banner = new ItemStack(Material.valueOf(color.getChatColor().name()+"_BANNER"));
 
-        Bukkit.getPluginManager().registerEvents(this,session.minigames);
+        Bukkit.getPluginManager().registerEvents(this, Minigames.INSTANCE);
     }
     public Flag(Coordinate baseCoordinate, LasertagColor color){
         new Flag(baseCoordinate.getLocation(), color);
@@ -140,6 +141,7 @@ public class Flag implements Listener {
         return session != null;
     }
     public void enable(Session session){
+        System.out.println("enable");
         this.session = session;
         armorStand = (ArmorStand) baseLocation.getWorld().spawnEntity(baseLocation, EntityType.ARMOR_STAND);
         armorStand.setVisible(false);

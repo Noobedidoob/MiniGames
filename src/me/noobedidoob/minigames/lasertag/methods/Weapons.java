@@ -75,14 +75,12 @@ public class Weapons {
 			if(s != null){
 				switch (this) {
 				case LASERGUN:
-					cooldown = (s.withMultiweapons())? s.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE) : s.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE);
+					cooldown = (s.withMultiweapons())? s.getIntMod(Mod.LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS) : s.getIntMod(Mod.LASERGUN_COOLDOWN_TICKS);
 					break;
 				case SNIPER:
 					cooldown = s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS);
 					Utils.runLater(() -> {
-						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?3:2).setAmount(s.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
-						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?4:3).setType(Material.AIR);
-						p.getInventory().getItem((Lasertag.isPlayerTesting(p))?5:4).setType(Material.AIR);
+						p.getInventory().getItem(2).setAmount(s.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
 					}, s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
 					break;
 				case SHOTGUN:

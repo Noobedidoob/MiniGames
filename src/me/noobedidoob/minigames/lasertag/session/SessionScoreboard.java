@@ -99,9 +99,7 @@ public class SessionScoreboard {
 				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
 					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
 				}
-				else if(Lasertag.isPlayerProtected(p)) {
-					p.spawnParticle(Particle.COMPOSTER, p.getLocation().subtract(0, 1, 0), 1, 2,2,2);
-				}
+				if(Lasertag.isPlayerProtected(p)) BaseSphere.drawPlayerProtectionSphere(p);
 			}
 		} else {
 			
