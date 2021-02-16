@@ -54,7 +54,7 @@ public class SessionModifiers {
 
 	public enum Mod{
 		POINTS(1, "Normal amount of points a player gets"),
-		NORMAL_KILL_EXTRA_POINTS(0, "Extra points when a player shot normal"),
+		SHOT_KILL_EXTRA_POINTS(0, "Extra points when a player shot normal"),
 		SNIPER_KILL_EXTRA_POINTS(1, "Extra points when killing with snipe-shot"),
 		HEADSHOT_EXTRA_POINTS(1, "Extra ponts when killing with headshot"),
 		BACKSTAB_EXTRA_POINTS(0, "Extra points when backstabbing"),

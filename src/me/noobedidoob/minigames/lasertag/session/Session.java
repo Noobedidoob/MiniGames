@@ -443,6 +443,12 @@ public class Session implements Listener{
 	public LasertagColor getPlayerColor(Player p) {
 		return playerColor.get(p);
 	}
+	public Player getPlayerFromColor(LasertagColor color){
+		for (Player p : players) {
+			if(getPlayerColor(p).equals(color)) return p;
+		}
+		return null;
+	}
 	public void refreshSoloPlayerColors() {
 		if (isSolo()) {
 			for (Player p : players) {
@@ -460,9 +466,11 @@ public class Session implements Listener{
 	public int getPlayerPoints(Player p) {
 		return playerPoints.get(p);
 	}
-	public void addPoints(Player p, int points) {
-		playerPoints.put(p, playerPoints.get(p)+points);
-		if(!solo) getPlayerTeam(p).addPoints(points);
+
+	public void addPoints(Player p, int points, String message) {
+		playerPoints.put(p, playerPoints.get(p) + points);
+		if (!solo) getPlayerTeam(p).addPoints(points);
+		broadcast(message);
 	}
 	private List<Player> players = new ArrayList<>();
 	public Player[] getPlayers() {
@@ -735,12 +743,7 @@ public class Session implements Listener{
 	
 	
 
-	public void broadcast(String s) {
-		for(Player p : players) {
-			sendMessage(p, s);
-		}
-	}
-	public void sendMessageAll(String s) {
+	public void broeadcast(String s) {
 		for(Player p : players) {
 			p.sendMessage(s);
 		}

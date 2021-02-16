@@ -2,6 +2,7 @@ package me.noobedidoob.minigames.utils;
 
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,6 +43,7 @@ public class Flag implements Listener {
 
     private BukkitTask glowTask;
     public void attach(Player p){
+        //TODO: give player drop item
         if(session == null) return;
         this.playerAttachedTo = p;
         p.getEquipment().setHelmet(banner);
@@ -84,9 +86,9 @@ public class Flag implements Listener {
         if (session != null && session.isInSession(e.getPlayer())) {
             Player p = e.getPlayer();
             LasertagColor playerColor = session.getPlayerColor(p);
-            if(playerAttachedTo != null){
+            if(playerAttachedTo == null){
                 if (e.getTo().distance(armorStand.getLocation()) < 1.5) {
-                    if(armorStand.getLocation() == baseLocation){
+                    if(isAtBase()){
                         if(!playerColor.equals(color)) {
                             attach(e.getPlayer());
                         }
@@ -99,9 +101,11 @@ public class Flag implements Listener {
                     }
                 }
             } else {
-                if(p == playerAttachedTo && session.getMap().getBaseCoord(playerColor).getLocation().distance( e.getTo()) < session.getMap().getProtectionRaduis()){
-                    //TODO: add points
-
+                if(p == playerAttachedTo && session.getMap().getBaseCoord(playerColor).getLocation().distance(p.getLocation()) < session.getMap().getProtectionRaduis()){
+                    if (session.getMap().getBaseFlag(playerColor).isAtBase()) {
+                        teleportToBase();
+                        session.addPoints(p,session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor()+p.getName()+" §7§ocaptured the flag from "+color.getChatColor()+((session.isTeams()?"team "+color:session.getPlayerFromColor(color).getName())));
+                    }
                 }
             }
         }
@@ -128,6 +132,9 @@ public class Flag implements Listener {
         return playerAttachedTo != null;
     }
 
+    public boolean isAtBase(){
+        return playerAttachedTo == null && armorStand.getLocation() == baseLocation;
+    }
 
     public boolean isEnabled(){
         return session != null;
@@ -153,7 +160,7 @@ public class Flag implements Listener {
     }
 
 
-    private static HashMap<Player, Flag> PLAYER_FLAG = new HashMap<>();
+    private static final HashMap<Player, Flag> PLAYER_FLAG = new HashMap<>();
     public static Flag getPlayerFlag(Player p){
         return PLAYER_FLAG.get(p);
     }

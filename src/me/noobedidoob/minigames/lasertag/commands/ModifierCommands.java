@@ -11,8 +11,8 @@ import me.noobedidoob.minigames.Minigames;
 
 public class ModifierCommands  {
 	
-	@SuppressWarnings("unused")
-	private Minigames minigames;
+	@SuppressWarnings({"FieldCanBeLocal", "unused"})
+	private final Minigames minigames;
 	public ModifierCommands(Minigames minigames) {
 		this.minigames = minigames;
 	}
@@ -31,9 +31,7 @@ public class ModifierCommands  {
 			} else {
 				sender.sendMessage("\n§7—————————§b§lModifiers§r§7—————————");
 				Session s = Session.getPlayerSession((Player) sender);
-				s.modifiers.modValues.forEach((m, v) ->{
-					sender.sendMessage("§7> " + m.name() + ": §a" + s.getModValue(m).toString());
-				});
+				s.modifiers.modValues.forEach((m, v) -> sender.sendMessage("§7> " + m.name() + ": §a" + s.getModValue(m).toString()));
 				sender.sendMessage("§7—————————————————————\n");
 			}
 			return;
@@ -53,8 +51,9 @@ public class ModifierCommands  {
 			if(args[0].equalsIgnoreCase("setmodifier") && args.length == 3) {
 				Mod m = Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_"));
 				String valString = args[2];
+				//noinspection UnusedAssignment
 				Object value = valString;
-				
+
 				try {
 					value = Integer.parseInt(valString);
 				} catch (NumberFormatException e1) {
@@ -90,9 +89,7 @@ public class ModifierCommands  {
 		}
 		
 		
-
 		sender.sendMessage("§cSyntax ERROR! Please use §e/lt §cto see all commands and their arguments");
-		return;
 	}
 	
 	public List<String> getTabComplete(List<String> list, CommandSender sender, String[] args) {
@@ -107,7 +104,7 @@ public class ModifierCommands  {
 			if(args.length == 2) {
 				for(Mod m : Mod.values()) list.add(m.name().toLowerCase());
 			} else if(args.length == 3 && Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_")) != null) {
-				if(Mod.getMod(StringUtils.replace(args[1].toUpperCase(),"-", "_")).getValueTypeName() == "true/false") {
+				if(Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_")).getValueTypeName().equals("true/false")) {
 					list.add("true");
 					list.add("false");
 				}
@@ -117,7 +114,7 @@ public class ModifierCommands  {
 		if(args.length == 3) {
 			Mod m = Mod.getMod(args[2]);
 			if (m != null) {
-				if (m.getValueTypeName() == "true/false") {
+				if (m.getValueTypeName().equals("true/false")) {
 					if (sender.isOp()) {
 						list.add("true");
 						list.add("false");

@@ -19,8 +19,8 @@ import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 public class SessionCommands implements CommandExecutor, TabCompleter{
 	
 	
-	private Minigames minigames;
-	private ModifierCommands modifierCommands;
+	private final Minigames minigames;
+	private final ModifierCommands modifierCommands;
 	public SessionCommands(Minigames minigames, ModifierCommands modifierCommands) {
 		this.minigames = minigames;
 		this.modifierCommands = modifierCommands;
