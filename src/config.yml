@@ -12,6 +12,7 @@ Lasertag:
     streak-extra-points: 2
     streak-shutdown-extra-points: 2
     multikills-extra-points: 2
+    capture-the-flag-points: 2
     minimal-snipe-distance: 30
     sktreak-shutdown-points: 2
     minimal-kills-for-streak: 5
