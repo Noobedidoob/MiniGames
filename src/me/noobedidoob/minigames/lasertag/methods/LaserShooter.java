@@ -1,17 +1,21 @@
 package me.noobedidoob.minigames.lasertag.methods;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
+import me.noobedidoob.minigames.Minigames;
+import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
+import me.noobedidoob.minigames.lasertag.listeners.DeathListener.HitType;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.session.SessionTeam;
+import me.noobedidoob.minigames.utils.BaseSphere;
 import me.noobedidoob.minigames.utils.HitBox;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.Tag;
+import me.noobedidoob.minigames.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Slab;
@@ -22,20 +26,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
-import me.noobedidoob.minigames.lasertag.listeners.DeathListener.HitType;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
-import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.lasertag.session.SessionTeam;
-import me.noobedidoob.minigames.Minigames;
-import me.noobedidoob.minigames.utils.BaseSphere;
-import me.noobedidoob.minigames.utils.Coordinate;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class LaserShooter{
 	
@@ -45,20 +38,12 @@ public class LaserShooter{
 		SessionModifiers modifiers = session.modifiers;
 		
 		List<Player> alreadyKilledPlayers = new ArrayList<>();
+		List<Player> killedPlayers = new ArrayList<>();
 		
 		switch (w) {
 		case LASERGUN:
 			if(!w.hasCooldown(p)) {
 				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
-//				if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//					for (Coordinate coord : session.getMap().getBaseCoords()) {
-//						if (p.getLocation().distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
-//							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//							return;
-//						}
-//					}
-//				}
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 
 				Location l1 = p.getLocation();
@@ -73,24 +58,12 @@ public class LaserShooter{
 				}
 
 				int range = 100;
-//				if(session.withMultiweapons()) range = 35;
 				for(double d = 0; d<range; d += 0.1) {
 					if(d==0) w.setCooldown(p);
 					Location loc = l1.add(direction);
-
+					if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 
 					spawnProjectile(p, loc);
-
-					if(session.getMap().checkPlayerLaserLoc(loc,p)) return;
-//					if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//						for(Coordinate coord : session.getMap().getBaseCoords()) {
-//							if(loc.distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
-//								session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//								return;
-//							}
-//						}
-//					}
 
 					for(Player hitP : session.getPlayers()) {
 						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
@@ -98,59 +71,20 @@ public class LaserShooter{
 								if(Lasertag.isPlayerProtected(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
 									BaseSphere.drawPlayerProtectionSphere(hitP);
-									return;
+									break;
 								}
-								boolean fromTeam = false;
-								if(session.isTeams()) {
-									for(SessionTeam team : session.getTeams()) {
-										boolean pInTeam = false;
-										for(Player tp : team.getPlayers())
-											if (tp == p) {
-												pInTeam = true;
-												break;
-											}
-										if(pInTeam) {
-											for(Player thp : team.getPlayers())
-												if (thp == hitP) {
-													fromTeam = true;
-													break;
-												}
-										}
-									}
-								}
-								if(!fromTeam) {
-//									if(alreadyKilledPlayers.size() > 1) {
-//										Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-//											@Override
-//											public void run() {
-//												String killedPlayersNames = "";
-//												int i = 0;
-//												for(Player kp : alreadyKilledPlayers) {
-//													if(i == 0) killedPlayersNames += session.getPlayerColor(kp).getChatColor()+kp.getName();
-//													else killedPlayersNames += ", "+session.getPlayerColor(kp).getChatColor()+kp.getName();
-//													i++;
-//												}
-//												int points =modifiers.getInt(Mod.MULTIKILLS_EXTRA_POINTS)*alreadyKilledPlayers.size();
-//												String pAddon = "";
-//												if(points > 1) pAddon = "s";
-//												for(Player ap : session.getPlayers()) {
-//													ap.sendMessage("§e——————————————————");
-//													ap.sendMessage(session.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-//													ap.sendMessage("§e——————————————————");
-//												}
-//
-//												session.addPoints(p, points);
-//											}
-//										}, 10);
-//									}
-									DeathListener.hit(HitType.SHOT, p, hitP, (session.withMultiweapons())?session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE): session.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false);
+								if(!session.inSameTeam(p,hitP)){
 									alreadyKilledPlayers.add(hitP);
+									if(DeathListener.hit(HitType.SHOT, p, hitP, (session.withMultiweapons())?session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE): session.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)){
+										killedPlayers.add(hitP);
+									}
 								}
 							}
 						}
 					}
-					if(isInBlock(session, loc)) return;
+					if(isInBlock(session, loc)) break;
 				}
+				checkMultikill(p,killedPlayers);
 			}
 			break;
 
@@ -158,15 +92,6 @@ public class LaserShooter{
 		case SHOTGUN:
 			if(!w.hasCooldown(p)) {
 				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
-//				if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//					for(Coordinate coord : session.getMap().getBaseCoords()) {
-//						if(p.getLocation().distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
-//							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//							return;
-//						}
-//					}
-//				}
 
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 
@@ -193,114 +118,44 @@ public class LaserShooter{
 				}
 
 
+				w.setCooldown(p);
 				for(double d = 0; d<6; d += 0.1) {
-					if(d==0) {
-						w.setCooldown(p);
-					}
-
 					for(int i = 0; i < 9; i++) {
-						boolean inside = false;
-						for (Coordinate coord : session.getMap().getBaseCoords()) {
-							if (locs[i].distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) inside = true;
-						}
-						if (!inside) {
-							locs[i] = startLocs[i].add(dirs[i]);
-							spawnProjectile(p, locs[i]);
-						}
+						if(locs[i] == null) continue;
+						if(session.getMap().checkPlayerLaserLoc(locs[i],p)) locs[i] = null;
+						locs[i] = startLocs[i].add(dirs[i]);
+						spawnProjectile(p, locs[i]);
 					}
-					for (Location loc : locs) {
-						if(session.getMap().checkPlayerLaserLoc(loc,p)) return;
-					}
-//					if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//						if (!warned) {
-//							for (Coordinate coord : session.getMap().getBaseCoords()) {
-//								for (Location loc : locs) {
-//									if (loc.distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
-//										session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//										warned = true;
-//									}
-//								}
-//							}
-//						}
-//					}
 					for(Player hitP : session.getPlayers()) {
 						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
 							for(Location loc : locs) {
+								if(loc == null) continue;
 								if(isLaserInsideEntity(hitP, loc)) {
 									if(Lasertag.isPlayerProtected(hitP)) {
 										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
 										BaseSphere.drawPlayerProtectionSphere(hitP);
 										return;
 									}
-									boolean fromTeam = false;
-									if(session.isTeams()) {
-										for(SessionTeam team : session.getTeams()) {
-											boolean pInTeam = false;
-											for(Player tp : team.getPlayers())
-												if (tp == p) {
-													pInTeam = true;
-													break;
-												}
-											if(pInTeam) {
-												for(Player thp : team.getPlayers())
-													if (thp == hitP) {
-														fromTeam = true;
-														break;
-													}
-											}
-										}
-									}
-									if(!fromTeam) {
-//										if(alreadyKilledPlayers.size() > 1) {
-//											Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.minigames, new Runnable() {
-//												@Override
-//												public void run() {
-//													String killedPlayersNames = "";
-//													int i = 0;
-//													for(Player kp : alreadyKilledPlayers) {
-//														if(i == 0) killedPlayersNames += session.getPlayerColor(kp).getChatColor()+kp.getName();
-//														else killedPlayersNames += ", "+session.getPlayerColor(kp).getChatColor()+kp.getName();
-//														i++;
-//													}
-//													int points = modifiers.getInt(Mod.MULTIKILLS_EXTRA_POINTS)*alreadyKilledPlayers.size();
-//													String pAddon = "";
-//													if(points > 1) pAddon = "s";
-//													for(Player ap : session.getPlayers()) {
-//														ap.sendMessage("§e——————————————————");
-//														ap.sendMessage(session.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+pAddon+"§7)");
-//														ap.sendMessage("§e——————————————————");
-//													}
-//
-//													session.addPoints(p, points);
-//												}
-//											}, 10);
-//										}
-										DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SHOTGUN_DAMAGE), false, false, false);
+									if(!session.inSameTeam(p,hitP)) {
 										alreadyKilledPlayers.add(hitP);
+										if (DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SHOTGUN_DAMAGE), false, false, false)) {
+											killedPlayers.add(hitP);
+										}
 									}
 								}
 							}
 						}
 					}
-					for(Location loc : locs) {
-						if(isInBlock(session, loc)) return;
+					for (int i = 0; i < locs.length; i++) {
+						if(locs[i] != null && isInBlock(session, locs[i])) locs[i] = null;
 					}
 				}
+				checkMultikill(p,killedPlayers);
 			}
 			break;
 		case SNIPER:
 			if(!w.hasCooldown(p)) {
 				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
-//				if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//					for(Coordinate coord : session.getMap().getBaseCoords()) {
-//						if(p.getLocation().distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
-//							session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//							return;
-//						}
-//					}
-//				}
 
 				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 10, 0);
 
@@ -316,70 +171,32 @@ public class LaserShooter{
 						} else {
 							w.setCooldown(p);
 						}
-						
-//						if(playersSnipershots.get(p) == null) playersSnipershots.put(p, 0);
-//						int shots = playersSnipershots.get(p);
-//						if(shots == modifiers.getInt(Mod.SNIPER_AMMO_BEFORE_COOLDOWN)-1) {
-//							Weapons.cooldownPlayer(p, Weapon.SNIPER, false);
-//							playersSnipershots.put(p, 0);
-//							p.getInventory().getItem(2).setAmount(1);
-//						} else {
-//							playersSnipershots.put(p, shots+1);
-//							p.getInventory().getItem(2).setAmount(modifiers.getInt(Mod.SNIPER_AMMO_BEFORE_COOLDOWN)-1-shots);
-//						}
-						
 					}
 					Location loc = l1.add(direction);
-					
+					if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
+
 					spawnProjectile(p, loc);
 
-					if(session.getMap().checkPlayerLaserLoc(loc,p)) return;
-//					if ((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-//						for(Coordinate coord : session.getMap().getBaseCoords()) {
-//							if(loc.distance(coord.getLocation()) < session.getMap().getProtectionRaduis()) {
-//								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
-//								session.getMap().drawBaseSphere(session.getMap().baseColor.get(coord), p);
-//								return;
-//							}
-//						}
-//					}
-					
-					Player[] inGamePlayers = session.getPlayers();
-					for(Player hitP : inGamePlayers) {
+					for(Player hitP : session.getPlayers()) {
 						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
 							if(isLaserInsideEntity(hitP, loc)) {
 								if(Lasertag.isPlayerProtected(hitP)) {
 									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
 									BaseSphere.drawPlayerProtectionSphere(hitP);
-									return;
+									break;
 								}
-								boolean fromTeam = false;
-								if(session.isTeams()) {
-									for(SessionTeam team : session.getTeams()) {
-										boolean pInTeam = false;
-										for(Player tp : team.getPlayers())
-											if (tp == p) {
-												pInTeam = true;
-												break;
-											}
-										if(pInTeam) {
-											for(Player thp : team.getPlayers())
-												if (thp == hitP) {
-													fromTeam = true;
-													break;
-												}
-										}
-									}
-								}
-								if(!fromTeam) {
-									DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SNIPER_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false);
+								if (!session.inSameTeam(p,hitP)) {
 									alreadyKilledPlayers.add(hitP);
+									if(DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SNIPER_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)) {
+										killedPlayers.add(hitP);
+									}
 								}
 							}
 						}
 					}
-					if(isInBlock(session, loc)) return;
+					if(isInBlock(session, loc)) break;
 				}
+				checkMultikill(p, killedPlayers);
 			}
 			break;
 		
@@ -387,7 +204,25 @@ public class LaserShooter{
 			break;
 		}
 	}
-	
+
+	private static  void checkMultikill(Player p, List<Player> players){
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		if(players.size() > 1) {
+			Utils.runLater(()->{
+				StringBuilder killedPlayersNames = new StringBuilder();
+				int i = 0;
+				for(Player kp : players) {
+					if(i == 0) killedPlayersNames.append(session.getPlayerColor(kp).getChatColor()).append(kp.getName());
+					else killedPlayersNames.append(", ").append(session.getPlayerColor(kp).getChatColor()).append(kp.getName());
+					i++;
+				}
+				int points = session.getIntMod(Mod.MULTIKILLS_EXTRA_POINTS)*players.size();
+				session.addPoints(p, points, "§e—— "+session.getPlayerColor(p).getChatColor()+p.getName()+" §dkilled "+killedPlayersNames+" §dwith one shot! §7(§a+"+points+" extra Point"+((points > 1)?"s":"")+"§7) §e——");
+			}, 10);
+		}
+	}
+
 	public static void colorPlayerHitBox(Player p) {
 		HitBox hb = new HitBox(p);
 		for(double x = hb.getMinX(); x <= hb.getMaxX(); x += 0.1) {
@@ -401,8 +236,6 @@ public class LaserShooter{
 	
 	
 	public static boolean isLaserInsideEntity(Entity p, Location loc) {
-//		if(new HitBox(p).isInside(loc)) return true;
-		
 		double x = loc.getX();
 		double y = loc.getY();
 		double z = loc.getZ();
@@ -529,11 +362,12 @@ public class LaserShooter{
 				
 				for(double d = 0; d<3.6; d += 0.1) {
 					for(int i = 0; i < 9; i++) {
+						if(locs[i] == null) continue;
 						locs[i] = startLocs[i].add(dirs[i]);
 						spawnTestProjectile(p, locs[i], Color.YELLOW);
 					}
-					for(Location loc : locs) {
-						if(!checkloc(p, loc)) return;
+					for (int i = 0; i < 9; i++) {
+						if(locs[i]!= null && !checkloc(p, locs[i])) locs[i] = null;
 					}
 				}
 			}
@@ -553,7 +387,6 @@ public class LaserShooter{
 				direction1.multiply(1);
 
 				for(double d = 0; d<100; d += 1) {
-					
 					try {
 						if(d==0) {
 							int s = p.getInventory().getItem(2).getAmount();
@@ -601,9 +434,9 @@ public class LaserShooter{
 		}
 		return true;
 	}
-	
+
 	public static void spawnTestProjectile(Player p, Location loc, Color c) {
-		p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f));
+		Utils.runDefinedRepeater(()->p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f)),0,10,10);
 	}
 	
 }

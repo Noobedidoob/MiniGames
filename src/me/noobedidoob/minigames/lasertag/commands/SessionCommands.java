@@ -20,21 +20,12 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 	
 	
 	private final Minigames minigames;
-	private final ModifierCommands modifierCommands;
-	public SessionCommands(Minigames minigames, ModifierCommands modifierCommands) {
+	public SessionCommands(Minigames minigames) {
 		this.minigames = minigames;
-		this.modifierCommands = modifierCommands;
 	}
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
-		
-		if(args.length >= 1) {
-			if(args[0].toLowerCase().contains("modifier")/* | args[0].equalsIgnoreCase("withmultiweapons")*/) {
-				modifierCommands.perform(sender, args);
-				return true;
-			}
-		}
 		
 		if(sender instanceof Player){
 			Player p = (Player) sender;
@@ -148,12 +139,12 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 						Session.sendMessage(p, "§cPlease leave this session first!");
 						return true;
 					}
-					Session invS = Session.getSessionFromCode(args[1]);
+					Session invS = Session.getSessionFromName(args[1]);
 					if(invS != null) {
 						if(!invS.isPlayerBanned(p)) {
 							if (!invS.tagging()) {
 								invS.addPlayer(p);
-							} else Session.sendMessage(p, "§cThe players are currently in-game. Please wait!");
+							} else Session.sendMessage(p, "§cThe plasyers are currently in-game. Please wait!");
 						} else Session.sendMessage(p, "§cYou are banned from this session!");
 					} else Session.sendMessage(p, "§cThis invitation expired!");
 					return true;
@@ -271,27 +262,25 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					} else Session.sendMessage(p, "§cYou're not in a session!");
 					return true;
 				}
-			} else {
-				if(args[0].equalsIgnoreCase("setTime")) {
-					System.out.println(args.length);
-					if(s != null) {
-						if(s.isAdmin(p)) {
-							try {
-								int time = Integer.parseInt(args[1]);
-								TimeFormat format = TimeFormat.MINUTES;
-								if(args.length == 3) format = TimeFormat.getFromString(args[2]);
-								s.setTime(time, format, true);
-							} catch (NumberFormatException e) {
-								sender.sendMessage("§cThe given argument §e"+StringUtils.replace(e.getMessage(), "For input string: ","")+" §cis not a Number!");
-								return true;
-							} catch (Exception e) {
-								sender.sendMessage("§cSyntax error: "+e.getMessage());
-								return true;
-							}
-						} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
-					} else Session.sendMessage(p, "§cYou're not in a session!");
-					return true;
-				}
+			}
+			if(args[0].equalsIgnoreCase("setTime")) {
+				if(s != null) {
+					if(s.isAdmin(p)) {
+						try {
+							int time = Integer.parseInt(args[1]);
+							TimeFormat format = TimeFormat.MINUTES;
+							if(args.length == 3) format = TimeFormat.getFromString(args[2]);
+							s.setTime(time, format, true);
+						} catch (NumberFormatException e) {
+							sender.sendMessage("§cThe given argument §e"+StringUtils.replace(e.getMessage(), "For input string: ","")+" §cis not a Number!");
+							return true;
+						} catch (Exception e) {
+							sender.sendMessage("§cSyntax error: "+e.getMessage());
+							return true;
+						}
+					} else Session.sendMessage(p, "§aYou have to be an admin of this session to perform this command!");
+				} else Session.sendMessage(p, "§cYou're not in a session!");
+				return true;
 			}
 		} else sender.sendMessage("You may only perform this command as a player!");
 		
@@ -309,7 +298,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 		List<String> list = new ArrayList<>();
 		if(!(sender instanceof Player)) return list;
 		
-		list = modifierCommands.getTabComplete(list, sender, args);
+//		list = modifierCommands.getTabComplete(list, sender, args);
 		
 		Player p = (Player) sender;
 		Session s = Session.getPlayerSession(p);

@@ -46,7 +46,7 @@ public class Session implements Listener{
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
-		CODE_SESSION.put(code, this);
+		NAME_SESSION.put(code, this);
 		
 		SessionInventories.openTimeInv(owner);
 		SESSIONS.add(this);
@@ -74,7 +74,7 @@ public class Session implements Listener{
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
-		CODE_SESSION.put(code, this);
+		NAME_SESSION.put(code, this);
 		
 		SessionInventories.openTimeInv(owner);
 		SESSIONS.add(this);
@@ -93,14 +93,11 @@ public class Session implements Listener{
 					Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
 						for(Player p : players) p.sendTitle("§aStarting Lasetag in §d4","§eMap: §b"+map.getName(), 0,30,5);
 						Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
-							for (Player p : players)
-								p.sendTitle("§aStarting Lasetag in §d3", "§eMap: §b" + map.getName(), 0, 30, 5);
+							for (Player p : players) p.sendTitle("§aStarting Lasetag in §d3", "§eMap: §b" + map.getName(), 0, 30, 5);
 							Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
-								for (Player p : players)
-									p.sendTitle("§aStarting Lasetag in §d2", "§eMap: §b" + map.getName(), 0, 30, 5);
+								for (Player p : players) p.sendTitle("§aStarting Lasetag in §d2", "§eMap: §b" + map.getName(), 0, 30, 5);
 								Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
-									for (Player p : players)
-										p.sendTitle("§aStarting Lasetag in §d1", "§eMap: §b" + map.getName(), 0, 20, 5);
+									for (Player p : players) p.sendTitle("§aStarting Lasetag in §d1", "§eMap: §b" + map.getName(), 0, 20, 5);
 									Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> round.start(), 20);
 								}, 20);
 							}, 20);
@@ -131,6 +128,10 @@ public class Session implements Listener{
 		}
 		for(Map m : Map.MAPS) {
 			mapVotes.put(m, 0);
+		}
+
+		if(withCaptureTheFlag){
+			map.disableCTF();
 		}
 		
 		this.time = 5*60;
@@ -171,7 +172,7 @@ public class Session implements Listener{
 			}
 			removePlayerSessinos();
 			modifiers.reset();
-			CODE_SESSION.put(code, null);
+			NAME_SESSION.put(code, null);
 			players = null;
 			owner = null;
 			admins = null;
@@ -275,7 +276,6 @@ public class Session implements Listener{
 			}
 			
 			broadcast("§ePlaying with in the map §b"+map.getName());
-			map.enableCTF(this);
 			map.setUsed(true);
 			mapState = MapState.SET;
 			refreshScoreboard();
@@ -301,6 +301,7 @@ public class Session implements Listener{
 			}
 			return false;
 		}
+		if(withCaptureTheFlag) map.enableCTF(this);
 		return true;
 	}
 	public boolean isMapPlayable(Map m) {
@@ -361,7 +362,7 @@ public class Session implements Listener{
 		TextComponent linkMsg = new TextComponent("JOIN");
 		linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		linkMsg.setBold(true);
-		linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lt join "+owner.getName()));
+		linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/session join "+owner.getName()));
 		linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Join the session of "+owner.getName()).create()));
 		
 		p.spigot().sendMessage(linkMsg);
@@ -529,18 +530,18 @@ public class Session implements Listener{
 				close();
 			} else if(admins.size() == 0) {
 				admins.addAll(players);
-				CODE_SESSION.put(code, null);
+				NAME_SESSION.put(code, null);
 				owner = admins.get(0);
 				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
-				CODE_SESSION.put(code, this);
+				NAME_SESSION.put(code, this);
 				setPlayerInv(owner);
 			} else {
-				CODE_SESSION.put(code, null);
+				NAME_SESSION.put(code, null);
 				owner = admins.get(0);
 				sendMessage(owner, "§l§bYou were made the owner of this session!");
 				code = owner.getName();
-				CODE_SESSION.put(code, this);
+				NAME_SESSION.put(code, this);
 				setPlayerInv(owner);
 			}
 		}
@@ -895,9 +896,9 @@ public class Session implements Listener{
 	}
 	
 	
-	private static final HashMap<String, Session> CODE_SESSION = new HashMap<>();
-	public static Session getSessionFromCode(String code) {
-		return CODE_SESSION.get(code);
+	private static final HashMap<String, Session> NAME_SESSION = new HashMap<>();
+	public static Session getSessionFromName(String code) {
+		return NAME_SESSION.get(code);
 	}
 	
 	public static void sendMessage(Player p, String s) {

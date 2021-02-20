@@ -29,16 +29,17 @@ public class DeathListener implements Listener {
 		SHOT,
 		PVP,
 	}
-	public static void hit(HitType type, Player killer, Player victim, double damage, boolean headshot, boolean snipe, boolean backstab) {
+	public static boolean hit(HitType type, Player killer, Player victim, double damage, boolean headshot, boolean snipe, boolean backstab) {
 		Session session = Session.getPlayerSession(killer);
-		if(session == null) return;
-		if(!session.isInSession(victim)) return;
+		if(session == null) return false;
+		if(!session.isInSession(victim)) return false;
 		
 		if (victim.getGameMode() == GameMode.ADVENTURE) {
 			if (damage < victim.getHealth()) {
 				if(headshot) damage *= session.getDoubleMod(Mod.HEADSHOT_MULTIPLIKATOR);
 				if(snipe) damage *= session.getDoubleMod(Mod.SNIPER_SHOT_MULTIPLIKATOR);
 				victim.damage(damage);
+				return false;
 			} else {
 				int points = session.getIntMod(Mod.POINTS);
 				if(backstab) points += session.getIntMod(Mod.BACKSTAB_EXTRA_POINTS);
@@ -68,8 +69,10 @@ public class DeathListener implements Listener {
 				},5);
 				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.setPlayerProtected(victim, true);
+				return true;
 			} 
 		}
+		return false;
 	}
 	
 	@EventHandler

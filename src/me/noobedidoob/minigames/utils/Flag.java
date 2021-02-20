@@ -12,12 +12,15 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 
@@ -25,9 +28,9 @@ public class Flag implements Listener {
 
     private Session session;
     private ArmorStand armorStand;
-    private ItemStack banner;
-    private Location baseLocation;
-    private LasertagColor color;
+    private final ItemStack banner;
+    private final Location baseLocation;
+    private final LasertagColor color;
 
     private Player playerAttachedTo;
 
@@ -38,47 +41,72 @@ public class Flag implements Listener {
 
         Bukkit.getPluginManager().registerEvents(this, Minigames.INSTANCE);
     }
-    public Flag(Coordinate baseCoordinate, LasertagColor color){
-        new Flag(baseCoordinate.getLocation(), color);
-    }
 
     private BukkitTask glowTask;
     public void attach(Player p){
-        //TODO: give player drop item
         if(session == null) return;
         this.playerAttachedTo = p;
         p.getEquipment().setHelmet(banner);
+        p.getInventory().setItem(8,Utils.getItemStack(banner.getType(),"§eDrop flag"));
         PLAYER_FLAG.put(p,this);
 
+        if(glowTask != null) glowTask.cancel();
         glowTask = new BukkitRunnable(){
             @Override
             public void run() {
                 p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,25,255));
             }
         }.runTaskTimer(session.minigames,0,20);
+
+        armorStand.getEquipment().clear();
+        armorStand.removePotionEffect(PotionEffectType.GLOWING);
+        armorStand.teleport(baseLocation.clone().add(0, session.getMap().getArea().getHeight(),0));
     }
 
     public void drop(Location dropLocation){
         if(playerAttachedTo != null){
             PLAYER_FLAG.put(playerAttachedTo,null);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
+            playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
             this.playerAttachedTo = null;
         }
         if(glowTask != null) glowTask.cancel();
+        glowTask = new BukkitRunnable(){
+            @Override
+            public void run() {
+                armorStand.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,25,255));
+            }
+        }.runTaskTimer(Minigames.INSTANCE,0,20);
 
-        armorStand.teleport(dropLocation);
+        Location loc = dropLocation.clone();
         armorStand.getEquipment().setHelmet(banner);
+        armorStand.teleport(loc.subtract(0,1,0));
+        armorStand.setGravity(true);
+        Utils.runLater(()-> {
+            armorStand.setGravity(false);
+            while(loc.getBlock().getType().isAir()){
+                loc.subtract(0,1,0);
+                armorStand.teleport(loc);
+            }
+        },20);
     }
 
     public void teleportToBase(){
         if(playerAttachedTo != null){
             PLAYER_FLAG.put(playerAttachedTo,null);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
+            playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
             this.playerAttachedTo = null;
         }
         if(glowTask != null) glowTask.cancel();
+        glowTask = new BukkitRunnable(){
+            @Override
+            public void run() {
+                armorStand.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,25,255));
+            }
+        }.runTaskTimer(Minigames.INSTANCE,0,20);
 
-        armorStand.teleport(baseLocation);
+        armorStand.teleport(baseLocation.clone().subtract(0,1,0));
         armorStand.getEquipment().setHelmet(banner);
     }
 
@@ -106,7 +134,22 @@ public class Flag implements Listener {
                     if (session.getMap().getBaseFlag(playerColor).isAtBase()) {
                         teleportToBase();
                         session.addPoints(p,session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor()+p.getName()+" §7§ocaptured the flag from "+color.getChatColor()+((session.isTeams()?"team "+color:session.getPlayerFromColor(color).getName())));
+                    } else {
+                        // TODO: 21.02.2021 Send notification, that its not possible
                     }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent e){
+        if (playerAttachedTo != null && e.getPlayer() == playerAttachedTo) {
+            if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) | e.getAction().equals(Action.RIGHT_CLICK_AIR)){
+                if(e.getItem() != null && e.getItem().getItemMeta().getDisplayName().toLowerCase().contains("drop flag")){
+                    Vector direction = playerAttachedTo.getLocation().getDirection().multiply(-1);
+                    Location loc = playerAttachedTo.getLocation().clone().add(direction).add(direction);
+                    drop(loc);
                 }
             }
         }
@@ -134,19 +177,30 @@ public class Flag implements Listener {
     }
 
     public boolean isAtBase(){
-        return playerAttachedTo == null && armorStand.getLocation() == baseLocation;
+        System.out.println((playerAttachedTo == null)+" : "+(armorStand.getLocation().distance(baseLocation.clone().subtract(0,1,0)) < 0.1));
+        return playerAttachedTo == null && armorStand.getLocation().distance(baseLocation.clone().subtract(0,1,0)) < 0.1;
     }
 
     public boolean isEnabled(){
         return session != null;
     }
     public void enable(Session session){
-        System.out.println("enable");
         this.session = session;
-        armorStand = (ArmorStand) baseLocation.getWorld().spawnEntity(baseLocation, EntityType.ARMOR_STAND);
+        Location loc = baseLocation.clone().subtract(0,1,0);
+        while(loc.getBlock().getType().isAir()){
+            loc.subtract(0,1,0);
+        }
+        armorStand = (ArmorStand) baseLocation.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
         armorStand.getEquipment().setHelmet(banner);
+        if(glowTask != null) glowTask.cancel();
+        glowTask = new BukkitRunnable(){
+            @Override
+            public void run() {
+                armorStand.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING,25,255));
+            }
+        }.runTaskTimer(Minigames.INSTANCE,0,20);
     }
     public void disable(){
         this.session = null;

@@ -14,6 +14,7 @@ import org.bukkit.FireworkEffect.Type;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -81,40 +82,27 @@ public class SessionRound {
 	
 	public void preparePlayers() {
 		for(Player p : session.getPlayers()) {
-//			LaserShooter.playersSnipershots.put(p, 0);
 			setPlayerGameInv(p);
 		}
 	}
 	
 	public void setPlayerGameInv(Player p) {
 		LasertagColor playerColor = session.getPlayerColor(p);
-		
-		if (session.isSolo()) {
-			p.getInventory().clear();
-			p.getInventory().addItem(Utils.getItemStack(Weapon.LASERGUN.getType(), playerColor.getChatColor()+"Lasergun #"+(playerColor.ordinal()+1)));
-			
-			if(session.withMultiweapons()){
-				p.getInventory().setItem(1, Utils.getItemStack(Weapon.DAGGER.getType(), playerColor.getChatColor()+"Dagger #"+(playerColor.ordinal()+1)));
-				
-				String name = session.getPlayerSecondaryWeapon(p).name().charAt(0)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
-				p.getInventory().setItem(2, Utils.getItemStack(session.getPlayerSecondaryWeapon(p).getType(), playerColor.getChatColor()+name+" #" + (playerColor.ordinal() + 1)));
-			}
-		} else {
-			LasertagColor teamColor = session.getPlayerTeam(p).getLasertagColor();
-
-			p.getInventory().clear();
-			p.getInventory().setItem(0,Utils.getItemStack(Weapon.LASERGUN.getType(), teamColor.getChatColor()+"Lasergun #"+(teamColor.ordinal()+1)));
-			p.getInventory().setChestplate(Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE, teamColor.getChatColor()+teamColor.getName()+" team armor", teamColor.getColor(),1));
-			p.getInventory().setLeggings(Utils.getLeatherArmorItem(Material.LEATHER_LEGGINGS, teamColor.getChatColor()+teamColor.getName()+" team armor", teamColor.getColor(),1));
-			p.getInventory().setBoots(Utils.getLeatherArmorItem(Material.LEATHER_BOOTS, teamColor.getChatColor()+teamColor.getName()+" team armor", teamColor.getColor(),1));
-
-			if(session.withMultiweapons()) {
-				p.getInventory().setItem(1,Utils.getItemStack(Weapon.DAGGER.getType(),teamColor.getChatColor()+"Dagger #"+(teamColor.ordinal()+1)));
-				String name = session.getPlayerSecondaryWeapon(p).name().charAt(0)+session.getPlayerSecondaryWeapon(p).name().toLowerCase().substring(1);
-				p.getInventory().setItem(2, Utils.getItemStack(session.getPlayerSecondaryWeapon(p).getType(), teamColor.getChatColor()+name+" #"+(teamColor.ordinal()+1)));
-				if(session.getPlayerSecondaryWeapon(p) == Weapon.SNIPER) p.getInventory().getItem(2).setAmount(session.getIntMod(SessionModifiers.Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
-			}
+		p.getInventory().clear();
+		p.getInventory().setItem(0, Weapon.LASERGUN.getColoredItem(playerColor));
+		if(session.withMultiweapons()){
+			p.getInventory().setItem(1, Weapon.DAGGER.getColoredItem(playerColor));
+			ItemStack secondaryWeapon = session.getPlayerSecondaryWeapon(p).getColoredItem(playerColor);
+			if(session.getPlayerSecondaryWeapon(p) == Weapon.SNIPER) secondaryWeapon.setAmount(session.getIntMod(SessionModifiers.Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
+			p.getInventory().setItem(2, secondaryWeapon);
 		}
+
+		if (session.isTeams()) {
+			p.getInventory().setChestplate(Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE, playerColor.getChatColor()+playerColor.getName()+" team armor", playerColor.getColor(),1));
+			p.getInventory().setLeggings(Utils.getLeatherArmorItem(Material.LEATHER_LEGGINGS, playerColor.getChatColor()+playerColor.getName()+" team armor", playerColor.getColor(),1));
+			p.getInventory().setBoots(Utils.getLeatherArmorItem(Material.LEATHER_BOOTS, playerColor.getChatColor()+playerColor.getName()+" team armor", playerColor.getColor(),1));
+		}
+
 	}
 	
 	

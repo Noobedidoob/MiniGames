@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 public class Utils {
 	
@@ -38,7 +39,19 @@ public class Utils {
 			}
 		}.runTaskTimer(Minigames.INSTANCE,delay,interval);
 	}
-
+	public static void runDefinedRepeater(Runnable r, int delay, int interval, int repeatAmount, Runnable runWhenComplete){
+		new BukkitRunnable(){
+			int times = 0;
+			@Override
+			public void run(){
+				r.run();
+				if(times++ == repeatAmount-1) {
+					cancel();
+					runWhenComplete.run();
+				}
+			}
+		}.runTaskTimer(Minigames.INSTANCE,delay,interval);
+	}
 
 	public static ItemStack getItemStack(Material material, String displayName, ItemFlag... flags) {
 		return getItemStack(material, displayName, 1, flags);
@@ -94,6 +107,16 @@ public class Utils {
 		assert skullMeta != null;
 		skullMeta.setDisplayName((displayName != null)?displayName:p.getName());
 		skullMeta.setOwningPlayer(p);
+		skull.setItemMeta(skullMeta);
+		return skull;
+	}
+	public static ItemStack getPlayerSkullItem(Player p, String displayName, List<String> lore){
+		ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+		SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+		assert skullMeta != null;
+		skullMeta.setDisplayName((displayName != null)?displayName:p.getName());
+		skullMeta.setOwningPlayer(p);
+		if(lore != null) skullMeta.setLore(lore);
 		skull.setItemMeta(skullMeta);
 		return skull;
 	}

@@ -42,8 +42,9 @@ public class PlayerZoomer {
 	}
 	public static void zoomPlayerOut(Player p) {
 		p.setWalkSpeed(0.2f);
-		p.getInventory().setHelmet(new ItemStack(Material.AIR));
+		if(p.getInventory().getHelmet() != null && p.getInventory().getHelmet().getType().equals(Material.CARVED_PUMPKIN)) p.getInventory().setHelmet(new ItemStack(Material.AIR));
 		IS_PLAYER_ZOOMED.put(p, false);
 	}
-	
+
+
 }

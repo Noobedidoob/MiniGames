@@ -62,14 +62,13 @@ public class SessionModifiers {
 		STREAK_EXTRA_POINTS(2, "Extra points when having a streak"),
 		STREAK_SHUTDOWN_EXTRA_POINTS(2, "Extra points when shutting down a streak"),
 		MULTIKILLS_EXTRA_POINTS(2, "Extra points when killing multiple players at once"),
-		
-		MINIMAL_SNIPE_DISTANCE(30, "Minimal distance of a shot to be a sniper shot"),
-		
-		MINIMAL_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
-		
-		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
-
 		CAPTURE_THE_FLAG_POINTS(2, "Points a player gets when delivering an enemys flag"),
+
+		MINIMAL_SNIPE_DISTANCE(30, "Minimal distance of a shot to be a sniper shot"),
+
+		MINIMAL_KILLS_FOR_STREAK(5, "Minimal kill amount required for a streak"),
+
+		SPAWNPROTECTION_SECONDS(10, "Seconds a player is protected after spawning"),
 
 		WIDTH_ADDON(0D, "ADDON TO A PLAYERS HITBOX WIDTH"),
 		HEIGHT_ADDON(0d, "Addon to a players hitbox height"),
@@ -82,17 +81,17 @@ public class SessionModifiers {
 		LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS(2, "Ticks a lasergun takes to cool down when playing with multiple weapons"),
 		SNIPER_COOLDOWN_TICKS(100, "Ticks a sniperrifle takes to cool down"),
 		SHOTGUN_COOLDOWN_TICKS(40, "Ticks a shotgun takes to cool down"),
-		SNIPER_AMMO_BEFORE_COOLDOWN(2, "Maximal sniper ammo"),
+		SNIPER_AMMO_BEFORE_COOLDOWN(3, "Maximal sniper ammo"),
 		
 		LASERGUN_NORMAL_DAMAGE(100, "Normal lasergun shot damage"),
-		LASERGUN_MULTIWEAPONS_DAMAGE(9, "lasergun shot damage when playing with multiple weapons"),
-		LASERGUN_PVP_DAMAGE(10, "Lasergun melee damage (only without multiweapons"),
-		SHOTGUN_DAMAGE(5, "Shotgun shot damage"),
+		LASERGUN_MULTIWEAPONS_DAMAGE(7, "lasergun shot damage when playing with multiple weapons"),
+		LASERGUN_PVP_DAMAGE(8, "Lasergun melee damage (only without multiweapons"),
+		SHOTGUN_DAMAGE(13, "Shotgun shot damage"),
 		SNIPER_DAMAGE(100, "Sniper shot damage"),
-		STABBER_DAMAGE(10, "Stabber melee damage"),
+		STABBER_DAMAGE(13, "Stabber melee damage"),
 		
-		HEADSHOT_MULTIPLIKATOR(1.5d, "Extra damage when hitting the head"),
-		SNIPER_SHOT_MULTIPLIKATOR(1.5d, "Extra damage when sniping");
+		HEADSHOT_MULTIPLIKATOR(1.3d, "Extra damage when hitting the head"),
+		SNIPER_SHOT_MULTIPLIKATOR(1.3d, "Extra damage when sniping");
 		
 		private Object ogValue;
 		private final String description;

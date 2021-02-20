@@ -1,5 +1,11 @@
 package me.noobedidoob.minigames.lasertag.session;
 
+import me.noobedidoob.minigames.Minigames;
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.utils.Map;
+import me.noobedidoob.minigames.utils.Utils;
+import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -16,13 +22,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.PluginManager;
-
-import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
-import me.noobedidoob.minigames.Minigames;
-import me.noobedidoob.minigames.utils.Map;
-import me.noobedidoob.minigames.utils.Utils;
-import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class SessionInventories implements Listener{
@@ -39,8 +38,9 @@ public class SessionInventories implements Listener{
 		try {
 			Player p = (Player) e.getWhoClicked();
 			Inventory inv = e.getClickedInventory();
+			assert inv != null;
 			int slot = e.getSlot();
-			if(inv == null | inv.getItem(slot) == null) return;
+			if(inv.getItem(slot) == null) return;
 			Session session = Session.getPlayerSession(p);
 			if(session == null) {
 				if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE | inv.getItem(4).getType() == Material.BARRIER) {
@@ -200,7 +200,6 @@ public class SessionInventories implements Listener{
 							}
 
 						}
-						e.setCancelled(true);
 					} catch (NullPointerException e1) {
 						e1.printStackTrace();
 					}
@@ -232,32 +231,31 @@ public class SessionInventories implements Listener{
 					p.getInventory().getItem(p.getInventory().first(Material.PAPER)).getItemMeta().setDisplayName("§eVoted for: §d"+Map.MAPS.get(slot).getName());
 				}
 
-				if(e.getInventory().getItem(1) != null && e.getInventory().getItem(1).getType() == Weapon.SHOTGUN.getType()){
+				if(inv.getItem(1) != null && inv.getItem(1).getType() == Weapon.SHOTGUN.getType()){
 					int i = 1;
 					if(session.isAdmin(p)) i = 2;
-					if(session.isTeams()) {
-						if(session.isAdmin(p)) i = 3;
-					}
+					if(session.isTeams() && session.isAdmin(p)) i = 3;
 					if(slot == 1) {
 						session.setPlayerSecondaryWeapon(p, Weapon.SHOTGUN);
-						Session.sendMessage(p, "§eYou chose the §dShotgun §eas secondary weapon");
-						p.getInventory().getItem(i).setType(Weapon.SHOTGUN.getType());
+						Session.sendMessage(p, "§eYou chose §dShotgun §eas secondary weapon");
+						p.getInventory().setItem(i,Weapon.SHOTGUN.getColoredItem(session.getPlayerColor(p), "§eSecondary weapon: §bShotgun §7[§6click to change§7]"));
 						p.closeInventory();
 					} else if(slot == 7){
 						session.setPlayerSecondaryWeapon(p, Weapon.SNIPER);
-						Session.sendMessage(p, "§eYou chose the §dSniper §eas secondary weapon");
-						p.getInventory().getItem(i).setType(Weapon.SNIPER.getType());
+						Session.sendMessage(p, "§eYou chose §dSniper §eas secondary weapon");
+						p.getInventory().setItem(i,Weapon.SNIPER.getColoredItem(session.getPlayerColor(p), "§eSecondary weapon: §bSniper §7[§6click to change§7]"));
 						p.closeInventory();
 					} else if(slot == 4 && session.isAdmin(p)){
 						session.setWithMultiWeapons(false);
 						session.broadcast("§cDisabled multiweapons");
 						p.closeInventory();
+						for (Player ap : session.getPlayers()) {
+							if(ap.getOpenInventory().getTopInventory().contains(Weapon.SNIPER.getType()) && ap.getOpenInventory().getTopInventory().contains(Weapon.SHOTGUN.getType())) ap.closeInventory();
+						}
 					}
 				}
 			}
-			e.setCancelled(true);
-		} catch (NullPointerException npe){
-			npe.printStackTrace();
+		} catch (NullPointerException ignored){
 		}
 	}
 	
@@ -286,8 +284,7 @@ public class SessionInventories implements Listener{
 							} else if(inv.getItem(1).getType() == Weapon.SHOTGUN.getType()) {
 								if(session.withMultiweapons() && !session.isPlayerReady(p)) openSecondaryWeaponChooserInv(p);
 							}
-						} catch (NullPointerException npe){
-							
+						} catch (NullPointerException ignored){
 						}
 					}
 				}.runTaskLater(minigames,5);
@@ -357,9 +354,6 @@ public class SessionInventories implements Listener{
 	}
 	
 	
-	private static ItemStack getNextItem() {
-		return Utils.getItemStack(Weapon.LASERGUN.getType(), "§aNext");
-	}
 	private static ItemStack getAdditionItem(String displayName) {
 		return Utils.getItemStack(Material.LIME_STAINED_GLASS_PANE, displayName);
 	}
@@ -373,7 +367,7 @@ public class SessionInventories implements Listener{
 		inv.setItem(2, getSubtractionItem("§c§l-1 §r§bTeam"));
 		inv.setItem(4, Utils.getItemStack(Material.BARRIER, "§cNo Teams -> §7(§bSOLO§7)"));
 		inv.setItem(6, getAdditionItem("§a§l+1 §r§bTeam"));
-		inv.setItem(8, getNextItem());
+		inv.setItem(8, Weapon.LASERGUN.getItem("§aNext"));
 		
 		p.closeInventory();
 		p.openInventory(inv);
@@ -392,7 +386,7 @@ public class SessionInventories implements Listener{
 		inv.setItem(2, getSubtractionItem("§c§l-1 §r§cminute"));
 		inv.setItem(4, Utils.getItemStack(Material.CLOCK, "§bTime: §r"+time+" Minutes", (int) time));
 		inv.setItem(6, getAdditionItem("§a§l+1 §r§aminute"));
-		inv.setItem(8, getNextItem());
+		inv.setItem(8, Weapon.LASERGUN.getItem("§aNext"));
 		
 		p.closeInventory();
 		p.openInventory(inv);
@@ -432,7 +426,7 @@ public class SessionInventories implements Listener{
 		
 		inv.setItem(2, getSubtractionItem("§c§l-1 §r§bTeam"));
 		inv.setItem(6, getAdditionItem("§a§l+1 §r§bTeam"));
-		inv.setItem(8, getNextItem());
+		inv.setItem(8, Weapon.LASERGUN.getItem("§aNext"));
 		
 		p.closeInventory();
 		p.openInventory(inv);
@@ -469,11 +463,7 @@ public class SessionInventories implements Listener{
 		}
 		
 		if(session.withMultiweapons()) {
-			Material m = Weapon.DAGGER.getType();
-			if(session.getPlayerSecondaryWeapon(p) != null) {
-				 m = (session.getPlayerSecondaryWeapon(p) == Weapon.SHOTGUN)? Weapon.SHOTGUN.getType() : Weapon.SNIPER.getType();
-			}
-			ItemStack weapon = /*new ItemStack(m);*/ Utils.getItemStack(m, "§eYour secondary weapon §7[§6Click to change§7]");
+			ItemStack weapon = (session.getPlayerSecondaryWeapon(p) != null)? session.getPlayerSecondaryWeapon(p).getColoredItem(session.getPlayerColor(p), "§eSecondary weapon: §d"+session.getPlayerSecondaryWeapon(p).getName()+" §7[§6click to change§7]"):Weapon.DAGGER.getColoredItem(session.getPlayerColor(p),"§eChoose your secondary Weapon");
 
 			if(session.isTeams()) {
 				if(session.isAdmin(p)) {
@@ -491,12 +481,12 @@ public class SessionInventories implements Listener{
 		}
 		if(session.isAdmin(p)) {
 			int addition = (session.isSolo())? 0:1;
-			p.getInventory().setItem(0, Utils.getItemStack(Weapon.LASERGUN.getType(),"§a§lSTART"));
+			p.getInventory().setItem(0, Weapon.LASERGUN.getItem("§a§lSTART"));
 
 			p.getInventory().setItem(((session.withMultiweapons())?4:3)+addition, Utils.getItemStack(Material.CLOCK,"§bChange time"));
 
 			if(!session.withMultiweapons()) {
-				p.getInventory().setItem(4+addition, Utils.getItemStack(Weapon.DAGGER.getType(),"§aWith Multiweapons"));
+				p.getInventory().setItem(4+addition, Weapon.DAGGER.getItem("§aWith Multiweapons"));
 			}
 
 			p.getInventory().setItem(5+addition, Utils.getItemStack(Material.END_CRYSTAL,"§6Change mode"));
@@ -561,8 +551,8 @@ public class SessionInventories implements Listener{
 		Inventory weaponsInv = Bukkit.createInventory(null, 9, "§0Choose your secondary weapon!");
 
 		LasertagColor playerColor = session.getPlayerColor(p);
-		ItemStack shotgun = Utils.getItemStack(Weapon.SHOTGUN.getType(), playerColor.getChatColor()+"Shotgun #"+(playerColor.ordinal()+1));
-		ItemStack sniper = Utils.getItemStack(Weapon.SNIPER.getType(), playerColor.getChatColor()+"Sniper #"+(playerColor.ordinal()+1));
+		ItemStack shotgun = Weapon.SHOTGUN.getColoredItem(playerColor);
+		ItemStack sniper = Weapon.SNIPER.getColoredItem(playerColor);
 		ItemStack disable = Utils.getItemStack(Material.BARRIER,"§cDisable Multiweapons");
 
 		weaponsInv.setContents(new ItemStack[] {null, shotgun, null, null, (session.isAdmin(p))?disable:null, null, null, sniper, null});

@@ -22,7 +22,7 @@ import java.util.zip.ZipInputStream;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
-	public static String TEXTUREPACK_URL = "https://www.dropbox.com/s/d3l1ciaf58gvpbf/Laserguns.zip?dl=1";
+	public static String TEXTUREPACK_URL = "https://www.dropbox.com/s/7usi9cz2hwq53jx/Lasertag-Texturepack.zip?dl=1";
 	public static String WORLD_NAME;
 	
 	public Lasertag lasertag;
@@ -37,10 +37,10 @@ public class Minigames extends JavaPlugin implements Listener{
 		INSTANCE = this;
 		
 		Commands commands = new Commands(this);
-		Objects.requireNonNull(getCommand("minigames")).setExecutor(commands);
-		Objects.requireNonNull(getCommand("minigames")).setTabCompleter(commands);
-		Objects.requireNonNull(getCommand("lobby")).setExecutor(commands);
-		Objects.requireNonNull(getCommand("test")).setExecutor(new Test(this));
+		getCommand("minigames").setExecutor(commands);
+		getCommand("minigames").setTabCompleter(commands);
+		getCommand("lobby").setExecutor(commands);
+		getCommand("test").setExecutor(new Test(this));
 		new Listeners(this);
 		
 		reloadConfig();
@@ -61,8 +61,8 @@ public class Minigames extends JavaPlugin implements Listener{
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
 		}
-		
-		
+
+		// TODO: 20.02.2021 Extract Wolrd and Texturepack to plugin folder
 	}
 	public void onDisable() {
 		reloadConfig();
@@ -166,7 +166,10 @@ public class Minigames extends JavaPlugin implements Listener{
         	if(dir.mkdirs()){
 				byte[] buffer = new byte[1024];
 				try {
-					System.out.println(" "); System.out.println(" "); System.out.println(" "); System.out.println(" ");
+					System.out.println(" ");
+					System.out.println(" ");
+					System.out.println(" ");
+					System.out.println(" ");
 					System.out.println("Extracting resource"+zipFilePath+" to "+destDir+"...");
 					System.out.println("Creating temporary file \"TemporaryFile_please-delete.zip\" in \""+tempFile.getParentFile().getPath()+"\"...");
 					FileInputStream fis = new FileInputStream(tempFile);
@@ -188,7 +191,7 @@ public class Minigames extends JavaPlugin implements Listener{
 								//close this ZipEntry
 							}
 						} catch (FileNotFoundException e) {
-							System.out.println("Error occured!");
+							System.out.println("Error occured while extracting Lasertag-Texturepack.zip");
 						}
 						zis.closeEntry();
 						ze = zis.getNextEntry();
@@ -202,8 +205,10 @@ public class Minigames extends JavaPlugin implements Listener{
 					tempFile.delete();
 					throw e;
 				}
-				if(tempFile.delete()) System.out.println("DELETED temporary file SUCCESSFULLY!");
-				else System.out.println("FAILED to DELETE temporary file!");
+				if(tempFile.delete()) {
+					System.out.println("DELETED temporary file SUCCESSFULLY!");
+				}
+				else System.out.println("FAILED to delete temporary file at "+tempFilePath);
 				System.out.println("Extraction COMPLETE!");
 				System.out.println(" "); System.out.println(" "); System.out.println(" "); System.out.println(" ");
 			} else {
@@ -212,8 +217,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		}
 
     }
-	
-	
+
 	public static void teleportPlayersToSpawn(Player... players) {
 		for(Player p : players) {
 			p.teleport(INSTANCE.spawn);

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
+import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -19,12 +21,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
 import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
@@ -67,11 +65,15 @@ public class Lasertag implements Listener{
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
 
-		ModifierCommands modifierCommands = new ModifierCommands(minigames);
 		//TODO activate modifier command
-		SessionCommands sessionCommands = new SessionCommands(minigames, modifierCommands);
+		SessionCommands sessionCommands = new SessionCommands(minigames);
 		minigames.getCommand("session").setExecutor(sessionCommands);
 		minigames.getCommand("session").setTabCompleter(sessionCommands);
+
+		ModifierCommands modifierCommands = new ModifierCommands();
+		minigames.getCommand("modifier").setExecutor(modifierCommands);
+		minigames.getCommand("modifier").setTabCompleter(modifierCommands);
+
 		
 		Bukkit.getPluginManager().registerEvents(this, minigames);
 		
@@ -249,28 +251,16 @@ public class Lasertag implements Listener{
 	}
 	
 	public static void setPlayersLobbyInv(Player p) {
-		ItemStack find = new ItemStack(Material.COMPASS);
-		ItemMeta findMeta = find.getItemMeta();
-		findMeta.setDisplayName("§aFind Sessions");
-		find.setItemMeta(findMeta);
-		p.getInventory().setItem(0, find);
-		
-		ItemStack create = new ItemStack(Material.NETHER_STAR);
-		ItemMeta cMeta = create.getItemMeta();
-		cMeta.setDisplayName("§eStart new session");
-		create.setItemMeta(cMeta);
-		p.getInventory().setItem(1, create);
+		p.getInventory().setItem(0, Utils.getItemStack(Material.COMPASS,"§aFind sessions"));
+		p.getInventory().setItem(1, Utils.getItemStack(Material.NETHER_STAR,"§eCreate new session"));
 	}
+
 	public static void openPlayerFindSessionInv(Player p) {
 		Inventory inv = Bukkit.createInventory(null, (((Session.getAllSessions().length-1)/9)+1)*9, "§0Join a session:");
 		
 		int i = 0;
 		for(Session session : Session.getAllSessions()) {
 			if(!session.tagging()) {
-				ItemStack s = new ItemStack(Material.PLAYER_HEAD);
-				SkullMeta meta = (SkullMeta) s.getItemMeta();
-				meta.setDisplayName("§d"+session.getOwner().getName()+"§a's session");
-				meta.setOwningPlayer(session.getOwner());
 				List<String> lore = new ArrayList<>();
 				for(Player a : session.getAdmins()) {
 					if(a != session.getOwner()) lore.add("§b"+a.getName());
@@ -278,9 +268,7 @@ public class Lasertag implements Listener{
 				for(Player ap : session.getPlayers()) {
 					if(!session.isAdmin(ap)) lore.add("§a"+ap.getName());
 				}
-				meta.setLore(lore);
-				s.setItemMeta(meta);
-				inv.setItem(i++, s);
+				inv.setItem(i++, Utils.getPlayerSkullItem(session.getOwner(),"§d"+session.getOwner().getName()+"§a's session", lore));
 			}
 		}
 		
@@ -303,9 +291,8 @@ public class Lasertag implements Listener{
 		} catch (Exception exception){
 			return;
 		}
-		if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
-			String code = e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", "");
-			Session s = Session.getSessionFromCode(code);
+		if(e.getSlot() < e.getInventory().getSize()+1 && e.getInventory().getItem(e.getSlot()) != null && e.getInventory().getItem(e.getSlot()).getType().equals(Material.PLAYER_HEAD) && e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().contains("session")) {
+			Session s = Session.getSessionFromName(e.getInventory().getItem(e.getSlot()).getItemMeta().getDisplayName().replaceAll("§a", "").replaceAll("§d", "").replaceAll("'s session", "").replaceAll(" ", ""));
 			if(s != null) {
 				if(!s.isPlayerBanned((Player) e.getWhoClicked())) {
 					if(!s.tagging()) {

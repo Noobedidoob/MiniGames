@@ -82,25 +82,13 @@ public class SessionScoreboard {
 					sortedInRanks.addAll(rankList);
 				}
 			}
-			
-			
+
 			for(Player p : sortedInRanks) {
-				String underline = "";
-				if(playersInSorted.get(maxScore).contains(p)) underline = "§n";
-				LasertagColor color = session.getPlayerColor(p);
-				if(color == null) System.out.println("Color = null from player "+p.getName());
 				int pp = session.getPlayerPoints(p);
-				obj.getScore(underline+color.getChatColor()+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
+				obj.getScore(((playersInSorted.get(maxScore).contains(p))?"§n":"")+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
 			}
-			obj.getScore("   ").setScore(i);
-			
-			for(Player p : session.getPlayers()) {
-				p.setScoreboard(board);
-				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
-					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
-				}
-				if(Lasertag.isPlayerProtected(p)) BaseSphere.drawPlayerProtectionSphere(p);
-			}
+
+
 		} else {
 			
 			HashMap<Integer, List<SessionTeam>> teamsInSorted = new HashMap<>();
@@ -151,13 +139,16 @@ public class SessionScoreboard {
 				}
 				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).name()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
 			}
-			obj.getScore("   ").setScore(i);
-			for(Player p : session.getPlayers()) {
-				p.setScoreboard(board);
-				if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
-					if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
-				}
+		}
+		obj.getScore("   ").setScore(i);
+		for(Player p : session.getPlayers()) {
+			p.setScoreboard(board);
+			if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
+				if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
+			}
+			if (session.tagging()) {
 				if(Lasertag.isPlayerProtected(p)) BaseSphere.drawPlayerProtectionSphere(p);
+				session.getMap().checkPlayerPosition(p);
 			}
 		}
 	}

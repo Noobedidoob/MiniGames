@@ -1,6 +1,8 @@
 package me.noobedidoob.minigames.lasertag.methods;
 
-import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -8,28 +10,25 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
-import me.noobedidoob.minigames.lasertag.session.Session;
-
 public class Weapons {
 
 	
 	public enum Weapon {
-		LASERGUN(Material.DIAMOND_HOE, "§bLasergun"),
-		DAGGER(Material.DIAMOND_SWORD, "§aDagger"),
-		SHOTGUN(Material.DIAMOND_SHOVEL, "§eShotgun"),
-		SNIPER(Material.DIAMOND_PICKAXE, "§dSniper");
+		LASERGUN(Material.DIAMOND_HOE, LasertagColor.Blue,"§bLasergun"),
+		DAGGER(Material.DIAMOND_SWORD, LasertagColor.Green, "§aDagger"),
+		SHOTGUN(Material.DIAMOND_SHOVEL, LasertagColor.Yellow, "§eShotgun"),
+		SNIPER(Material.DIAMOND_PICKAXE, LasertagColor.Purple, "§dSniper");
 		
 		private final Material material;
 		private final ItemStack item;
-		
-		Weapon(Material material, String displayName){
+
+		Weapon(Material material, LasertagColor defaultColor, String displayName){
 			this.material = material;
 			ItemStack item = new ItemStack(material);
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(displayName);
 			meta.setUnbreakable(true);
+			meta.setCustomModelData(defaultColor.ordinal()+1);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_UNBREAKABLE);
 			item.setItemMeta(meta);
 			this.item = item;
@@ -41,8 +40,15 @@ public class Weapons {
 		public ItemStack getItem() {
 			return item;
 		}
+		public ItemStack getItem(String displayName){
+			ItemStack item = this.item.clone();
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(displayName);
+			item.setItemMeta(meta);
+			return item;
+		}
 		public ItemStack getTestItem() {
-			ItemStack newItem = item;
+			ItemStack newItem = item.clone();
 			if(this == SNIPER) newItem.setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
 			ItemMeta meta = newItem.getItemMeta();
 			meta.setDisplayName(meta.getDisplayName()+" Test");
@@ -50,9 +56,18 @@ public class Weapons {
 			return newItem;
 		}
 		public ItemStack getColoredItem(LasertagColor color) {
-			ItemStack item = this.item;
+			ItemStack item = this.item.clone();
 			ItemMeta meta = item.getItemMeta();
-			meta.setDisplayName(color.getChatColor()+meta.getDisplayName().substring(2)+" "+(color.ordinal()+1));
+			meta.setDisplayName(color.getChatColor()+meta.getDisplayName().substring(2));
+			meta.setCustomModelData(color.ordinal()+1);
+			item.setItemMeta(meta);
+			return item;
+		}
+		public ItemStack getColoredItem(LasertagColor color, String displayName){
+			ItemStack item = this.item.clone();
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(displayName);
+			meta.setCustomModelData(color.ordinal()+1);
 			item.setItemMeta(meta);
 			return item;
 		}
@@ -64,6 +79,10 @@ public class Weapons {
 				if(w.getType() == type && name.toUpperCase().contains(w.name().substring(2))) return w;
 			}
 			return null;
+		}
+
+		public String getName(){
+			return this.name().charAt(0)+this.name().toLowerCase().substring(1);
 		}
 		
 		public boolean hasCooldown(Player p) {
@@ -79,9 +98,7 @@ public class Weapons {
 					break;
 				case SNIPER:
 					cooldown = s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS);
-					Utils.runLater(() -> {
-						p.getInventory().getItem(2).setAmount(s.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
-					}, s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
+					Utils.runLater(() -> p.getInventory().getItem(2).setAmount(s.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN)), s.getIntMod(Mod.SNIPER_COOLDOWN_TICKS));
 					break;
 				case SHOTGUN:
 					cooldown = s.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS);

@@ -21,9 +21,9 @@ public class DropSwitchItemListener implements Listener {
 		pluginManeger.registerEvents(this, minigames);
 	}
 
-	//TODO: Fix q-zoom on lasergun
 	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent e){
+		if(!Lasertag.isPlayerTesting(e.getPlayer()) && Session.getPlayerSession(e.getPlayer()) == null) return;
 		ItemStack item = e.getItemDrop().getItemStack();
 		if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 			PlayerZoomer.toggleZoom(e.getPlayer());

@@ -2,6 +2,8 @@ package me.noobedidoob.minigames.lasertag.listeners;
 
 import java.util.HashMap;
 
+import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
+import me.noobedidoob.minigames.utils.Flag;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.Utils;
 import org.apache.commons.lang.StringUtils;
@@ -31,7 +33,7 @@ public class MoveListener implements Listener {
 		
 		if(session != null) {
 			if(session.tagging()) {
-				session.getMap().checkPlayerPosition(p);
+//				session.getMap().checkPlayerPosition(p);
 //				if(session.getMap().withBaseSpawn() && ((session.isSolo() && !session.getMap().withRandomSpawn()) | session.isTeams())) {
 //					for(Coordinate coord : session.getMap().baseCoords) {
 //						if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p)) {
@@ -42,14 +44,17 @@ public class MoveListener implements Listener {
 //						}
 //					}
 //				}
-				if(Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getX()-e.getTo().getX()), "-", "")) > 0.13 | Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getZ()-e.getTo().getZ()), "-", "")) > 0.15) {
-					Lasertag.setPlayerProtected(e.getPlayer(), false);
-				}
-				if(e.getFrom().getPitch() != e.getTo().getPitch() | e.getFrom().getYaw() != e.getTo().getYaw()) {
-					Lasertag.setPlayerProtected(e.getPlayer(), false);
+				if (Lasertag.isPlayerProtected(p)) {
+					if(Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getX()-e.getTo().getX()), "-", "")) > 0.13 | Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getZ()-e.getTo().getZ()), "-", "")) > 0.15) {
+						Lasertag.setPlayerProtected(e.getPlayer(), false);
+					}
+					if(e.getFrom().getPitch() != e.getTo().getPitch() | e.getFrom().getYaw() != e.getTo().getYaw()) {
+						Lasertag.setPlayerProtected(e.getPlayer(), false);
+					}
 				}
 				if(e.getTo().getY() < 0 | (session.isMapSet() && session.getMap().getName().equalsIgnoreCase("skyhigh") && e.getTo().getY() < 70)) {
-					e.getPlayer().damage(100);
+					if(Flag.getPlayerFlag(p) != null) Flag.getPlayerFlag(p).teleportToBase();
+					e.getPlayer().teleport(PlayerTeleporter.getPlayerSpawnLoc(e.getPlayer()));
 				}
 			}
 		} /*else {

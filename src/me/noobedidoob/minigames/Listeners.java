@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -24,7 +25,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerToggleFlightEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -161,19 +161,6 @@ public class Listeners implements Listener{
 	}
 	
 	@EventHandler
-	public void onPlayerToggleSneak(PlayerToggleSneakEvent e) {
-		Player p = e.getPlayer();
-		Session session = Session.getPlayerSession(p);
-		if(session == null) return;
-		if(session.tagging()) {
-			Lasertag.setPlayerProtected(e.getPlayer(), false);
-		} /*else if(p == Bukkit.getPlayer("Noobedidoob")) {
-			FallingBlock b = world.spawnFallingBlock(p.getLocation(), Material.BLACK_BANNER, (byte) 0x0);
-			FallingBlock d = world.spawnFallingBlock(p.getLocation(), Material.DIRT, (byte) 0x0);
-		}*/
-	}
-	
-	@EventHandler
 	public void playerInteractAtEntity(PlayerInteractEntityEvent e) {
 		Entity entity = e.getRightClicked();
 		if(entity instanceof ItemFrame) {
@@ -183,6 +170,7 @@ public class Listeners implements Listener{
 
 	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent e){
+		if(e.getPlayer().getGameMode().equals(GameMode.CREATIVE) && !Lasertag.isPlayerTesting(e.getPlayer()) && Session.getPlayerSession(e.getPlayer()) == null) return;
 		Player p = e.getPlayer();
 		ItemStack item = e.getItemDrop().getItemStack();
 		item.setAmount(p.getInventory().getItemInMainHand().getAmount()+1);
@@ -195,10 +183,16 @@ public class Listeners implements Listener{
 	public void onPlayerItemPickup(PlayerPickupItemEvent e) {
 		if(!e.getPlayer().getGameMode().equals(GameMode.CREATIVE)) e.setCancelled(true);
 	}
+
+	@EventHandler
+	public void onFoodLevelChange(FoodLevelChangeEvent e){
+		e.setCancelled(true);
+	}
 	
 	
 	@EventHandler
 	public void onPlayerClickInventory(InventoryClickEvent e) {
+		if(e.getWhoClicked().getGameMode().equals(GameMode.CREATIVE)) return;
 		if(!(e.getWhoClicked() instanceof Player)) return;
 		Player p = (Player) e.getWhoClicked();
 		if(p.getGameMode() != GameMode.CREATIVE) e.setCancelled(true);

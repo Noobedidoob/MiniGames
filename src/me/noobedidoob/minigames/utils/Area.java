@@ -14,30 +14,30 @@ public class Area {
 	private Coordinate coord1;
 	private Coordinate coord2;
 	
-	public Area(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+	public Area(int x1, int y1, int z1, int x2, int y2, int z2) {
 		super();
-		this.minX = minX;
-		this.minY = minY;
-		this.minZ = minZ;
-		this.maxX = maxX;
-		this.maxY = maxY;
-		this.maxZ = maxZ;
+		this.minX = Math.min(x1, x2);
+		this.minY = Math.min(y1, y2);
+		this.minZ = Math.min(z1, z2);
+		this.maxX = Math.max(x1, x2);
+		this.maxY = Math.max(y1, y2);
+		this.maxZ = Math.max(z1, z2);
 		
-		this.coord1 = new Coordinate(minX, minY, minZ);
-		this.coord2 = new Coordinate(maxX, maxY, maxZ);
+		this.coord1 = new Coordinate(x1, y1, z1);
+		this.coord2 = new Coordinate(x2, y2, z2);
 	}
 	
 	public Area(Coordinate coord1, Coordinate coord2) {
 		super();
-		this.maxX = coord2.getBlockX();
-		this.minX = coord1.getBlockX();
-		this.maxY = coord2.getBlockY();
-		this.minY = coord1.getBlockY();
-		this.maxZ = coord2.getBlockZ();
-		this.minZ = coord1.getBlockZ();
+		this.minX = Math.min(coord1.getBlockX(), coord2.getBlockX());
+		this.minY = Math.min(coord1.getBlockY(), coord2.getBlockY());
+		this.minZ = Math.min(coord1.getBlockZ(), coord2.getBlockZ());
+		this.maxX = Math.max(coord1.getBlockX(), coord2.getBlockX());
+		this.maxY = Math.max(coord1.getBlockY(), coord2.getBlockY());
+		this.maxZ = Math.max(coord1.getBlockZ(), coord2.getBlockZ());
 
-		this.coord1 = coord1;
-		this.coord2 = coord2;
+		this.coord1 = new Coordinate(minX, minY, minZ);
+		this.coord2 = new Coordinate(maxX, maxY, maxZ);
 	}
 	
 	
@@ -94,7 +94,7 @@ public class Area {
 	}
 
 
-	public int getWidth() {
+	public int getWidthX() {
 		int width = maxX - minX;
 		if(width < 0) width = width*(-1);
 		return width;
@@ -104,14 +104,14 @@ public class Area {
 		if(height < 0) height = height*(-1);
 		return height;
 	}
-	public int getDepth() {
+	public int getWidthZ() {
 		int depth = maxZ - minZ;
 		if(depth < 0) depth = depth*(-1);
 		return depth;
 	}
 	
 	public int getVolume() {
-		return getWidth()*getHeight()*getDepth();
+		return getWidthX()*getHeight()* getWidthZ();
 	}
 	
 	
@@ -124,9 +124,9 @@ public class Area {
 	}
 	
 	public boolean isInside(Location loc) {
-		if(loc.getX() >= minX && loc.getX() <= maxX) {
-			if(loc.getY() >= minY && loc.getY() <= maxY) {
-				return loc.getZ() >= minZ && loc.getZ() <= maxZ;
+		if(minX <= loc.getX() && loc.getX() <= maxX) {
+			if(minY <= loc.getY() && loc.getY() <= maxY) {
+				return minZ <= loc.getZ() && loc.getZ() <= maxZ;
 			}
 		}
 		return false;

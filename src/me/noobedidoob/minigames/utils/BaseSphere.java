@@ -1,6 +1,7 @@
 package me.noobedidoob.minigames.utils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -22,16 +23,17 @@ public class BaseSphere {
 	public BaseSphere(Coordinate coord, double radius, Color color, Area mapArea) {
 		this.coord = coord;
 		
-		this.offsets = getSphereOffsets(radius, radius, radius, 0.5f);
+		this.offsets = getSphereOffsets(radius, 50);
 		
 		this.color = color;
 		this.limitedArea = mapArea;
 	}
 	
 	
-	
+	private boolean isCooledDown = false;
 	public void draw(Player... players) {
-		if(players == null | players.length == 0) {
+	    if(isCooledDown) return;
+		if((players != null && players.length == 0) | players == null) {
 			for(Vector v : offsets) {
 				Location newLoc = new Location(minigames.world, coord.getX()+v.getX(), coord.getY()+v.getY(), coord.getZ()+v.getZ());
 				if(limitedArea.isInside(newLoc)) {
@@ -48,78 +50,41 @@ public class BaseSphere {
 				}
 			}
 		}
+		isCooledDown = true;
+		Utils.runLater(()->isCooledDown = false,15);
 	}
-	
 
-	public static ArrayList<Vector> getSphereOffsets(double radiusX, double radiusY, double radiusZ, double dotsDistance) {
-        ArrayList<Vector> pos = new ArrayList<>();
 
-        radiusX += 0.5;
-        radiusY += 0.5;
-        radiusZ += 0.5;
-
-        final double invRadiusX = 1 / radiusX;
-        final double invRadiusY = 1 / radiusY;
-        final double invRadiusZ = 1 / radiusZ;
-
-        final double ceilRadiusX = Math.ceil(radiusX);
-        final double ceilRadiusY = Math.ceil(radiusY);
-        final double ceilRadiusZ = Math.ceil(radiusZ);
-
-        double nextXn = 0;
-        forX: for (double x = 0; x <= ceilRadiusX; x += dotsDistance) {
-            final double xn = nextXn;
-            nextXn = (x + dotsDistance) * invRadiusX;
-            double nextYn = 0;
-            forY: for (double y = 0; y <= ceilRadiusY; y += dotsDistance) {
-                final double yn = nextYn;
-                nextYn = (y + dotsDistance) * invRadiusY;
-                double nextZn = 0;
-                for (double z = 0; z <= ceilRadiusZ; z += dotsDistance) {
-                    final double zn = nextZn;
-                    nextZn = (z + dotsDistance) * invRadiusZ;
-                    double distanceSq = lengthSq(xn, yn, zn);
-                    if (distanceSq > 1) {
-                        if (z == 0) {
-                            if (y == 0) {
-                                break forX;
-                            }
-                            break forY;
-                        }
-                    }
-
-                    if (lengthSq(nextXn, yn, zn) <= 1 && lengthSq(xn, nextYn, zn) <= 1 && lengthSq(xn, yn, nextZn) <= 1) {
-                        continue;
-                    }
-
-                    pos.add(new Vector(x, y, z));
-                    pos.add(new Vector(-x, y, z));
-                    pos.add(new Vector(x, -y, z));
-                    pos.add(new Vector(x, y, -z));
-                    pos.add(new Vector(-x, -y, z));
-                    pos.add(new Vector(x, -y, -z));
-                    pos.add(new Vector(-x, y, -z));
-                    pos.add(new Vector(-x, -y, -z));
-                }
+    public static ArrayList<Vector> getSphereOffsets(double radius, int density){
+        return getSphereOffsets(radius,density,density);
+    }
+    public static ArrayList<Vector> getSphereOffsets(double radius, int circleDensity, int dotsDensity){
+        ArrayList<Vector> offsets = new ArrayList<>();
+        for(double phi=0; phi<=Math.PI; phi+=Math.PI/circleDensity) {
+            double y = radius*Math.cos(phi);
+            for(double theta=0; theta<=2*Math.PI; theta+=Math.PI/dotsDensity) {
+                double x = radius*Math.cos(theta)*Math.sin(phi);
+                double z = radius*Math.sin(theta)*Math.sin(phi);
+                offsets.add(new Vector(x,y,z));
             }
         }
-        return pos;
+        return offsets;
     }
 
-	private static double lengthSq(double x, double y, double z) {
-        return (x * x) + (y * y) + (z * z);
-    }
+	public static ArrayList<Vector> playerProtSphereOffsets = getSphereOffsets(1.3, 15);
 	
-	
-	public static ArrayList<Vector> playerProtSphereOffsets = getSphereOffsets(0.6, 0.9, 0.6, 0.3);
-	
-	
+	private static final HashMap<Player, Boolean> IS_PLAYER_COOLED_DOWN = new HashMap<>();
 	public static void drawPlayerProtectionSphere(Player p) {
-		Color c = Session.getPlayerSession(p) != null ? Session.getPlayerSession(p).getPlayerColor(p).getColor() : Color.RED;
-		for(Vector v : playerProtSphereOffsets) {
-			p.getLocation().getWorld().spawnParticle(Particle.REDSTONE, p.getLocation().getX()+v.getX(), p.getLocation().getY()+1+v.getY(), p.getLocation().getZ()+v.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.8f));
-		}
-	}
+	    IS_PLAYER_COOLED_DOWN.putIfAbsent(p,false);
+        if (!IS_PLAYER_COOLED_DOWN.get(p)) {
+            Color c = Session.getPlayerSession(p) != null ? Session.getPlayerSession(p).getPlayerColor(p).getColor() : Color.RED;
+            for(Vector v : playerProtSphereOffsets) {
+                p.getLocation().getWorld().spawnParticle(Particle.REDSTONE, p.getLocation().getX()+v.getX(), p.getLocation().getY()+1+v.getY(), p.getLocation().getZ()+v.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 1.1f));
+            }
+            IS_PLAYER_COOLED_DOWN.put(p,true);
+            Utils.runLater(()->IS_PLAYER_COOLED_DOWN.put(p,false), 15);
+        }
+    }
 
 
 }
