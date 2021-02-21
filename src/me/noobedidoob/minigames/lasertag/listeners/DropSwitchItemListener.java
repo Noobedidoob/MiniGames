@@ -26,6 +26,7 @@ public class DropSwitchItemListener implements Listener {
 		if(!Lasertag.isPlayerTesting(e.getPlayer()) && Session.getPlayerSession(e.getPlayer()) == null) return;
 		ItemStack item = e.getItemDrop().getItemStack();
 		if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
+			// TODO: 21.02.2021 Fix zooming on sniper
 			PlayerZoomer.toggleZoom(e.getPlayer());
 		}
 	}

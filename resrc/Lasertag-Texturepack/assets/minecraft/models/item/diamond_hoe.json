@@ -1,0 +1,18 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+      "layer0": "item/diamond_hoe"
+  },
+  "overrides": [
+    { "predicate": {"damage": 0}, "model": "item/diamond_hoe" },
+    { "predicate": {"custom_model_data":1}, "model": "item/lasergun/red_lasergun"},
+    { "predicate": {"custom_model_data":2}, "model": "item/lasergun/blue_lasergun"},
+    { "predicate": {"custom_model_data":3}, "model": "item/lasergun/green_lasergun"},
+    { "predicate": {"custom_model_data":4}, "model": "item/lasergun/yellow_lasergun"},
+    { "predicate": {"custom_model_data":5}, "model": "item/lasergun/purple_lasergun"},
+    { "predicate": {"custom_model_data":6}, "model": "item/lasergun/gray_lasergun"},
+    { "predicate": {"custom_model_data":7}, "model": "item/lasergun/orange_lasergun"},
+    { "predicate": {"custom_model_data":8}, "model": "item/lasergun/white_lasergun"},
+    { "predicate": {"damaged": 1}, "model": "item/diamond_hoe"}
+  ]
+}

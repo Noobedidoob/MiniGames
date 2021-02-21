@@ -8,7 +8,6 @@ import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
-import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.utils.BaseSphere;
 import me.noobedidoob.minigames.utils.HitBox;
 import me.noobedidoob.minigames.utils.Utils;

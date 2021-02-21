@@ -1,0 +1,18 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+      "layer0": "item/diamond_pickaxe"
+  },
+  "overrides": [
+    { "predicate": {"damage": 0}, "model": "item/diamond_hoe" },
+    { "predicate": {"custom_model_data":1}, "model": "item/sniper/red_sniper"},
+    { "predicate": {"custom_model_data":2}, "model": "item/sniper/blue_sniper"},
+    { "predicate": {"custom_model_data":3}, "model": "item/sniper/green_sniper"},
+    { "predicate": {"custom_model_data":4}, "model": "item/sniper/yellow_sniper"},
+    { "predicate": {"custom_model_data":5}, "model": "item/sniper/purple_sniper"},
+    { "predicate": {"custom_model_data":6}, "model": "item/sniper/gray_sniper"},
+    { "predicate": {"custom_model_data":7}, "model": "item/sniper/orange_sniper"},
+    { "predicate": {"custom_model_data":8}, "model": "item/sniper/white_sniper"},
+    { "predicate": {"damaged": 1}, "model": "item/diamond_hoe"}
+  ]
+}

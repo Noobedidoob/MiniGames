@@ -1,0 +1,18 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+      "layer0": "item/diamond_sword"
+  },
+  "overrides": [
+    { "predicate": {"damage": 0}, "model": "item/diamond_hoe" },
+    { "predicate": {"custom_model_data":1}, "model": "item/dagger/red_dagger"},
+    { "predicate": {"custom_model_data":2}, "model": "item/dagger/blue_dagger"},
+    { "predicate": {"custom_model_data":3}, "model": "item/dagger/green_dagger"},
+    { "predicate": {"custom_model_data":4}, "model": "item/dagger/yellow_dagger"},
+    { "predicate": {"custom_model_data":5}, "model": "item/dagger/purple_dagger"},
+    { "predicate": {"custom_model_data":6}, "model": "item/dagger/gray_dagger"},
+    { "predicate": {"custom_model_data":7}, "model": "item/dagger/orange_dagger"},
+    { "predicate": {"custom_model_data":8}, "model": "item/dagger/white_dagger"},
+    { "predicate": {"damaged": 1}, "model": "item/diamond_hoe"}
+  ]
+}

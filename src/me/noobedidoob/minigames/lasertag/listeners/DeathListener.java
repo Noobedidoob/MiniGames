@@ -61,13 +61,12 @@ public class DeathListener implements Listener {
 				}
 
 				victim.damage(100);
-				if(session.withCaptureTheFlag() && Flag.getPlayerFlag(victim) != null) Flag.getPlayerFlag(victim).drop(victim.getLocation());
 				STREAKED_PLAYERS.putIfAbsent(victim, 0);
 				Utils.runLater(()->{
 					addStreak(killer);
 					if (STREAKED_PLAYERS.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
 				},5);
-				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+//				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.setPlayerProtected(victim, true);
 				return true;
 			} 
@@ -80,6 +79,7 @@ public class DeathListener implements Listener {
 		Player p = e.getEntity();
 		e.setDeathMessage("");
 		STREAKED_PLAYERS.put(p, 0);
+		if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.getPlayerFlag(p) != null) Flag.getPlayerFlag(p).drop(p.getLocation());
 	}
 	
 	

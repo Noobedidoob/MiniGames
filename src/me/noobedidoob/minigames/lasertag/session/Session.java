@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -470,7 +471,12 @@ public class Session implements Listener{
 
 	public void addPoints(Player p, int points, String message) {
 		playerPoints.put(p, playerPoints.get(p) + points);
-		if (!solo) getPlayerTeam(p).addPoints(points);
+		if (!solo) {
+			getPlayerTeam(p).addPoints(points);
+			for(Player ap : getPlayerTeam(p).getPlayers()){
+				ap.playSound(ap.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+			}
+		} else p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 		for(Player ap : players){
 			ap.sendMessage(message);
 		}
