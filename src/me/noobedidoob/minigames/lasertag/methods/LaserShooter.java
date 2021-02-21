@@ -435,7 +435,7 @@ public class LaserShooter{
 	}
 
 	public static void spawnTestProjectile(Player p, Location loc, Color c) {
-		Utils.runDefinedRepeater(()->p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f)),0,10,10);
+		p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f));
 	}
 	
 }

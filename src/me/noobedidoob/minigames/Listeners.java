@@ -59,27 +59,32 @@ public class Listeners implements Listener{
 		p.setAllowFlight(true);
 		Lasertag.setPlayersLobbyInv(p);
 		e.setJoinMessage("");
-		
-		TextComponent msg1 = new TextComponent("Hello there!\n");
+
+		p.sendMessage("§7——————————————————————");
+		TextComponent msg1 = new TextComponent("Hello there, ");
 		msg1.setColor(net.md_5.bungee.api.ChatColor.GREEN);
 
-		TextComponent msg2 = new TextComponent("This server uses a custom texturepack! You should either click ");
-		msg2.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+		TextComponent msg15 = new TextComponent(p.getName()+"!\n");
+		msg15.setColor(net.md_5.bungee.api.ChatColor.AQUA);
+		msg1.addExtra(msg15);
+
+		TextComponent msg2 = new TextComponent(" This server uses a custom texturepack! You should either click ");
+		msg2.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		msg1.addExtra(msg2);
 
 		TextComponent linkMsg = new TextComponent("here");
-		linkMsg.setColor(net.md_5.bungee.api.ChatColor.GOLD);
+		linkMsg.setColor(net.md_5.bungee.api.ChatColor.LIGHT_PURPLE);
 		linkMsg.setUnderlined(true);
 		linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.TEXTUREPACK_URL));
 		linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Download the texturepack").create()));
 		msg1.addExtra(linkMsg);
 
-		TextComponent msg3 = new TextComponent(" to download it or activate server resourcepacks in the serversettings before joining!");
-		msg3.setColor(net.md_5.bungee.api.ChatColor.YELLOW);
+		TextComponent msg3 = new TextComponent(" to download it or activate server resourcepacks in the server-settings before joining!");
+		msg3.setColor(net.md_5.bungee.api.ChatColor.GOLD);
 		msg1.addExtra(msg3);
-
 		p.spigot().sendMessage(msg1);
-		
+		p.sendMessage("§7——————————————————————\n ");
+
 		new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -119,7 +124,6 @@ public class Listeners implements Listener{
 		}
 		
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
-		//TODO: Fix "TEST TEST TEST" bug on testweaponsdisplayname
 		if (Session.getPlayerSession(p) != null && Session.getPlayerSession(p).tagging()) return;
 		if (!Lasertag.isPlayerTesting(p)) {
 			if(Lasertag.getTestAera().isInside(e.getTo())) {
@@ -211,14 +215,12 @@ public class Listeners implements Listener{
 	}
 	
 	@EventHandler
-	public void onPlayerSwitchGameMode(PlayerGameModeChangeEvent e) {
-		if(e.getNewGameMode().equals(GameMode.ADVENTURE)) e.getPlayer().setAllowFlight(true);
-		else if(e.getNewGameMode().equals(GameMode.SURVIVAL)) e.getPlayer().setAllowFlight(false);
-	}
-	
-	@EventHandler
 	public void onPlayerChangeGameMode(PlayerGameModeChangeEvent e) {
-		if(e.getNewGameMode() == GameMode.ADVENTURE) e.getPlayer().setAllowFlight(true);
+		if(e.getNewGameMode() == GameMode.ADVENTURE) {
+			e.getPlayer().setGameMode(GameMode.ADVENTURE);
+			e.getPlayer().setExp(1f);
+			e.getPlayer().setAllowFlight(true);
+		}
 	}
 	
 	@EventHandler

@@ -1,5 +1,6 @@
 package me.noobedidoob.minigames.lasertag.commands;
 
+import me.noobedidoob.minigames.Commands;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,10 +15,17 @@ import java.util.List;
 
 public class ModifierCommands implements CommandExecutor, TabCompleter {
 
+    String commands = "\n§7————————— §bModifier Commands§7 ——————————\n"
+            + "§6 getModifiers §7— Get current values\n"
+            + "§6 getModifierTypes §7— Get mod value types\n"
+            + "§6 setmodifier §7<§6mod§7> <§6value§7> — Set value\n  "
+            + "\n§a Use §6/mods §7<§6command§7> §ato perform a command!\n"
+            + "§7——————————————————————————————\n  ";
+
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String[] args) {
         if(args.length == 0){
-            sendModifiers(sender);
+            sender.sendMessage(commands);
             return true;
         } else {
             if(args[0].equalsIgnoreCase("getModifiers") | args[0].equalsIgnoreCase("modifiers")) {
@@ -117,19 +125,20 @@ public class ModifierCommands implements CommandExecutor, TabCompleter {
         List<String> list = new ArrayList<>();
 
         if(args.length == 1) {
-            list.add("getModifiers");
-            list.add("getModifierTypes");
+           list.add("getModifiers");
+           list.add("getModifierTypes");
             if(sender instanceof Player && Session.getPlayerSession((Player) sender) != null && Session.getPlayerSession((Player) sender).waiting() && Session.getPlayerSession((Player) sender).isAdmin((Player) sender)) {
-                list.add("withmultiweapons");
-                list.add("setModifier");
+               list.add("setModifier");
             }
         } else if(sender instanceof Player && args.length >= 2 && args[0].equalsIgnoreCase("setmodifier") && Session.getPlayerSession((Player) sender).isAdmin((Player) sender)) {
             if(args.length == 2) {
-                for(Mod m : Mod.values()) list.add(m.name().toLowerCase());
+                for(Mod m : Mod.values()) {
+                    if(m.name().toLowerCase().contains(args[1].toLowerCase())) list.add(m.name().toLowerCase());
+                }
             } else if(args.length == 3 && Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_")) != null) {
                 if(Mod.getMod(StringUtils.replace(args[1].toUpperCase(), "-", "_")).getValueTypeName().equals("true/false")) {
-                    list.add("true");
-                    list.add("false");
+                   list.add("true");
+                   list.add("false");
                 }
             }
         }
@@ -139,12 +148,12 @@ public class ModifierCommands implements CommandExecutor, TabCompleter {
             if (m != null) {
                 if (m.getValueTypeName().equals("true/false")) {
                     if (sender.isOp()) {
-                        list.add("true");
-                        list.add("false");
+                       list.add("true");
+                       list.add("false");
                     }
                 }
             }
         }
-        return list;
+        return Commands.filterTabAutocompleteList(args,list);
     }
 }

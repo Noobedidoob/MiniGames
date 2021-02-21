@@ -8,6 +8,7 @@ import me.noobedidoob.minigames.utils.Utils;
 import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -33,6 +34,7 @@ public class SessionInventories implements Listener{
 		pluginManeger.registerEvents(this, minigames);
 	}
 	
+	@SuppressWarnings("ConstantConditions")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerClickInventory(InventoryClickEvent e) {
 		try {
@@ -85,147 +87,124 @@ public class SessionInventories implements Listener{
 			} else {
 				if(session.tagging()) return;
 				if(session.isAdmin(p)) {
-					try {
-					/*if(inv.getItem(4).getType() == Material.LIME_STAINED_GLASS_PANE) {
-						try {
-							if(slot == 4 && inv.getItem(4).getType() == Material.LIME_STAINED_GLASS_PANE) {
-								for(Player op : Bukkit.getOnlinePlayers()) {
-									if(op != p) {
-										if(!session.invitedPlayers.contains(op)) {
-											session.sendInvitation(op);
-										}
-									}
-								}
-								Session.sendMessage(p, "§aInvited everyone!");
-								session.setInvitationSent(true);
-								if(!session.isTimeSet()) openTimeInv(p);
-							} else if(slot > 8 && slot < inv.getSize()-1) {
-								Player ip = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
-								if(!session.invitedPlayers.contains(ip)) {
-									session.sendInvitation(ip);
-								}
-								else Session.sendMessage(p, "§cThis player was already invited!");
-								Session.sendMessage(p, "§aInvited §b"+ip.getName());
-								inv.setItem(slot, new ItemStack(Material.AIR));
-							} else if(slot == inv.getSize()-1 && inv.getItem(slot).getType() == Weapon.LASERGUN.getType()) {
-								session.setInvitationSent(true);
-								if(!session.isTimeSet()) openTimeInv(p);
-							}
-						} catch (Exception e1) {}
-					} else */
-
-
-						if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.CLOCK){
-							if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
-								if(inv.getItem(4).getAmount() > 1) inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
-							} else if(slot == 6 && inv.getItem(6).getType() == Material.LIME_STAINED_GLASS_PANE) {
-								if(inv.getItem(4).getAmount() < 60) inv.getItem(4).setAmount(inv.getItem(4).getAmount()+1);
-								else Session.sendMessage(p, "§cMaxi time is 1 hour!");
-							} else if(slot == 8 && inv.getItem(8).getType() == Weapon.LASERGUN.getType()) {
-								session.setTime(inv.getItem(4).getAmount(), TimeFormat.MINUTES, true);
-								//						Session.sendMessage(p, "Time set to §b"+inv.getItem(4).getAmount()+" §eminutes!");
-								if(session.isMapNull()) openMapInv(p);
-								else p.closeInventory();
-							}
-							ItemMeta timeMeta = inv.getItem(4).getItemMeta();
-							timeMeta.setDisplayName("§bTime: §r"+inv.getItem(4).getAmount()+" Minutes");
-							inv.getItem(4).setItemMeta(timeMeta);
+					if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.CLOCK){
+						if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
+							if(inv.getItem(4).getAmount() > 1) inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
+						} else if(slot == 6 && inv.getItem(6).getType() == Material.LIME_STAINED_GLASS_PANE) {
+							if(inv.getItem(4).getAmount() < 60) inv.getItem(4).setAmount(inv.getItem(4).getAmount()+1);
+							else Session.sendMessage(p, "§cMaxi time is 1 hour!");
+						} else if(slot == 8 && inv.getItem(8).getType() == Weapon.LASERGUN.getType()) {
+							session.setTime(inv.getItem(4).getAmount(), TimeFormat.MINUTES, true);
+							//						Session.sendMessage(p, "Time set to §b"+inv.getItem(4).getAmount()+" §eminutes!");
+							if(session.isMapNull()) openMapInv(p);
+							else p.closeInventory();
 						}
+						ItemMeta timeMeta = inv.getItem(4).getItemMeta();
+						timeMeta.setDisplayName("§bTime: §r"+inv.getItem(4).getAmount()+" Minutes");
+						inv.getItem(4).setItemMeta(timeMeta);
+					}
 
 
-						else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-							if(slot == 4 && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
-								session.setMap(null);
-								Session.sendMessage(p, "§aMap vote enabled!");
-								p.closeInventory();
-								if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
-								session.setAllPlayersInv();
-							} else if(slot > 8 && slot-9 < Map.MAPS.size() && inv.getItem(slot).getType() == Material.FILLED_MAP) {
-								Map m = Map.getMapByName(inv.getItem(slot).getItemMeta().getDisplayName().toLowerCase().substring(2));
-								session.setMap(m);
-								p.closeInventory();
-								for(Player ap : session.getPlayers()) {
-									setPlayerSessionWaitingInv(ap);
-								}
-								if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
-								session.setAllPlayersInv();
+					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
+						if(slot == 4 && inv.getItem(4).getType() == Material.PURPLE_STAINED_GLASS_PANE) {
+							session.setMap(null);
+							Session.sendMessage(p, "§aMap vote enabled!");
+							p.closeInventory();
+							if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
+							session.setAllPlayersInv();
+						} else if(slot > 8 && slot-9 < Map.MAPS.size() && inv.getItem(slot).getType() == Material.FILLED_MAP) {
+							Map m = Map.getMapByName(inv.getItem(slot).getItemMeta().getDisplayName().toLowerCase().substring(2));
+							session.setMap(m);
+							p.closeInventory();
+							for(Player ap : session.getPlayers()) {
+								setPlayerSessionWaitingInv(ap);
 							}
+							if(session.isTeams() && !session.isTeamsAmountSet()) openTeamsInv(p);
+							session.setAllPlayersInv();
 						}
+					}
 
 
-						else if(inv.getItem(4) != null && (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE | inv.getItem(4).getType() == Material.BARRIER)) {
-							if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
-								if(inv.getItem(4).getAmount() > 1) {
-									inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
-									if(inv.getItem(4).getAmount() == 1) {
-										inv.getItem(4).setType(Material.BARRIER);
-										inv.getItem(4).getItemMeta().setDisplayName("§cNo Teams -> §7(§bSOLO§7)");
-									}
+					else if(inv.getItem(4) != null && (inv.getItem(4).getType() == Material.LEATHER_CHESTPLATE | inv.getItem(4).getType() == Material.BARRIER)) {
+						if(slot == 2 && inv.getItem(2).getType() == Material.RED_STAINED_GLASS_PANE) {
+							if(inv.getItem(4).getAmount() > 1) {
+								inv.getItem(4).setAmount(inv.getItem(4).getAmount()-1);
+								if(inv.getItem(4).getAmount() == 1) {
+									inv.getItem(4).setType(Material.BARRIER);
+									inv.getItem(4).getItemMeta().setDisplayName("§cNo Teams -> §7(§bSOLO§7)");
 								}
-							} else if(slot == 6 && inv.getItem(6).getType() == Material.LIME_STAINED_GLASS_PANE) {
-								if(inv.getItem(4).getAmount() < 8) inv.getItem(4).setAmount(inv.getItem(4).getAmount()+1);
-							} else if(slot == 8 && inv.getItem(8).getType() == Weapon.LASERGUN.getType()) {
-								session.setTeamsAmount(inv.getItem(4).getAmount());
-								p.closeInventory();
-								session.refreshScoreboard();
-								session.setAllPlayersInv();
 							}
-							ItemMeta timeMeta = inv.getItem(4).getItemMeta();
-							timeMeta.setDisplayName("§a"+inv.getItem(4).getAmount()+" §bTeams");
-							inv.getItem(4).setItemMeta(timeMeta);
+						} else if(slot == 6 && inv.getItem(6).getType() == Material.LIME_STAINED_GLASS_PANE) {
+							if(inv.getItem(4).getAmount() < 8) inv.getItem(4).setAmount(inv.getItem(4).getAmount()+1);
+						} else if(slot == 8 && inv.getItem(8).getType() == Weapon.LASERGUN.getType()) {
+							session.setTeamsAmount(inv.getItem(4).getAmount());
+							p.closeInventory();
+							session.refreshScoreboard();
+							session.setAllPlayersInv();
 						}
+						ItemMeta timeMeta = inv.getItem(4).getItemMeta();
+						timeMeta.setDisplayName("§a"+inv.getItem(4).getAmount()+" §bTeams");
+						inv.getItem(4).setItemMeta(timeMeta);
+					}
 
 
-						else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.BLUE_STAINED_GLASS_PANE) {
-							if(slot == 4) {
-								boolean doNonAdminsExist = true;
-								for(Player ap : session.getPlayers()) {
-									if(!session.isAdmin(ap)) {
-										doNonAdminsExist = false;
-										session.addAdmin(ap);
-									}
-								}
-								if(doNonAdminsExist) {
-									p.closeInventory();
-									Session.sendMessage(p, "§aEverybody is an §badmin §anow!");
-									session.broadcast("§d" + p.getName() + " §amade everybody an §badmin§a!", p);
-								}
-							} else if(slot > 8) {
-								Player ap = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
-								if(session.isInSession(ap) && !session.isAdmin(ap)) {
+					else if(inv.getItem(4) != null && inv.getItem(4).getType() == Material.BLUE_STAINED_GLASS_PANE) {
+						if(slot == 4) {
+							boolean doNonAdminsExist = true;
+							for(Player ap : session.getPlayers()) {
+								if(!session.isAdmin(ap)) {
+									doNonAdminsExist = false;
 									session.addAdmin(ap);
-									Session.sendMessage(p, "§aMade §b"+ap.getName()+" §aan §eadmin");
 								}
-								inv.setItem(slot, new ItemStack(Material.AIR));
 							}
-
-						}
-					} catch (NullPointerException e1) {
-						e1.printStackTrace();
-					}
-				} else if(session.isAdmin(p))
-
-
-					if(session.hasTeamChooseInvOpen.contains(p)) {
-						if(inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
-							SessionTeam chosenTeam = SessionTeam.getTeamByCooserSlot.get(slot);
-							SessionTeam currentTeam = session.getPlayerTeam(p);
-
-							if(chosenTeam != currentTeam) {
-								session.addPlayerToTeam(p, chosenTeam);
-								for(Player ip : session.hasTeamChooseInvOpen) {
-									ip.getOpenInventory().getTopInventory().setItem(currentTeam.getTeamChooserSlot(), currentTeam.getTeamChooser());
-									ip.getOpenInventory().getTopInventory().setItem(chosenTeam.getTeamChooserSlot(), chosenTeam.getTeamChooser());
-								}
-								Session.sendMessage(p, "§aYou're now in "+chosenTeam.getChatColor()+"team "+chosenTeam.getLasertagColor());
-								LeatherArmorMeta meta = (LeatherArmorMeta) p.getInventory().getItem(p.getInventory().first(Material.LEATHER_CHESTPLATE)).getItemMeta();
-								meta.setColor(chosenTeam.getColor());
-								p.getInventory().getItem(p.getInventory().first(Material.LEATHER_CHESTPLATE)).setItemMeta(meta);
+							if(doNonAdminsExist) {
+								p.closeInventory();
+								Session.sendMessage(p, "§aEverybody is an §badmin §anow!");
+								session.broadcast("§d" + p.getName() + " §amade everybody an §badmin§a!", p);
 							}
+						} else if(slot > 8) {
+							Player ap = Bukkit.getPlayer(inv.getItem(slot).getItemMeta().getDisplayName().substring(2));
+							if(session.isInSession(ap) && !session.isAdmin(ap)) {
+								session.addAdmin(ap);
+								Session.sendMessage(p, "§aMade §b"+ap.getName()+" §aan §eadmin");
+							}
+							inv.setItem(slot, new ItemStack(Material.AIR));
 						}
+
 					}
 
-				if(session.votingMap() && inv.getItem(0) != null && inv.getItem(0).getType() == Material.FILLED_MAP) {
+					else if(inv.getItem(1) != null && inv.getItem(1).getType().equals(Weapon.DAGGER.getType()) && inv.getItem(7) != null && Tag.BANNERS.isTagged(inv.getItem(7).getType())){
+						if(slot == 1){
+							inv.setItem(1,(!session.withMultiweapons())?Weapon.DAGGER.getColoredItem(LasertagColor.Red, "§cDisable §nMultiweapons") : Weapon.DAGGER.getItem("§aEnable §nMultiweapons"));
+							session.setWithMultiWeapons(!session.withMultiweapons());
+						} else if(slot == 7){
+							inv.setItem(7,(session.withCaptureTheFlag())?Utils.getItemStack(Material.GREEN_BANNER,"§aEnable §nCapture the Flag"):Utils.getItemStack(Material.RED_BANNER,"§cDisable §nCapture the Flag"));
+							session.setWithCaptureTheFlag(!session.withCaptureTheFlag());
+						}
+					}
+				}
+
+
+				if (session.hasTeamChooseInvOpen.contains(p)) {
+					if (inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
+						SessionTeam chosenTeam = SessionTeam.getTeamByChooserSlot(slot, session);
+						SessionTeam currentTeam = session.getPlayerTeam(p);
+
+						if (chosenTeam != currentTeam) {
+							session.addPlayerToTeam(p, chosenTeam);
+							for (Player ip : session.hasTeamChooseInvOpen) {
+								ip.getOpenInventory().getTopInventory().setItem(currentTeam.getTeamChooserSlot(), currentTeam.getTeamChooser());
+								ip.getOpenInventory().getTopInventory().setItem(chosenTeam.getTeamChooserSlot(), chosenTeam.getTeamChooser());
+							}
+							Session.sendMessage(p, "§aYou're now in " + chosenTeam.getChatColor() + "team " + chosenTeam.getLasertagColor());
+							LeatherArmorMeta meta = (LeatherArmorMeta) p.getInventory().getItem(p.getInventory().first(Material.LEATHER_CHESTPLATE)).getItemMeta();
+							meta.setColor(chosenTeam.getColor());
+							p.getInventory().getItem(p.getInventory().first(Material.LEATHER_CHESTPLATE)).setItemMeta(meta);
+						}
+					}
+				}
+
+				else if(session.votingMap() && inv.getItem(0) != null && inv.getItem(0).getType() == Material.FILLED_MAP) {
 					session.playerVoteMap(p, Map.getMapByName(inv.getItem(slot).getItemMeta().getDisplayName().toLowerCase().substring(0, inv.getItem(slot).getItemMeta().getDisplayName().length()-10)));
 					p.closeInventory();
 					p.getInventory().getItem(p.getInventory().first(Material.PAPER)).getItemMeta().setDisplayName("§eVoted for: §d"+Map.MAPS.get(slot).getName());
@@ -247,11 +226,7 @@ public class SessionInventories implements Listener{
 						p.closeInventory();
 					} else if(slot == 4 && session.isAdmin(p)){
 						session.setWithMultiWeapons(false);
-						session.broadcast("§cDisabled multiweapons");
 						p.closeInventory();
-						for (Player ap : session.getPlayers()) {
-							if(ap.getOpenInventory().getTopInventory().contains(Weapon.SNIPER.getType()) && ap.getOpenInventory().getTopInventory().contains(Weapon.SHOTGUN.getType())) ap.closeInventory();
-						}
 					}
 				}
 			}
@@ -262,6 +237,7 @@ public class SessionInventories implements Listener{
 	
 	
 	
+	@SuppressWarnings("ConstantConditions")
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerCloseInventory(InventoryCloseEvent e) {
 		try {
@@ -272,6 +248,7 @@ public class SessionInventories implements Listener{
 			if(session.tagging()) return;
 			if(session.getOwner() == p) {
 				new BukkitRunnable(){
+					@SuppressWarnings("ConstantConditions")
 					@Override
 					public void run() {
 						try {
@@ -293,8 +270,8 @@ public class SessionInventories implements Listener{
 			if(inv.contains(Material.LEATHER_CHESTPLATE) && inv.getItem(inv.first(Material.LEATHER_CHESTPLATE)).getItemMeta().getDisplayName().toUpperCase().contains("RED")) {
 				session.hasTeamChooseInvOpen.remove(p);
 			}
-		} catch (Exception exp) {
-			exp.printStackTrace();
+		} catch (Exception ignored) {
+
 		}
 	}
 	
@@ -344,9 +321,8 @@ public class SessionInventories implements Listener{
 					Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> session.leavePlayer(p), 1);
 				} else if(session.withMultiweapons() && (item.getType() == Weapon.DAGGER.getType() || item.getType() == Weapon.SHOTGUN.getType() || item.getType() == Weapon.SNIPER.getType())) {
 					openSecondaryWeaponChooserInv(p);
-				} else if(!session.withMultiweapons() && item.getType() == Weapon.DAGGER.getType()) {
-					Session.sendMessage(p, "§aEnabled §bmultiweapons!");
-					session.setWithMultiWeapons(true);
+				} else if(item.getType().equals(Material.REDSTONE_TORCH)) {
+					openExtraModesInv(p);
 				}
 			}
 		}
@@ -444,6 +420,7 @@ public class SessionInventories implements Listener{
 		if(session.isAdmin(p)) mapTitle += " §o§7[§6Click to change§7]";
 		ItemStack map = /*new ItemStack(Material.PAPER);*/ Utils.getItemStack(Material.PAPER, mapTitle);
 
+
 		if(session.isTeams()) {
 			ItemStack team = /*new ItemStack(Material.LEATHER_CHESTPLATE);*/ Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE, session.getPlayerColor(p).getChatColor()+"Change team",session.getPlayerColor(p).getColor(), 1);
 
@@ -455,43 +432,21 @@ public class SessionInventories implements Listener{
 				p.getInventory().setItem(1, map);
 			}
 		} else {
-			if (session.isAdmin(p)) {
-				p.getInventory().setItem(1, map);
-			} else {
-				p.getInventory().setItem(0, map);
-			}
+			p.getInventory().setItem((session.isAdmin(p))?1:0, map);
 		}
-		
+
+		int addon = (session.isTeams())?1:0;
 		if(session.withMultiweapons()) {
 			ItemStack weapon = (session.getPlayerSecondaryWeapon(p) != null)? session.getPlayerSecondaryWeapon(p).getColoredItem(session.getPlayerColor(p), "§eSecondary weapon: §d"+session.getPlayerSecondaryWeapon(p).getName()+" §7[§6click to change§7]"):Weapon.DAGGER.getColoredItem(session.getPlayerColor(p),"§eChoose your secondary Weapon");
-
-			if(session.isTeams()) {
-				if(session.isAdmin(p)) {
-					p.getInventory().setItem(3, weapon);
-				} else {
-					p.getInventory().setItem(2, weapon);
-				}
-			} else {
-				if(session.isAdmin(p)) {
-					p.getInventory().setItem(2, weapon);
-				} else {
-					p.getInventory().setItem(1, weapon);
-				}
-			}
+			p.getInventory().setItem(((session.isAdmin(p))?2:1)+addon, weapon);
 		}
 		if(session.isAdmin(p)) {
-			int addition = (session.isSolo())? 0:1;
+			if(session.withMultiweapons()) addon++;
 			p.getInventory().setItem(0, Weapon.LASERGUN.getItem("§a§lSTART"));
-
-			p.getInventory().setItem(((session.withMultiweapons())?4:3)+addition, Utils.getItemStack(Material.CLOCK,"§bChange time"));
-
-			if(!session.withMultiweapons()) {
-				p.getInventory().setItem(4+addition, Weapon.DAGGER.getItem("§aWith Multiweapons"));
-			}
-
-			p.getInventory().setItem(5+addition, Utils.getItemStack(Material.END_CRYSTAL,"§6Change mode"));
-
-			p.getInventory().setItem(6+addition, Utils.getItemStack(Material.DIAMOND_HELMET,"§ePromote player to admin"));
+			p.getInventory().setItem(3+addon, Utils.getItemStack(Material.CLOCK,"§bChange time"));
+			p.getInventory().setItem(4+addon, Utils.getItemStack(Material.REDSTONE_TORCH,"§dExtra modes"));
+			p.getInventory().setItem(5+addon, Utils.getItemStack(Material.END_CRYSTAL,"§6Change mode"));
+			p.getInventory().setItem(6+addon, Utils.getItemStack(Material.DIAMOND_HELMET,"§ePromote player to admin"));
 		}
 
 		p.getInventory().setItem(8, Utils.getItemStack(Material.BARRIER,"§cLeave"));
@@ -559,5 +514,15 @@ public class SessionInventories implements Listener{
 		p.closeInventory();
 		p.openInventory(weaponsInv);
 	}
-	
+
+	public static void openExtraModesInv(Player p){
+		Session session = Session.getPlayerSession(p);
+		if(session == null) return;
+		Inventory inv = Bukkit.createInventory(null, 9, "§0Choose Extra mode:");
+
+		inv.setItem(1,(session.withMultiweapons())?Weapon.DAGGER.getColoredItem(LasertagColor.Red, "§cDisable §nMultiweapons") : Weapon.DAGGER.getItem("§aEnable §nMultiweapons"));
+		inv.setItem(7,(session.withCaptureTheFlag())?Utils.getItemStack(Material.RED_BANNER,"§cDisable §nCapture the Flag"):Utils.getItemStack(Material.GREEN_BANNER,"§aEnable §nCapture the Flag"));
+		p.closeInventory();
+		p.openInventory(inv);
+	}
 }

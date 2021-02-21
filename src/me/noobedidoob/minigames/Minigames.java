@@ -1,6 +1,7 @@
 package me.noobedidoob.minigames;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.utils.Area;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -29,13 +30,14 @@ public class Minigames extends JavaPlugin implements Listener{
 
 	public World world;
 	public Location spawn;
+	public Area lobbyArea;
 	public Location winnerPodium;
 
 	public static Minigames INSTANCE;
 
 	public void onEnable() {
 		INSTANCE = this;
-		
+
 		Commands commands = new Commands(this);
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
@@ -73,7 +75,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		Bukkit.getOnlinePlayers().forEach(p ->{
 			p.getInventory().clear();
 			p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard());
-			p.teleport(spawn);
+			if(!lobbyArea.isInside(p.getLocation()) && !Lasertag.isPlayerTesting(p)) p.teleport(spawn);
 		});
 	}
 	
@@ -103,6 +105,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		}
 		world = Bukkit.getWorld(WORLD_NAME);
 		spawn = new Location(world, 220.5, 7, -139.5);
+		lobbyArea = new Area(195,4,-171,245,22,-109);
 		assert world != null;
 		world.setSpawnLocation(spawn);
 		winnerPodium = new Location(world, 220.5, 7, -139.5);

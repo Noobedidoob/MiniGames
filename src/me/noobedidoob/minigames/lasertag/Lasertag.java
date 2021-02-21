@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -262,13 +263,17 @@ public class Lasertag implements Listener{
 		for(Session session : Session.getAllSessions()) {
 			if(!session.tagging()) {
 				List<String> lore = new ArrayList<>();
-				for(Player a : session.getAdmins()) {
-					if(a != session.getOwner()) lore.add("§b"+a.getName());
+				lore.add("§7 - §f"+((session.isSolo()?"Solo":session.getTeamsAmount()+" Teams"))+((!session.withMultiweapons()&&!session.withCaptureTheFlag())?"":(session.withCaptureTheFlag() && session.withMultiweapons())?" §7(§6MultiWeapons§7, §6Capture the Flag§7)":" §7(§6"+((session.withMultiweapons())?"MultiWeapons":"Capture the Flag")+"§7)"));
+				if(session.getPlayers().length > 1){
+					lore.add("§7 - §7Players:");
+					for(Player a : session.getAdmins()) {
+						if(a != session.getOwner()) lore.add("§b   "+a.getName());
+					}
+					for(Player ap : session.getPlayers()) {
+						if(!session.isAdmin(ap)) lore.add("§a   "+ap.getName());
+					}
 				}
-				for(Player ap : session.getPlayers()) {
-					if(!session.isAdmin(ap)) lore.add("§a"+ap.getName());
-				}
-				inv.setItem(i++, Utils.getPlayerSkullItem(session.getOwner(),"§d"+session.getOwner().getName()+"§a's session", lore));
+				inv.setItem(i++, Utils.getPlayerSkullItem(session.getOwner(),"§d"+session.getOwner().getName()+"'s §asession", lore));
 			}
 		}
 		
@@ -302,6 +307,11 @@ public class Lasertag implements Listener{
 				} else Session.sendMessage(p, "§cYou've been banned from this session! Ask the owner to unban you!");
 			} else Session.sendMessage(p, "§cError occured! Couldn't find session!");
 		}
+	}
+
+	@EventHandler
+	public void onPlayerChangeGameMode(PlayerGameModeChangeEvent e){
+		if(Session.getPlayerSession(e.getPlayer()) != null && Session.getPlayerSession(e.getPlayer()).tagging()) e.setCancelled(true);
 	}
 	
 	

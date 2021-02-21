@@ -6,7 +6,7 @@ import java.util.List;
 
 import me.noobedidoob.minigames.utils.BaseSphere;
 import org.bukkit.Bukkit;
-import org.bukkit.Particle;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -15,7 +15,6 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.Utils;
@@ -41,28 +40,44 @@ public class SessionScoreboard {
 		if(time < 3600) obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "m")).setScore(0);
 		else obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "h")).setScore(0);
 		obj.getScore(" ").setScore(1);
-		
-		
-		
+
 		int i = 2;
-		
-		
+		boolean limit = (session.getTeamsAmount() > 3 | (session.isSolo() && session.getPlayers().length < 7));
+
+		int votes = 0;
 		if(!session.isMapNull()){
 			if(session.votingMap()) {
-				for(int j = Map.MAPS.size(); j-- > 0;) {
-					Map m = Map.MAPS.get(j);
-					if(session.mapVotes.get(m) > 0 && j == Map.MAPS.size()-1) obj.getScore("  §n§6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
-					else if(session.mapVotes.get(m) > 0) obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+				if (session.getTeamsAmount() < 3 && session.getPlayers().length < 10) {
+					for(int j = Map.MAPS.size(); j-- > 0;) {
+						Map m = Map.MAPS.get(j);
+						if(session.mapVotes.get(m) > 0 && j == Map.MAPS.size()-1) {
+							obj.getScore("  §n§6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+							votes++;
+						}
+						else if(session.mapVotes.get(m) > 0) {
+							obj.getScore("  §6"+m.getName()+": §7(§a"+session.mapVotes.get(m)+"§7)").setScore(i++);
+							votes++;
+						}
+					}
 				}
 				obj.getScore("§eMap:  §o§aVoting...").setScore(i++);
 			} else {
 				obj.getScore("§eMap:  §r§b"+session.getMap().getName()).setScore(i++);
 			}
-			obj.getScore("  ").setScore(i++);
+			if(session.votingMap() && votes > 0 && session.getTeamsAmount() < 3 && session.getPlayers().length < 10){
+				/*if(session.withCaptureTheFlag() | session.withMultiweapons()) */obj.getScore("  ").setScore(i++);
+			} else {
+				if(session.isSolo() && !session.withCaptureTheFlag() && !session.withMultiweapons()) obj.getScore("  ").setScore(i++);
+			}
 		}
-		
+
+		if(session.withCaptureTheFlag() | session.withMultiweapons()){
+			obj.getScore("§eModes:  "+((session.withMultiweapons()&&session.withCaptureTheFlag()?"§bMultiWeapons§7, §bCTF":(session.withCaptureTheFlag()?"§bCTF":"§bMultiWeapons")))).setScore(i++);
+			if(session.isSolo()) obj.getScore("        ").setScore(i++);
+		}
+
 		if(session.isSolo()) {
-			
+
 			HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
 			
 			int maxScore = 0;
@@ -88,9 +103,8 @@ public class SessionScoreboard {
 				obj.getScore(((playersInSorted.get(maxScore).contains(p))?"§n":"")+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+pp+"§7)  ").setScore(i++);
 			}
 
-
 		} else {
-			
+
 			HashMap<Integer, List<SessionTeam>> teamsInSorted = new HashMap<>();
 			int maxTeamScore = 0;
 			for(SessionTeam team : session.getTeams()) {
@@ -109,38 +123,54 @@ public class SessionScoreboard {
 					teamsSortedInRanks.addAll(rankTeamsList);
 				}
 			}
-			
+
 			for(SessionTeam team : teamsSortedInRanks) {
-				StringBuilder spaces = new StringBuilder("    ");
-				for(int j = 0; j < i; j++) spaces.append(" ");
-				obj.getScore(spaces.toString()).setScore(i++);
-				
-				HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
-				int maxScore = 0;
-				for(Player p : team.getPlayers()) {
-					List<Player> newList = new ArrayList<>();
-					if (playersInSorted.get(session.getPlayerPoints(p)) != null) {
-						newList = playersInSorted.get(session.getPlayerPoints(p));
+				try {
+					StringBuilder spaces = new StringBuilder("    ");
+					for(int j = 0; j < i; j++) spaces.append(" ");
+					obj.getScore(spaces.toString()).setScore(i++);
+
+					HashMap<Integer, List<Player>> playersInSorted = new HashMap<>();
+					int maxScore = 0;
+					for(Player p : team.getPlayers()) {
+						List<Player> newList = new ArrayList<>();
+						if (playersInSorted.get(session.getPlayerPoints(p)) != null) {
+							newList = playersInSorted.get(session.getPlayerPoints(p));
+						}
+						newList.add(p);
+						playersInSorted.put(session.getPlayerPoints(p), newList);
+						if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
 					}
-					newList.add(p);
-					playersInSorted.put(session.getPlayerPoints(p), newList);
-					if(session.getPlayerPoints(p) > maxScore) maxScore = session.getPlayerPoints(p);
-				}
-				List<Player> sortedInRanks = new ArrayList<>();
-				for(int c = 0; c <= maxScore; c++) {
-					if(playersInSorted.get(c) != null) {
-						List<Player> rankList = playersInSorted.get(c);
-						sortedInRanks.addAll(rankList);
+					List<Player> sortedInRanks = new ArrayList<>();
+					for(int c = 0; c <= maxScore; c++) {
+						if(playersInSorted.get(c) != null) {
+							List<Player> rankList = playersInSorted.get(c);
+							sortedInRanks.addAll(rankList);
+						}
 					}
+
+					if (session.getTeamsAmount()< 4) {
+						for(Player p : sortedInRanks) {
+							Lasertag.LasertagColor color = session.getPlayerColor(p);
+							ChatColor chatColor = color.getChatColor();
+							int points = session.getPlayerPoints(p);
+							obj.getScore("   "+chatColor+p.getName()+" §7(§a"+points+"§7)  ").setScore(i++);
+//							obj.getScore("   "+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
+						}
+					}
+					obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).name()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				
-				for(Player p : sortedInRanks) {
-					obj.getScore("   "+session.getPlayerColor(p).getChatColor()+p.getName()+" §7(§a"+session.getPlayerPoints(p)+"§7)  ").setScore(i++);
-				}
-				obj.getScore(session.getTeamColor(team).getChatColor()+session.getTeamColor(team).name()+" Team §7(§a"+session.getTeamPoints(team)+"§7)  ").setScore(i++);
 			}
 		}
 		obj.getScore("   ").setScore(i);
+		if(i > 14) {
+			i++;
+			if(time < 3600) obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "m")).setScore(i++);
+			else obj.getScore("§eTime:  §c§l"+Utils.getTimeFormatFromLong(time, "h")).setScore(i++);
+			obj.getScore(" ").setScore(i);
+		}
 		for(Player p : session.getPlayers()) {
 			p.setScoreboard(board);
 			if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {

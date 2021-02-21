@@ -82,6 +82,7 @@ public class SessionRound {
 	
 	public void preparePlayers() {
 		for(Player p : session.getPlayers()) {
+			p.setLevel(0);
 			setPlayerGameInv(p);
 		}
 	}
@@ -111,6 +112,7 @@ public class SessionRound {
 		if(externalStop) {
 			if(timer != null) timer.cancel();
 			for(Player p : session.getPlayers()) {
+				p.setGlowing(false);
 				p.sendTitle("§cStopped the game!","",20, 20*4, 20);
 				session.setAllPlayersInv();
 				p.removePotionEffect(PotionEffectType.GLOWING);

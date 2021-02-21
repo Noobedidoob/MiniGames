@@ -7,6 +7,8 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -44,6 +46,11 @@ public class Map {
 		MAPS.add(this);
 		this.name = name.substring(0, 1).toUpperCase()+name.substring(1);
 		this.centerCoord = centerCoordinate;
+
+		for (Entity e : centerCoordinate.getLocation().getWorld().getNearbyEntities(centerCoordinate.getLocation(), area.getWidthX()+4, area.getHeight()+4, area.getWidthZ()+4)) {
+			if(e.getType() == EntityType.ARMOR_STAND) e.remove();
+		}
+
 		this.area = area;
 		this.world = world;
 		for(LasertagColor color : LasertagColor.values()) hasColor.put(color, false);

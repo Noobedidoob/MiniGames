@@ -28,17 +28,16 @@ public class SessionTeam {
 		this.session = session;
 		this.lasertagColor = colorName;
 		points = 0;
-		getTeamByCooserSlot.put(getTeamChooserSlot(), this);
 		if(session.scoreboard.board.getTeam(colorName.name()) != null) session.scoreboard.board.getTeam(colorName.name()).unregister();
 		scoreboardTeam = session.scoreboard.board.registerNewTeam(colorName.name());
 		scoreboardTeam.setColor(colorName.getChatColor());
-
 		for(Player p : players) {
 			addPlayer(p);
 		}
 		for(Player p : players) {
 			playerTeam.put(p, this);
 		}
+		session.refreshScoreboard();
 	}
 	
 	public Player[] getPlayers() {
@@ -50,7 +49,7 @@ public class SessionTeam {
 			players.add(p);
 			playerTeam.put(p, this);
 			scoreboardTeam.addEntry(p.getName());
-			
+			session.setPlayerColor(p,lasertagColor);
 			p.getInventory().setChestplate(Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE, lasertagColor.getChatColor()+lasertagColor.getName()+" team armor", lasertagColor.getColor()));
 			p.getInventory().setLeggings(Utils.getLeatherArmorItem(Material.LEATHER_LEGGINGS, lasertagColor.getChatColor()+lasertagColor.getName()+" team armor", lasertagColor.getColor()));
 			p.getInventory().setBoots(Utils.getLeatherArmorItem(Material.LEATHER_BOOTS, lasertagColor.getChatColor()+lasertagColor.getName()+" team armor", lasertagColor.getColor()));
@@ -103,7 +102,12 @@ public class SessionTeam {
 	}
 	
 	
-	public static HashMap<Integer, SessionTeam> getTeamByCooserSlot = new HashMap<>();
+	public static SessionTeam getTeamByChooserSlot(int slot, Session session){
+		for(SessionTeam team : session.getTeams()){
+			if(team.getTeamChooserSlot() == slot) return team;
+		}
+		return null;
+	}
 	public int getTeamChooserSlot() {
 		if(session.getTeamsAmount() > 4) return lasertagColor.ordinal();
 		else {
@@ -111,18 +115,10 @@ public class SessionTeam {
 		}
 	}
 	public ItemStack getTeamChooser() {
-//		ItemStack item = new ItemStack(Material.LEATHER_CHESTPLATE);
-//		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-//		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_DYE);
-//		meta.setColor(getColor());
-//		meta.setDisplayName(getChatColor()+""+ getLasertagColor()+" Team");
 		List<String> lore = new ArrayList<>();
 		for(Player tp : getPlayers()) {
 			lore.add(getChatColor()+""+tp.getName());
 		}
-//		meta.setLore(lore);
-//		item.setItemMeta(meta);
-//		return item;
 		return Utils.getLeatherArmorItem(Material.LEATHER_CHESTPLATE,getChatColor()+""+ getLasertagColor()+" Team", lasertagColor.getColor(), lore);
 	}
 

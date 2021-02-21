@@ -31,6 +31,7 @@ public class Flag implements Listener {
 
     private Player playerAttachedTo;
 
+    // TODO: 21.02.2021 BLINK
     public Flag(Location baseLocation, LasertagColor color){
         this.color = color;
         this.baseLocation = baseLocation;
@@ -82,10 +83,13 @@ public class Flag implements Listener {
     private void removeFromPlayer(){
         if (playerAttachedTo != null) {
             PLAYER_FLAG.put(playerAttachedTo,null);
+            playerAttachedTo.setGlowing(false);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
             playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
-            playerAttachedTo.setGlowing(false);
-            this.playerAttachedTo = null;
+            Utils.runLater(()->{
+                playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
+                this.playerAttachedTo = null;
+            }, 5);
         }
     }
 
@@ -197,8 +201,8 @@ public class Flag implements Listener {
         if(playerAttachedTo != null){
             PLAYER_FLAG.put(playerAttachedTo,null);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
-            this.playerAttachedTo = null;
             playerAttachedTo.setGlowing(false);
+            this.playerAttachedTo = null;
         }
     }
 

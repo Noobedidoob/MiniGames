@@ -60,9 +60,9 @@ public class Session implements Listener{
 		scoreboard = new SessionScoreboard(this);
 		round = new SessionRound(this);
 		modifiers = new SessionModifiers();
-		
+
 		this.owner = owner;
-		
+
 		if(teamsAmount < 2) {
 			solo = true;
 			this.teamAmountSet = true;
@@ -71,7 +71,7 @@ public class Session implements Listener{
 			setTeamsAmount(teamsAmount);
 			teams.get(0).addPlayer(owner);
 		}
-		
+
 		addPlayer(owner);
 		addAdmin(owner);
 		this.code = owner.getName();
@@ -142,6 +142,7 @@ public class Session implements Listener{
 			try {
 				for (Player p : players) {
 					playerPoints.put(p, 0);
+					p.setLevel(0);
 				}
 				for (SessionTeam t : teams) {
 					t.setPoints(0);
@@ -406,20 +407,23 @@ public class Session implements Listener{
 	public void setWithCaptureTheFlag(boolean ctf){
 		if (withCaptureTheFlag != ctf) {
 			withCaptureTheFlag = ctf;
-			broadcast(((ctf)?"§aEnabled":"§rDisabled")+" §bcapture the flag mode!");
+			broadcast(((ctf)?"§aEnabled":"§cDisabled")+" §bcapture the flag mode!");
 			if(ctf){
 				if(mapState == MapState.SET && !map.withCaptureTheFlag()) {
-					map = null;
+					map = Map.MAPS.get(0);
 					SessionInventories.openMapInv(owner);
 				} else if(mapState == MapState.VOTING){
 					mapVotes.clear();
-					hasPlayerVoted.forEach((player, map1) -> {
-						sendMessage(player, "§rPlease re-vote your map!");
-						hasPlayerVoted.put(player,false);
+					setMap(null);
+					hasPlayerVoted.forEach((player, voted) -> {
+						if(voted) {
+							sendMessage(player, "§cPlease re-vote your map!");
+							hasPlayerVoted.put(player,false);
+						}
 					});
-					refreshScoreboard();
 				}
 			}
+			refreshScoreboard();
 		}
 	}
 	public boolean withCaptureTheFlag(){
@@ -466,11 +470,13 @@ public class Session implements Listener{
 		refreshScoreboard();
 	}
 	public int getPlayerPoints(Player p) {
+		playerPoints.putIfAbsent(p,0);
 		return playerPoints.get(p);
 	}
 
 	public void addPoints(Player p, int points, String message) {
 		playerPoints.put(p, playerPoints.get(p) + points);
+		p.setLevel(playerPoints.get(p));
 		if (!solo) {
 			getPlayerTeam(p).addPoints(points);
 			for(Player ap : getPlayerTeam(p).getPlayers()){
@@ -493,6 +499,7 @@ public class Session implements Listener{
 		setPlayerSession(p, this);
 		players.add(p);
 		playerPoints.put(p, 0);
+		p.setLevel(0);
 		hasPlayerVoted.put(p, false);
 		sendMessage(p, "§aWelcome to the Game, §b"+p.getName()+"§r§a!");
 		
@@ -598,6 +605,7 @@ public class Session implements Listener{
 			
 			players.add(p);
 			playerPoints.put(p, points);
+			p.setLevel(points);
 			hasPlayerVoted.put(p, false);
 			
 			if(isTeams()) {
@@ -626,8 +634,7 @@ public class Session implements Listener{
 	private int teamsAmount;
 	
 	public void addTeam(LasertagColor color, Player... players) {
-		SessionTeam team = new SessionTeam(this, color, players);
-		teams.add(team);
+		teams.add(new SessionTeam(this, color, players));
 		for(Player p : players) {
 			playerColor.put(p, color);
 		}
@@ -675,11 +682,11 @@ public class Session implements Listener{
 		if (round.tagging()) return;
 		if (!teamAmountSet) {
 			teamAmountSet = true;
-			
+
 			for (int i = 0; i < amount; i++) {
-				if (i == 0) addTeam(LasertagColor.Red, owner);
-				else addTeam(LasertagColor.values()[i]);
-			} 
+				if (i == 0) teams.add(new SessionTeam(this, LasertagColor.Red, owner));
+				else teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
+			}
 		} else {
 			if(amount < 2) {
 				if (!solo) {
@@ -687,11 +694,14 @@ public class Session implements Listener{
 					refreshSoloPlayerColors();
 					for(SessionTeam t : teams) {
 						for(Player p : t.getPlayers()) {
-							t.removePlayer(p);
+							try {
+								t.removePlayer(p);
+							} catch (IllegalStateException ignore) {
+							}
 						}
 					}
 					teams = new ArrayList<>();
-					broadcast(" §bUpdated mode to §dsolo!");
+					broadcast("§bUpdated mode to §dsolo!");
 					for(Player p : players) {
 						p.getInventory().clear();
 						setPlayerInv(p);
@@ -709,10 +719,9 @@ public class Session implements Listener{
 						setPlayerInv(p);
 						generatePlayerTeam(p);
 					}
-					broadcast(" §bUpdated mode to §d"+amount+" teams!");
 				} else if(amount > teamsAmount) {
-					for(int i = amount-1; i < amount-1; i++) {
-						addTeam(LasertagColor.values()[i]);
+					for(int i = amount-1; i < amount; i++) {
+						teams.add(new SessionTeam(this, LasertagColor.values()[i], new Player[] {}));
 					}
 				} else if(amount < teamsAmount) {
 					teams = new ArrayList<>();
@@ -726,6 +735,7 @@ public class Session implements Listener{
 						generatePlayerTeam(p);
 					}
 				}
+				broadcast("§bUpdated mode to §d"+amount+" teams!");
 			}
 		}
 		teamsAmount = amount;
@@ -862,20 +872,27 @@ public class Session implements Listener{
     }
     public void setWithMultiWeapons(boolean withMultiWeapons) {
     	if (waiting()) {
-    		if(withMultiWeapons) {
-        		if(!this.withMultiWeapons) {
-        			this.withMultiWeapons = true;
-        			for(Player p : players) {
-        				setPlayerReady(p, false);
-        				SessionInventories.openSecondaryWeaponChooserInv(p);
-        				setPlayerInv(p);
-        			}
+    		if(withMultiWeapons != this.withMultiWeapons) {
+    			broadcast(((withMultiWeapons)?"§aEnabled":"§cDisabled")+" §bMultiweapons!");
+				if(withMultiWeapons) {
+					if(!this.withMultiWeapons) {
+						this.withMultiWeapons = true;
+						for(Player p : players) {
+							setPlayerReady(p, false);
+							SessionInventories.openSecondaryWeaponChooserInv(p);
+							setPlayerInv(p);
+						}
+					}
+				} else {
+					this.withMultiWeapons = false;
+					for (Player ap : players) {
+						if(ap.getOpenInventory().getTopInventory().contains(Weapon.SNIPER.getType()) && ap.getOpenInventory().getTopInventory().contains(Weapon.SHOTGUN.getType())) ap.closeInventory();
+					}
+					setAllPlayersInv();
+					playersSecondaryWeapon.clear();
 				}
-        	} else {
-        		this.withMultiWeapons = false;
-        		setAllPlayersInv();
-        		playersSecondaryWeapon.clear();
-        	}
+				refreshScoreboard();
+			}
     	}
     }
 	
