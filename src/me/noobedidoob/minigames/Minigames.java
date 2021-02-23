@@ -37,7 +37,7 @@ public class Minigames extends JavaPlugin implements Listener{
 	public void onEnable() {
 		INSTANCE = this;
 
-
+	
 		reloadConfig();
 		if (!(new File(this.getDataFolder(), "config.yml").exists())) {
 			inform("config.yml was not found! Creating config.yml...");
@@ -48,6 +48,7 @@ public class Minigames extends JavaPlugin implements Listener{
 
 		WORLD_NAME = getConfig().getString("world");
 
+		// TODO: 23.02.2021 Fix Minigames_world.zip export
 		exportZips();
 		if(!setWorld()) return;
 
@@ -106,7 +107,7 @@ public class Minigames extends JavaPlugin implements Listener{
 				Files.copy(getClass().getResourceAsStream("/Minigames_world.zip"), Paths.get(getDataFolder()+ "/Minigames_world.zip"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
 				Minigames.warn("Error occured while copying \"Minigames_world.zip\" to plugins datafolder");
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 		if(!new File(getDataFolder()+"/Lasertag-Texturepack.zip").exists()) {
@@ -115,7 +116,7 @@ public class Minigames extends JavaPlugin implements Listener{
 				Files.copy(getClass().getResourceAsStream("/Lasertag-Texturepack.zip"), Paths.get(getDataFolder()+"/Lasertag-Texturepack.zip"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
 				Minigames.warn("Error occured while copying \"Lasertag-Texturepack.zip\" to plugins datafolder");
-				e.printStackTrace();
+//				e.printStackTrace();
 			}
 		}
 	}
