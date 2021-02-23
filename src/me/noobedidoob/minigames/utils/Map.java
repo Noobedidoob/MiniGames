@@ -21,7 +21,6 @@ public class Map {
 	
 	private String name;
 	
-	private final Coordinate centerCoord;
 	private final Area area;
 	
 	private final World world;
@@ -42,13 +41,12 @@ public class Map {
 	
 	private int protectionRaduis;
 	
-	public Map(String name, Coordinate centerCoordinate, Area area,World world) {
+	public Map(String name, Area area, World world) {
 		MAPS.add(this);
 		this.name = name.substring(0, 1).toUpperCase()+name.substring(1);
-		this.centerCoord = centerCoordinate;
 
-		for (Entity e : centerCoordinate.getLocation().getWorld().getNearbyEntities(centerCoordinate.getLocation(), area.getWidthX()+4, area.getHeight()+4, area.getWidthZ()+4)) {
-			if(e.getType() == EntityType.ARMOR_STAND) e.remove();
+		for (Entity e : world.getNearbyEntities(new Coordinate(area.getMaxX()-(area.getWidthX()/2f), area.getMaxY()-(area.getHeight()/2f), area.getMaxZ()-(area.getWidthZ()/2f)).getLocation(), area.getWidthX()+4, area.getHeight()+4, area.getWidthZ()+4)) {
+			if(area.isInside(e.getLocation()) && e.getType() == EntityType.ARMOR_STAND) e.remove();
 		}
 
 		this.area = area;
@@ -58,12 +56,7 @@ public class Map {
 		NAME_MAPS.put(name.toLowerCase(), this);
 	}
 	
-	
-	
-	public Coordinate getCenterCoord() {
-		return centerCoord;
-	}
-	
+
 	public Area getArea() {
 		return area;
 	}
@@ -117,7 +110,7 @@ public class Map {
 	}
 	public Coordinate getTeamSpawnCoord(LasertagColor color) {
 		if(hasColor(color)) return teamSpawnCoords.get(color);
-		else return centerCoord;
+		else return null;
 	}
 	public void drawBaseSphere(LasertagColor color, Player... players) {
 		baseSphere.get(color).draw(players);
@@ -183,7 +176,7 @@ public class Map {
 	
 	public Location getTeamSpawnLoc(LasertagColor color) {
 		if(hasColor(color)) return teamSpawnCoords.get(color).getLocation();
-		else return centerCoord.getLocation();
+		else return null;
 	}
 	
 	

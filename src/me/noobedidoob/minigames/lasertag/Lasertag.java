@@ -66,7 +66,6 @@ public class Lasertag implements Listener{
 		minigames.getCommand("lasertag").setExecutor(laserCommands);
 		minigames.getCommand("lasertag").setTabCompleter(laserCommands);
 
-		//TODO activate modifier command
 		SessionCommands sessionCommands = new SessionCommands(minigames);
 		minigames.getCommand("session").setExecutor(sessionCommands);
 		minigames.getCommand("session").setTabCompleter(sessionCommands);
@@ -129,7 +128,7 @@ public class Lasertag implements Listener{
 			Coordinate centerCoord = new Coordinate(cs.getInt(name+".center.x"), cs.getInt(name+".center.y"), cs.getInt(name+".center.z"));
 			Coordinate coord1 = new Coordinate(cs.getInt(name+".area.x.min"), cs.getInt(name+".area.y.min"), cs.getInt(name+".area.z.min"));
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
-			Map map = new Map(name, centerCoord, new Area(coord1, coord2), minigames.world);
+			Map map = new Map(name, new Area(coord1, coord2), minigames.world);
 			
 			boolean withRandomSpawn = cs.getBoolean(name+".area.randomspawn");
 			map.setWithRandomSpawn(withRandomSpawn);
@@ -153,45 +152,7 @@ public class Lasertag implements Listener{
 				}
 				map.setProtectionRaduis(cs.getInt(name+".basespawn.protectionradius"));
 			}
-			
-			boolean enabled = true;
-			if(minigames.world == null) System.out.println("WORLD IS NULL!!!");
-			String blockName = cs.getString(name + ".center.block").toUpperCase().replace(" ", "_");
-			if(blockName.equals("!air")) {
-				if(minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().isAir()) enabled = false;
-			} else if(blockName.equals("*")) {
-				continue;
-			} else if(blockName.contains("*")){
-				if(!minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().name().contains(blockName)) enabled = false;
-			} else {
-				if(!minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().name().equals(blockName)) enabled = false;
-			}
-			if(!enabled) {
-				map.setEnabled(false);
-				unenabledMaps++;
-//				warn("The Map \""+name.substring(0, 1).toUpperCase()+name.substring(1) + "\" could not be approved because expected block  '"+blockName+"' didnt match with "
-//				+minigames.world.getBlockAt(centerCoord.getLocation().subtract(0, 1, 0)).getType().name()+"' at "+centerCoord.getX()+", "+(centerCoord.getY()-1)+", "+centerCoord.getZ()
-//				+". The map will still be playable but won't be listed in the tab-complete list.");
-			}
 		}
-		File reloadedBefore = new File(minigames.getDataFolder()+File.pathSeparator+"reloaded.before");
-		if(unenabledMaps > (Map.MAPS.size()/2)) {
-			if(!reloadedBefore.exists()) {
-				inform("Attempting to reload server due to error while enab");
-				try {
-					if(reloadedBefore.createNewFile()) Bukkit.reload();
-					else {
-						warn("An error eoccured while creating the reloaded.before file! Therefore it is not posible to reload the server!");
-						inform("Please reload the server manually in order to enable the maps!");
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			} else {
-				inform("Deleting reloaded.before file...");
-				if(reloadedBefore.delete()) inform("Success!");
-			}
-		} else if(reloadedBefore.exists()) reloadedBefore.delete();
 	}
 	
 	

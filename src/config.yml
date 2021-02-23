@@ -40,7 +40,6 @@ Lasertag:
         x: 396
         y: 22
         z: 212
-        block: red_sandstone_slab
       area:
         randomspawn: true
         x:
@@ -59,7 +58,6 @@ Lasertag:
         x: 299
         y: 8
         z: -160
-        block: blue_terracotta
       area:
         randomspawn: true
         x:
@@ -112,7 +110,6 @@ Lasertag:
         x: 287
         y: 4
         z: -86
-        block: blue_terracotta
       area:
         randomspawn: false
         x:
@@ -149,7 +146,6 @@ Lasertag:
         x: 344
         y: 9
         z: -71
-        block: red_stained_glass
       area:
         randomspawn: false
         x:
@@ -186,7 +182,6 @@ Lasertag:
         x: 746
         y: 101
         z: -410
-        block: spruce_slab
       area:
         randomspawn: false
         x:
@@ -223,7 +218,6 @@ Lasertag:
         x: 298
         y: 4
         z: -263
-        block: sea_lantern
       area:
         randomspawn: false
         x:
@@ -276,7 +270,6 @@ Lasertag:
         x: 276
         y: 4
         z: -366
-        block: black_concrete
       area:
         randomspawn: true
         x:
@@ -329,7 +322,6 @@ Lasertag:
         x: 338
         y: 4
         z: -341
-        block: black_concrete
       area:
         randomspawn: false
         x:
@@ -366,7 +358,6 @@ Lasertag:
         x: 162
         y: 8
         z: -98
-        block: gray_concrete
       area:
         randomspawn: true
         x:
@@ -399,7 +390,6 @@ Lasertag:
           max: -106
       basespawn:
         enabled: true
-        capture-the-flag: true
         red:
           x: 150.5
           y: 14

@@ -9,7 +9,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,52 +37,94 @@ public class Minigames extends JavaPlugin implements Listener{
 	public void onEnable() {
 		INSTANCE = this;
 
-		Commands commands = new Commands(this);
-		getCommand("minigames").setExecutor(commands);
-		getCommand("minigames").setTabCompleter(commands);
-		getCommand("lobby").setExecutor(commands);
-		getCommand("test").setExecutor(new Test(this));
-		new Listeners(this);
-		
+
 		reloadConfig();
 		if (!(new File(this.getDataFolder(), "config.yml").exists())) {
 			inform("config.yml was not found! Creating config.yml...");
 			getConfig().options().copyDefaults(true);
 			saveConfig();
 		}
-		
-		WORLD_NAME = getConfig().getString("world");
-		
-		setWorld();
 		if(getConfig().getBoolean("set-server-texturepack")) setServerResourcepack();
-		
+
+		WORLD_NAME = getConfig().getString("world");
+
+		exportZips();
+		if(!setWorld()) return;
+
+		Commands commands = new Commands(this);
+		getCommand("minigames").setExecutor(commands);
+		getCommand("minigames").setTabCompleter(commands);
+		getCommand("lobby").setExecutor(commands);
+		getCommand("test").setExecutor(new Test(this));
+		new Listeners(this);
+
+
+
 		lasertag = new Lasertag(this);
 		lasertag.enable();
 
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
 		}
-
-		// TODO: 20.02.2021 Extract Wolrd and Texturepack to plugin folder
 	}
 	public void onDisable() {
-		reloadConfig();
-		if(lasertag != null) lasertag.disable();
+		try {
+			reloadConfig();
+			if(lasertag != null) lasertag.disable();
 
-		Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
-		
-		Bukkit.getOnlinePlayers().forEach(p ->{
-			p.getInventory().clear();
-			p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard());
-			if(!lobbyArea.isInside(p.getLocation()) && !Lasertag.isPlayerTesting(p)) p.teleport(spawn);
-		});
+			Bukkit.unloadWorld(world, !getConfig().getBoolean("resetworld"));
+
+			Bukkit.getOnlinePlayers().forEach(p ->{
+				p.getInventory().clear();
+				p.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getNewScoreboard());
+				if(!lobbyArea.isInside(p.getLocation()) && !Lasertag.isPlayerTesting(p)) p.teleport(spawn);
+			});
+		} catch (Exception ignored) {
+		}
 	}
-	
-	
-	private void setWorld() {
+
+	private void setServerResourcepack() {
+		File propsFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties").toFile();
+		try {
+			Properties props = new Properties();
+			props.load(new FileInputStream(propsFile));
+			if(props.getProperty("resource-pack", "").equals("")) {
+				props.setProperty("resource-pack", TEXTUREPACK_URL);
+				props.store(new FileOutputStream(propsFile), null);
+			} else if(!props.getProperty("resource-pack", "").equals(TEXTUREPACK_URL)){
+				warn("Server already has resourcepack! Please remove the resourcepack in order to set the Minigames-texturepack!");
+			}
+		} catch (IOException e) {
+			System.err.println("FAILED to set server resourcepack! Caused by: "+e.getMessage());
+		}
+	}
+
+	private void exportZips(){
+		if(!new File(getDataFolder()+ "/Minigames_world.zip").exists()) {
+			try {
+//				System.out.println(getClass().getResourceAsStream("/Minigames_world.zip") == null);
+				Files.copy(getClass().getResourceAsStream("/Minigames_world.zip"), Paths.get(getDataFolder()+ "/Minigames_world.zip"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (Exception e) {
+				Minigames.warn("Error occured while copying \"Minigames_world.zip\" to plugins datafolder");
+				e.printStackTrace();
+			}
+		}
+		if(!new File(getDataFolder()+"/Lasertag-Texturepack.zip").exists()) {
+			try {
+//				System.out.println(getClass().getResourceAsStream("/Lasertag-Texturepack.zip") == null);
+				Files.copy(getClass().getResourceAsStream("/Lasertag-Texturepack.zip"), Paths.get(getDataFolder()+"/Lasertag-Texturepack.zip"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (Exception e) {
+				Minigames.warn("Error occured while copying \"Lasertag-Texturepack.zip\" to plugins datafolder");
+				e.printStackTrace();
+			}
+		}
+	}
+
+
+	private boolean setWorld() {
 		if (Bukkit.getWorld(WORLD_NAME) == null) {
 			try {
-				File serverFile = new File(getDataFolder().getParentFile().getParentFile().getParentFile().getPath());
+				File serverFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
 				if (!new File(serverFile.getPath() + "/" + WORLD_NAME).exists()) {
 					unzipWorld();
 					inform("Loading world...");
@@ -101,7 +142,8 @@ public class Minigames extends JavaPlugin implements Listener{
 				e.printStackTrace();
 				severe("An error occured while trying to get the Minigames world \"" + WORLD_NAME + "\"! Please set the world manually or try again! Disabeling...");
 				Bukkit.getPluginManager().disablePlugin(this);
-			} 
+				return false;
+			}
 		}
 		world = Bukkit.getWorld(WORLD_NAME);
 		spawn = new Location(world, 220.5, 7, -139.5);
@@ -113,56 +155,22 @@ public class Minigames extends JavaPlugin implements Listener{
 		world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
 		world.setGameRule(GameRule.DO_WEATHER_CYCLE, false);
 		world.setTime(6000);
+		return true;
 	}
-	
-	private void setServerResourcepack() {
-//		Path path = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties");
-		File propsFile = Paths.get(getDataFolder().getParentFile().getAbsolutePath()).getParent().resolve("server.properties").toFile();
-        try {
-        	Properties props = new Properties();
-        	props.load(new FileInputStream(propsFile));
-        	if(props.getProperty("resource-pack", "").equals("")) {
-        		props.setProperty("resource-pack", TEXTUREPACK_URL);
-        		props.store(new FileOutputStream(propsFile), null);
-        	} else if(!props.getProperty("resource-pack", "").equals(TEXTUREPACK_URL)){
-        		warn("Server already has resourcepack! Please remove the resourcepack in order to set the Minigames-texturepack!");
-        	}
 
-//            List<String> ogLines = Files.readAllLines(path);
-//            List<String> newLines = new ArrayList<String>();
-//            boolean empty = false;
-//            for(String line : ogLines) {
-//            	if(line.contains("resource") && !line.contains("sha1")) {
-//            		newLines.add("resource-pack="+texturepackURL);
-//            		empty = true;
-//            	} else {
-//            		newLines.add(line);
-//            	}
-//            }
-//            if(empty == true) {
-//            	Files.write(path, newLines);
-//            	inform("Successfully set server resourcepack to Minigames-texturepack!");
-//            } else {
-//            	warn("Server already has resourcepack! Please remove the resourcepack first!");
-//            }
-        } catch (IOException e) {
-        	System.err.println("FAILED to set server resourcepack! Caused by: "+e.getMessage());
-        }
-	}
+
 	
 	
-	
-	
-	private void unzipWorld() throws URISyntaxException, IOException {
+	private void unzipWorld() throws Exception {
 		String zipFilePath = "/Minigames_world.zip";
 		File serverFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
 		String destDir = serverFile.getPath()+"/"+WORLD_NAME;
 		String tempFilePath = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getPath()+"/TemporaryFile_please-delete.zip";
 		
 		InputStream zipStream = getClass().getResourceAsStream(zipFilePath);
+		if(zipStream == null) throw new NullPointerException("Could not find resource \"Minigames_world.zip\"");
 		Path zipDestPath = Paths.get(tempFilePath);
 		Files.copy(zipStream, zipDestPath, StandardCopyOption.REPLACE_EXISTING);
-		
 		File tempFile = new File(tempFilePath);
 		File dir = new File(destDir);
         if(!dir.exists()) {

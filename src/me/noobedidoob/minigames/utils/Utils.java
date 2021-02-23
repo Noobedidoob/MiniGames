@@ -29,6 +29,14 @@ public class Utils {
 			}
 		}.runTaskLater(Minigames.INSTANCE, delay);
 	}
+	public static BukkitTask runTimer(Runnable runnable, int delay, int interval){
+		return new BukkitRunnable(){
+			@Override
+			public void run() {
+				runnable.run();
+			}
+		}.runTaskTimer(Minigames.INSTANCE,delay,interval);
+	}
 	public static void runDefinedRepeater(Runnable r, int delay, int interval, int repeatAmount){
 		new BukkitRunnable(){
 			int times = 0;
@@ -167,8 +175,7 @@ public class Utils {
 		}
 		return false;
 	}
-	
-	
+
 	public static boolean isBetween(double min, double value, double max) {
 		return value < max && value > min;
 	}

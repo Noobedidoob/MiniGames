@@ -4,6 +4,8 @@ import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -17,6 +19,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.util.HashMap;
@@ -31,7 +34,7 @@ public class Flag implements Listener {
 
     private Player playerAttachedTo;
 
-    // TODO: 21.02.2021 BLINK
+
     public Flag(Location baseLocation, LasertagColor color){
         this.color = color;
         this.baseLocation = baseLocation;
@@ -40,12 +43,22 @@ public class Flag implements Listener {
         Bukkit.getPluginManager().registerEvents(this, Minigames.INSTANCE);
     }
 
+    // TODO: 21.02.2021 Test BLINK
+    private boolean playerGlowing = false;
+    BukkitTask repeater;
     public void attach(Player p){
         this.playerAttachedTo = p;
         p.getEquipment().setHelmet(banner);
         p.getInventory().setItem(8,Utils.getItemStack(banner.getType(),"§eDrop flag"));
         PLAYER_FLAG.put(p,this);
         p.setGlowing(true);
+        p.spigot().sendMessage(new TextComponent(ChatColor.GREEN+""+ChatColor.BOLD+"Bring the flag to your base!"));
+
+        if(!repeater.isCancelled()) repeater.cancel();
+        repeater = Utils.runTimer(()->{
+            playerAttachedTo.setGlowing(!playerGlowing);
+            playerGlowing = !playerGlowing;
+        },0,10);
 
         armorStand.getEquipment().clear();
         armorStand.setGlowing(false);
@@ -86,6 +99,8 @@ public class Flag implements Listener {
             playerAttachedTo.setGlowing(false);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
             playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
+            if(!repeater.isCancelled()) repeater.cancel();
+            playerGlowing = false;
             Utils.runLater(()->{
                 playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
                 this.playerAttachedTo = null;
@@ -118,7 +133,7 @@ public class Flag implements Listener {
                         teleportToBase();
                         session.addPoints(p,session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor()+p.getName()+" §7§ocaptured the flag from "+color.getChatColor()+((session.isTeams()?"team "+color:session.getPlayerFromColor(color).getName())));
                     } else {
-                        // TODO: 21.02.2021 Send notification, that its not possible
+                        p.spigot().sendMessage(new TextComponent(ChatColor.GOLD+""+ChatColor.UNDERLINE+""+ChatColor.BOLD+"Your flag is not at your base!"));
                     }
                 }
             }
