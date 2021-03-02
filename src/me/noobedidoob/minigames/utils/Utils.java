@@ -214,4 +214,16 @@ public class Utils {
 	public static boolean isPlayerBehindOtherPlayer(Player player1, Player player2){
 		return player1.getLocation().add(0,1,0).distance(getPlayerBackLocation(player2)) <= 0.5;
 	}
+
+	public static ArrayList<Location> getRay(Location a, double distance, double space){
+		ArrayList<Location> list = new ArrayList<>();
+
+		Vector direction = a.getDirection();
+		direction.multiply(space);
+		for(double d = 0; d < distance; d += space){
+			Location loc = a.add(direction);
+			list.add(loc.clone());
+		}
+		return list;
+	}
 }

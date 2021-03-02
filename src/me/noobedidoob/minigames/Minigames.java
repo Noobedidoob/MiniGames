@@ -10,14 +10,12 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.Vector;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -60,7 +58,7 @@ public class Minigames extends JavaPlugin implements Listener{
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
 		getCommand("lobby").setExecutor(commands);
-		getCommand("test").setExecutor(new Test(this));
+//		getCommand("test").setExecutor(new Test(this));
 		new Listeners(this);
 
 
@@ -77,18 +75,6 @@ public class Minigames extends JavaPlugin implements Listener{
 				((ArmorStand) e).getEquipment().setItemInMainHand(Weapons.Weapon.LASERGUN.getItem());
 			}
 		}
-	}
-
-	public static ArrayList<Location> getRay(Location a, double distance, double space){
-		ArrayList<Location> list = new ArrayList<>();
-
-		Vector direction = a.getDirection();
-		direction.multiply(space);
-		for(double d = 0; d < distance; d += space){
-			Location loc = a.add(direction);
-			list.add(loc.clone());
-		}
-		return list;
 	}
 
 	public void onDisable() {
