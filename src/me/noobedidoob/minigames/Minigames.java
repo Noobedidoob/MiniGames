@@ -1,18 +1,23 @@
 package me.noobedidoob.minigames;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.methods.Weapons;
 import me.noobedidoob.minigames.utils.Area;
 import org.bukkit.*;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.Vector;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -40,7 +45,6 @@ public class Minigames extends JavaPlugin implements Listener{
 	
 		reloadConfig();
 		if (!(new File(this.getDataFolder(), "config.yml").exists())) {
-			inform("config.yml was not found! Creating config.yml...");
 			getConfig().options().copyDefaults(true);
 			saveConfig();
 		}
@@ -67,7 +71,26 @@ public class Minigames extends JavaPlugin implements Listener{
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			if(p.getGameMode().equals(GameMode.ADVENTURE)) p.setAllowFlight(true);
 		}
+
+		for(Entity e : world.getNearbyEntities(spawn, 54,30,64)){
+			if(e instanceof ArmorStand){
+				((ArmorStand) e).getEquipment().setItemInMainHand(Weapons.Weapon.LASERGUN.getItem());
+			}
+		}
 	}
+
+	public static ArrayList<Location> getRay(Location a, double distance, double space){
+		ArrayList<Location> list = new ArrayList<>();
+
+		Vector direction = a.getDirection();
+		direction.multiply(space);
+		for(double d = 0; d < distance; d += space){
+			Location loc = a.add(direction);
+			list.add(loc.clone());
+		}
+		return list;
+	}
+
 	public void onDisable() {
 		try {
 			reloadConfig();
@@ -105,6 +128,8 @@ public class Minigames extends JavaPlugin implements Listener{
 			try {
 //				System.out.println(getClass().getResourceAsStream("/Minigames_world.zip") == null);
 				Files.copy(getClass().getResourceAsStream("/Minigames_world.zip"), Paths.get(getDataFolder()+ "/Minigames_world.zip"), StandardCopyOption.REPLACE_EXISTING);
+			} catch (NullPointerException npe) {
+				System.out.println("/Minigames_world.zip is null");
 			} catch (Exception e) {
 				Minigames.warn("Error occured while copying \"Minigames_world.zip\" to plugins datafolder");
 //				e.printStackTrace();

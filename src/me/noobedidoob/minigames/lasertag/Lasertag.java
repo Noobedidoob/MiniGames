@@ -1,7 +1,5 @@
 package me.noobedidoob.minigames.lasertag;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +90,7 @@ public class Lasertag implements Listener{
 		for(Player p : Bukkit.getOnlinePlayers()) {
 			p.setWalkSpeed(0.2f);
 		}
-//		Session.closeAllSessions();
+		Session.shutdownAllSessions();
 	}
 	
 
@@ -213,6 +211,7 @@ public class Lasertag implements Listener{
 	}
 	
 	public static void setPlayersLobbyInv(Player p) {
+		p.getInventory().clear();
 		p.getInventory().setItem(0, Utils.getItemStack(Material.COMPASS,"§aFind sessions"));
 		p.getInventory().setItem(1, Utils.getItemStack(Material.NETHER_STAR,"§eCreate new session"));
 	}

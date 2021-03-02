@@ -57,11 +57,11 @@ public class SessionModifiers {
 		SHOT_KILL_EXTRA_POINTS(0, "Extra points when a player shot normal"),
 		SNIPER_KILL_EXTRA_POINTS(1, "Extra points when killing with snipe-shot"),
 		HEADSHOT_EXTRA_POINTS(1, "Extra ponts when killing with headshot"),
-		BACKSTAB_EXTRA_POINTS(0, "Extra points when backstabbing"),
+		BACKSTAB_EXTRA_POINTS(2, "Extra points when backstabbing"),
 		PVP_KILL_EXTRA_POINTS(0, "Extra ponts when killed at melee"),
 		STREAK_EXTRA_POINTS(2, "Extra points when having a streak"),
 		STREAK_SHUTDOWN_EXTRA_POINTS(2, "Extra points when shutting down a streak"),
-		MULTIKILLS_EXTRA_POINTS(2, "Extra points when killing multiple players at once"),
+		MULTIKILLS_EXTRA_POINTS(3, "Extra points when killing multiple players at once"),
 		CAPTURE_THE_FLAG_POINTS(2, "Points a player gets when delivering an enemys flag"),
 
 		MINIMAL_SNIPE_DISTANCE(30, "Minimal distance of a shot to be a sniper shot"),
@@ -86,9 +86,9 @@ public class SessionModifiers {
 		LASERGUN_NORMAL_DAMAGE(100, "Normal lasergun shot damage"),
 		LASERGUN_MULTIWEAPONS_DAMAGE(7, "lasergun shot damage when playing with multiple weapons"),
 		LASERGUN_PVP_DAMAGE(8, "Lasergun melee damage (only without multiweapons"),
-		SHOTGUN_DAMAGE(13, "Shotgun shot damage"),
+		SHOTGUN_DAMAGE(11, "Shotgun shot damage"),
 		SNIPER_DAMAGE(100, "Sniper shot damage"),
-		STABBER_DAMAGE(13, "Stabber melee damage"),
+		DAGGER_DAMAGE(13, "Stabber melee damage"),
 		
 		HEADSHOT_MULTIPLIKATOR(1.3d, "Extra damage when hitting the head"),
 		SNIPER_SHOT_MULTIPLIKATOR(1.3d, "Extra damage when sniping");

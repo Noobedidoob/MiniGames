@@ -5,6 +5,7 @@ import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
@@ -43,7 +45,6 @@ public class Flag implements Listener {
         Bukkit.getPluginManager().registerEvents(this, Minigames.INSTANCE);
     }
 
-    // TODO: 21.02.2021 Test BLINK
     private boolean playerGlowing = false;
     BukkitTask repeater;
     public void attach(Player p){
@@ -52,9 +53,9 @@ public class Flag implements Listener {
         p.getInventory().setItem(8,Utils.getItemStack(banner.getType(),"§eDrop flag"));
         PLAYER_FLAG.put(p,this);
         p.setGlowing(true);
-        p.spigot().sendMessage(new TextComponent(ChatColor.GREEN+""+ChatColor.BOLD+"Bring the flag to your base!"));
+        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GREEN+""+ChatColor.BOLD+"Bring the flag to your base!"));
 
-        if(!repeater.isCancelled()) repeater.cancel();
+        if(repeater != null && !repeater.isCancelled()) repeater.cancel();
         repeater = Utils.runTimer(()->{
             playerAttachedTo.setGlowing(!playerGlowing);
             playerGlowing = !playerGlowing;
@@ -62,35 +63,29 @@ public class Flag implements Listener {
 
         armorStand.getEquipment().clear();
         armorStand.setGlowing(false);
+        armorStand.setGravity(false);
         armorStand.teleport(baseLocation.clone().add(0, session.getMap().getArea().getHeight(),0));
     }
 
     public void drop(Location dropLocation){
         removeFromPlayer();
 
-        armorStand.setGlowing(true);
         Location loc = dropLocation.clone();
+        while (loc.getY() < session.getMap().getArea().getMinY()){
+            loc.add(0,1,0);
+        }
         armorStand.getEquipment().setHelmet(banner);
         armorStand.teleport(loc.subtract(0,1,0));
         armorStand.setGravity(true);
-        Utils.runLater(()-> {
-            armorStand.setGravity(false);
-            while(loc.getBlock().getType().isAir()){
-                loc.subtract(0,1,0);
-                if(session.getMap().getArea().isInside(loc)){
-                    armorStand.teleport(loc);
-                } else {
-                    teleportToBase();
-                }
-            }
-        },20);
+        armorStand.setGlowing(true);
     }
 
     public void teleportToBase(){
         removeFromPlayer();
         armorStand.teleport(baseLocation.clone().subtract(0,1,0));
         armorStand.getEquipment().setHelmet(banner);
-        armorStand.setGlowing(true);
+        armorStand.setGlowing(false);
+        armorStand.setGravity(false);
     }
 
     private void removeFromPlayer(){
@@ -99,15 +94,20 @@ public class Flag implements Listener {
             playerAttachedTo.setGlowing(false);
             playerAttachedTo.getEquipment().setHelmet(new ItemStack(Material.AIR));
             playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
-            if(!repeater.isCancelled()) repeater.cancel();
+            if(repeater != null && !repeater.isCancelled()) repeater.cancel();
             playerGlowing = false;
             Utils.runLater(()->{
-                playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
-                this.playerAttachedTo = null;
+                try {
+                    playerAttachedTo.getInventory().setItem(8,new ItemStack(Material.AIR));
+                } catch (NullPointerException ignored) {
+                }
+                playerAttachedTo = null;
             }, 5);
         }
     }
 
+    private boolean coolingDown = false;
+    private boolean firstPoints = true;
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e){
         if (session != null && session.isInSession(e.getPlayer())) {
@@ -131,9 +131,20 @@ public class Flag implements Listener {
                 if(p == playerAttachedTo && session.getMap().getBaseCoord(playerColor).getLocation().distance(p.getLocation()) < session.getMap().getProtectionRaduis()){
                     if (session.getMap().getBaseFlag(playerColor).isAtBase()) {
                         teleportToBase();
-                        session.addPoints(p,session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor()+p.getName()+" §7§ocaptured the flag from "+color.getChatColor()+((session.isTeams()?"team "+color:session.getPlayerFromColor(color).getName())));
+                        if (firstPoints) {
+                            if(!coolingDown) {
+                                session.addPoints(p, session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor() + p.getName() + " §7§ocaptured the flag from " + color.getChatColor() + ((session.isTeams() ? "team " + color : session.getPlayerFromColor(color).getName())));
+                                coolingDown = true;
+                                Utils.runLater(()->{
+                                    coolingDown = false;
+                                    firstPoints = false;
+                                }, 10);
+                            }
+                        } else {
+                            session.addPoints(p, session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor() + p.getName() + " §7§ocaptured the flag from " + color.getChatColor() + ((session.isTeams() ? "team " + color : session.getPlayerFromColor(color).getName())));
+                        }
                     } else {
-                        p.spigot().sendMessage(new TextComponent(ChatColor.GOLD+""+ChatColor.UNDERLINE+""+ChatColor.BOLD+"Your flag is not at your base!"));
+                        p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GOLD+""+ChatColor.UNDERLINE+""+ChatColor.BOLD+"Your flag is not at your base!"));
                     }
                 }
             }
@@ -145,8 +156,11 @@ public class Flag implements Listener {
         if (playerAttachedTo != null && e.getPlayer() == playerAttachedTo) {
             if(e.getAction().equals(Action.RIGHT_CLICK_BLOCK) | e.getAction().equals(Action.RIGHT_CLICK_AIR)){
                 if(e.getItem() != null && e.getItem().getItemMeta().getDisplayName().toLowerCase().contains("drop flag")){
-                    Vector direction = playerAttachedTo.getLocation().getDirection().multiply(-1);
-                    Location loc = playerAttachedTo.getLocation().clone().add(direction).add(direction);
+                    Vector direction = playerAttachedTo.getLocation().getDirection().multiply(3);
+                    Location loc = playerAttachedTo.getLocation().add(direction);
+                    while (loc.getY() < session.getMap().getArea().getMinY()){
+                        loc.add(0,1,0);
+                    }
                     drop(loc);
                 }
             }
@@ -156,11 +170,12 @@ public class Flag implements Listener {
     @EventHandler
     public void onPlayerDropItem(PlayerDropItemEvent e){
         if (playerAttachedTo != null && e.getPlayer() == playerAttachedTo) {
-            if(e.getItemDrop().getItemStack().getItemMeta().getDisplayName().toLowerCase().contains("drop flag")){
-                Vector direction = playerAttachedTo.getLocation().getDirection().multiply(-1);
-                Location loc = playerAttachedTo.getLocation().clone().add(direction).add(direction);
-                drop(loc);
+            Vector direction = playerAttachedTo.getLocation().getDirection().multiply(3);
+            Location loc = playerAttachedTo.getLocation().add(direction);
+            while (loc.getY() < session.getMap().getArea().getMinY()){
+                loc.add(0,1,0);
             }
+            drop(loc);
         }
     }
 
@@ -205,8 +220,28 @@ public class Flag implements Listener {
         armorStand = (ArmorStand) baseLocation.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
         armorStand.setVisible(false);
         armorStand.setGravity(false);
-        armorStand.setGlowing(true);
         armorStand.getEquipment().setHelmet(banner);
+
+        new BukkitRunnable(){
+            double prevY = armorStand.getLocation().getY();
+            @Override
+            public void run() {
+                if(!isAttached() && armorStand.getLocation().distance(baseLocation) < 1) teleportToBase();
+                if(armorStand.getLocation().getY()+1 < session.getMap().getArea().getMinY()){
+                    teleportToBase();
+                }
+
+                if (armorStand.getLocation().getY() == prevY) {
+                    if(armorStand.getLocation().getBlock().getType().isAir()){
+                        if (session.getMap().getArea().getMaxY()-prevY > 5) {
+                            armorStand.setGravity(false);
+                            armorStand.teleport(armorStand.getLocation().subtract(0,1,0));
+                        }
+                    }
+                }
+                prevY = armorStand.getLocation().getY();
+            }
+        }.runTaskTimer(session.minigames,20,5);
     }
     public void disable(){
         this.session = null;

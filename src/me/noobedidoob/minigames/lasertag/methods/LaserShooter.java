@@ -56,9 +56,10 @@ public class LaserShooter{
 					direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
 				}
 
+				w.setCooldown(p);
+
 				int range = 100;
 				for(double d = 0; d<range; d += 0.1) {
-					if(d==0) w.setCooldown(p);
 					Location loc = l1.add(direction);
 					if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 

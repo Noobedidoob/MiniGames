@@ -8,9 +8,9 @@ import java.util.TimeZone;
 
 import me.noobedidoob.minigames.Minigames;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -18,7 +18,9 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
+@SuppressWarnings("unused")
 public class Utils {
 	
 	public static void runLater(Runnable runnable, int delay){
@@ -200,9 +202,16 @@ public class Utils {
 	    return true;
 	}
 
-	public static ItemStack getNonNullItemStack(Inventory inv, int slot){
-		ItemStack item = inv.getItem(slot);
-		if(item == null) return new ItemStack(Material.AIR);
-		return item;
+	public static Location getPlayerBackLocation(Player p){
+		Location backLoc = p.getLocation().add(0,1,0).add(p.getLocation().getDirection().multiply(-1));
+
+		Vector dir = p.getLocation().getDirection().multiply(-1);
+		Location backLocation = p.getLocation().add(dir);
+		backLocation.setY(p.getLocation().getY()+1);
+		return backLocation;
+	}
+
+	public static boolean isPlayerBehindOtherPlayer(Player player1, Player player2){
+		return player1.getLocation().add(0,1,0).distance(getPlayerBackLocation(player2)) <= 0.5;
 	}
 }

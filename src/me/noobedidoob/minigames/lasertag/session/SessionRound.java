@@ -126,6 +126,7 @@ public class SessionRound {
 
 		for(Player p : session.getPlayers()) {
 			PlayerZoomer.zoomPlayerOut(p);
+			p.setGlowing(false);
 		}
 		
 		session.stop(false, false);

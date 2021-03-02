@@ -1,5 +1,6 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
+import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -30,37 +31,43 @@ public class HitListener implements Listener {
 	@EventHandler
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
 		if(e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
-			Player p = (Player) e.getEntity();
-			Session session = Session.getPlayerSession(p);
+			Player victim = (Player) e.getEntity();
+			Session session = Session.getPlayerSession(victim);
 			if(session == null) return;
 			Player damager = (Player) e.getDamager();
 			
 			if(session.tagging()) {
-				if (session.isInSession(p) && session.isInSession(damager)) {
-					if (!session.inSameTeam(p, damager)) {
-						if (Lasertag.isPlayerProtected(p)) {
+				if (session.isInSession(victim) && session.isInSession(damager)) {
+					if (!session.inSameTeam(victim, damager)) {
+						if (Lasertag.isPlayerProtected(victim)) {
 							damager.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-							BaseSphere.drawPlayerProtectionSphere(p);
+							BaseSphere.drawPlayerProtectionSphere(victim);
 							e.setCancelled(true);
 						} else {
 							if (!session.withMultiweapons()) {
 								double damage = e.getDamage();
-								if (p.getInventory().getItemInMainHand().getType() != Material.AIR) {
-									if(p.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = session.getIntMod(Mod.LASERGUN_PVP_DAMAGE);
+								if (victim.getInventory().getItemInMainHand().getType() != Material.AIR) {
+									if(victim.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN")) damage = session.getIntMod(Mod.LASERGUN_PVP_DAMAGE);
 								}
-								if(damage < p.getHealth()-1) {
+								if(damage < victim.getHealth()-1) {
 									e.setDamage(1);
 									damage--;
 								} else e.setCancelled(true);
-								DeathListener.hit(HitType.PVP, damager, p, damage, false, false, false);
+								DeathListener.hit(HitType.PVP, damager, victim, damage, false, false, false);
 							} else {
 								if (damager.getInventory().getItemInMainHand().getItemMeta().getDisplayName().toUpperCase().contains("DAGGER")) {
-									double damage = session.getIntMod(Mod.STABBER_DAMAGE);
-									if(damage < p.getHealth()-1) {
-										e.setDamage(1);
-										damage--;
-									} else e.setCancelled(true);
-									DeathListener.hit(HitType.PVP, damager, p, damage, false, false, false);
+									if(Utils.isPlayerBehindOtherPlayer(damager, victim)) {
+										DeathListener.hit(HitType.PVP, damager, victim, 100, false, false, true);
+										e.setCancelled(true);
+									}
+									else{
+										double damage = session.getIntMod(Mod.DAGGER_DAMAGE);
+										if(damage < victim.getHealth()-1) {
+											e.setDamage(1);
+											damage--;
+										} else e.setCancelled(true);
+										DeathListener.hit(HitType.PVP, damager, victim, damage, false, false, false);
+									}
 								}
 							}
 						}

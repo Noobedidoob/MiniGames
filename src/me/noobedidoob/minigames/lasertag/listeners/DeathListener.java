@@ -79,7 +79,7 @@ public class DeathListener implements Listener {
 		Player p = e.getEntity();
 		e.setDeathMessage("");
 		STREAKED_PLAYERS.put(p, 0);
-		if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.getPlayerFlag(p) != null) Flag.getPlayerFlag(p).drop(p.getLocation());
+		if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.hasPlayerFlag(p)) Flag.getPlayerFlag(p).drop(p.getLocation());
 	}
 	
 	

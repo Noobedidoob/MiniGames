@@ -6,12 +6,18 @@ import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
 import me.noobedidoob.minigames.utils.Flag;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
@@ -33,17 +39,30 @@ public class MoveListener implements Listener {
 		
 		if(session != null) {
 			if(session.tagging()) {
-//				session.getMap().checkPlayerPosition(p);
-//				if(session.getMap().withBaseSpawn() && ((session.isSolo() && !session.getMap().withRandomSpawn()) | session.isTeams())) {
-//					for(Coordinate coord : session.getMap().baseCoords) {
-//						if(session.getMap().baseColor.get(coord) != session.getPlayerColor(p)) {
-//							if(coord.getLocation().distance(p.getLocation()) < session.getMap().getProtectionRaduis()) {
-//								p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You aren't allowed to be here!"));
-//								warnPlayer(p,session.getMap(),session.getMap().baseColor.get(coord));
-//							}
-//						}
-//					}
-//				}
+				if (session.withMultiweapons()) {
+
+					boolean found = false;
+					for(Entity entity : p.getNearbyEntities(2,2,2)){
+						if(entity instanceof Player && session.isInSession((Player) entity)){
+							Player target = (Player) entity;
+							if(Utils.isPlayerBehindOtherPlayer(p,target)){
+								found = true;
+							}
+						}
+					}
+					if(found){
+						ItemMeta meta = p.getInventory().getItem(1).getItemMeta();
+						meta.addEnchant(Enchantment.DAMAGE_ALL, 100, true);
+						p.getInventory().getItem(1).setItemMeta(meta);
+						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GREEN+""+ChatColor.BOLD+"Ready for backstab!"));
+					} else if(p.getInventory().getItem(1) != null && p.getInventory().getItem(1).getItemMeta().hasEnchant(Enchantment.DAMAGE_ALL)) {
+						ItemMeta meta = p.getInventory().getItem(1).getItemMeta();
+						meta.removeEnchant(Enchantment.DAMAGE_ALL);
+						p.getInventory().getItem(1).setItemMeta(meta);
+						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.WHITE+" "));
+					}
+				}
+
 				if (Lasertag.isPlayerProtected(p)) {
 					if(Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getX()-e.getTo().getX()), "-", "")) > 0.13 | Double.parseDouble(StringUtils.replace(Double.toString(e.getFrom().getZ()-e.getTo().getZ()), "-", "")) > 0.15) {
 						Lasertag.setPlayerProtected(e.getPlayer(), false);
@@ -57,20 +76,7 @@ public class MoveListener implements Listener {
 					e.getPlayer().teleport(PlayerTeleporter.getPlayerSpawnLoc(e.getPlayer()));
 				}
 			}
-		} /*else {
-			
-			if(!p.isSprinting() && p.getInventory().getItemInHand().getType().equals(Material.DIAMOND_SWORD)) {
-				for(Player target : Bukkit.getOnlinePlayers()) {
-					if (p.getLocation().distance(target.getLocation()) < 3) {
-						Vector inverseDirectionVec = target.getEyeLocation().getDirection().normalize().multiply(-1);
-						Location locBehindTarget = target.getLocation().add(inverseDirectionVec);
-						if (p.getLocation().distance(locBehindTarget) < 1) {
-							p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GREEN + "" + ChatColor.BOLD + "YOU WOULD BE ABLE TO BACKSTAB HIM :D"));
-						}
-					}
-				}
-			}
-		}*/
+		}
 	}
 	
 	private final HashMap<Player , Boolean> openForDamage = new HashMap<>();

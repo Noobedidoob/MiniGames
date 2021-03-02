@@ -7,6 +7,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -198,10 +199,20 @@ public class Map {
 
 
 	public void enableCTF(Session session){
-		if(captureTheFlag) baseFlag.forEach((lasertagColor, flag) -> flag.enable(session));
+		if(captureTheFlag) {
+			for(Entity e : world.getNearbyEntities(new Location(world, area.getMaxX()-area.getWidthX()/2d, area.getMaxY()-area.getHeight()/2d, area.getMaxZ()-area.getWidthZ()/2d), area.getWidthX()+4, area.getHeight()+4, area.getWidthZ()+4)){
+				if(e instanceof ArmorStand) {
+					((ArmorStand) e).getEquipment().clear();
+					e.remove();
+				}
+			}
+			baseFlag.forEach((lasertagColor, flag) -> flag.enable(session));
+		}
 	}
 	public void disableCTF(){
-		if(captureTheFlag) baseFlag.forEach((lasertagColor, flag) -> flag.disable());
+		if(captureTheFlag) {
+			baseFlag.forEach((lasertagColor, flag) -> flag.disable());
+		}
 	}
 
 	
@@ -210,21 +221,21 @@ public class Map {
 		return NAME_MAPS.get(name.toLowerCase());
 	}
 
- 	//TODO: fix
 	private final HashMap<Player, Boolean> playerCoolingDownFromParticleEffect = new HashMap<>();
 	public boolean checkLocPlayerShootingFrom(Player p){
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return true;
 		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-			playerCoolingDownFromParticleEffect.putIfAbsent(p,false);
-			if(!playerCoolingDownFromParticleEffect.get(p)){
-				for(Coordinate coord : baseCoords){
-					if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+			for(Coordinate coord : baseCoords){
+				if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && p.getLocation().distance(coord.getLocation()) < protectionRaduis){
+					playerCoolingDownFromParticleEffect.putIfAbsent(p,false);
+					if(!playerCoolingDownFromParticleEffect.get(p)) {
 						baseSphere.get(baseColor.get(coord)).draw(p);
 						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot while in a base!"));
-						Utils.runLater(()->playerCoolingDownFromParticleEffect.put(p,false), 25);
-						return true;
+						playerCoolingDownFromParticleEffect.put(p, true);
+						Utils.runLater(() -> playerCoolingDownFromParticleEffect.put(p, false), 25);
 					}
+					return true;
 				}
 			}
 		}
@@ -233,10 +244,15 @@ public class Map {
 	public boolean checkPlayerLaserLoc(Location loc, Player p){
 		Session session = Session.getPlayerSession(p); if(session == null) return true;
 		if((session.isSolo() && !session.getMap().withRandomSpawn()) | (session.isTeams() && session.getMap().withBaseSpawn())) {
-			for(Coordinate coord : baseCoords){
-				if(baseCoords.indexOf(coord) < ((session.isSolo())?session.getPlayers().length:session.getTeamsAmount()) && loc.distance(coord.getLocation()) < protectionRaduis){
-					baseSphere.get(baseColor.get(coord)).draw(p);
-					p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"You can't shoot into a base!"));
+			for (Coordinate coord : baseCoords) {
+				if (baseCoords.indexOf(coord) < ((session.isSolo()) ? session.getPlayers().length : session.getTeamsAmount()) && loc.distance(coord.getLocation()) < protectionRaduis) {
+					playerCoolingDownFromParticleEffect.putIfAbsent(p,false);
+					if(!playerCoolingDownFromParticleEffect.get(p)) {
+						baseSphere.get(baseColor.get(coord)).draw(p);
+						p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED + "" + ChatColor.BOLD + "You can't shoot into a base!"));
+						playerCoolingDownFromParticleEffect.put(p,true);
+						Utils.runLater(()->playerCoolingDownFromParticleEffect.put(p,false), 25);
+					}
 					return true;
 				}
 			}

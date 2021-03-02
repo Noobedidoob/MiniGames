@@ -2,18 +2,16 @@ package me.noobedidoob.minigames;
 
 import java.util.HashMap;
 
+import me.noobedidoob.minigames.utils.InstantFirework;
 import me.noobedidoob.minigames.utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -137,7 +135,8 @@ public class Listeners implements Listener{
 			Lasertag.setPlayerTesting(p, false);
 			p.getInventory().setContents(playerStoredInv.get(p));
 			PlayerZoomer.zoomPlayerOut(p);
-		} 
+		}
+
 	}
 	
 	private final HashMap<Player, Pair> playersLastLocation = new HashMap<>();
@@ -151,6 +150,7 @@ public class Listeners implements Listener{
 			p.setFlying(false);
 			
 //			Vector direction = p.getLocation().getDirection();
+			playersLastLocation.putIfAbsent(p,new Pair(p.getLocation(),p.getLocation()));
 			Vector direction = ((Location) playersLastLocation.get(p).get1()).subtract((Location) playersLastLocation.get(p).get1()).toVector();
 	        direction.setY(0.8);
 	        p.setVelocity(direction);
@@ -163,7 +163,23 @@ public class Listeners implements Listener{
 			p.setFlying(false);
 		}
 	}
-	
+
+	@EventHandler
+	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
+		if (e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
+			Player hitP = (Player) e.getEntity();
+			Player p = (Player) e.getDamager();
+			if(Session.getPlayerSession(p) != null) return;
+//			if (p.getLocation().add(0, 1, 0).distance(Utils.getPlayerBackLocation(hitP)) <= 0.5) {
+//				hitP.teleport(minigames.spawn);
+//			}
+			if(Utils.isPlayerBehindOtherPlayer(p,hitP)) {
+				new InstantFirework(FireworkEffect.builder().with(FireworkEffect.Type.BALL).flicker(false).trail(false).withColor(Color.RED).build(), hitP.getLocation().add(0,1,0));
+				hitP.teleport(minigames.spawn);
+			}
+		}
+	}
+
 	@EventHandler
 	public void playerInteractAtEntity(PlayerInteractEntityEvent e) {
 		Entity entity = e.getRightClicked();
@@ -216,10 +232,12 @@ public class Listeners implements Listener{
 	
 	@EventHandler
 	public void onPlayerChangeGameMode(PlayerGameModeChangeEvent e) {
-		if(e.getNewGameMode() == GameMode.ADVENTURE) {
-			e.getPlayer().setGameMode(GameMode.ADVENTURE);
-			e.getPlayer().setExp(1f);
-			e.getPlayer().setAllowFlight(true);
+		try {
+			if(e.getPlayer() != null && e.getNewGameMode() == GameMode.ADVENTURE) {
+				e.getPlayer().setExp(1f);
+				e.getPlayer().setAllowFlight(true);
+			}
+		} catch (Exception ignore) {
 		}
 	}
 	

@@ -162,9 +162,20 @@ public class Session implements Listener{
 		
 		if(closeSession) close();
 	}
+
+	public void shutdown() {
+		if(round.tagging()) round.stop(true);
+		if(withCaptureTheFlag){
+			map.disableCTF();
+		}
+		for (Player p : players) {
+			p.setLevel(0);
+		}
+	}
+
 	public void close() {
 		if(tagging()) stop(true, false);
-		Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> {
 			for(Player p : players) {
 				DeathListener.resetPlayerStreak(p);
 				setPlayerSession(p, null);
@@ -935,7 +946,10 @@ public class Session implements Listener{
 	
 	private static final List<Session> SESSIONS = new ArrayList<>();
 	public static void closeAllSessions() {
-		SESSIONS.forEach(Session::close);
+		SESSIONS.forEach((Session::close));
+	}
+	public static void shutdownAllSessions() {
+		SESSIONS.forEach((Session::shutdown));
 	}
 	public static Session[] getAllSessions() {
 		return SESSIONS.toArray(new Session[0]);

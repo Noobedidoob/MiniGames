@@ -4,6 +4,7 @@ import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.session.Session;
+import me.noobedidoob.minigames.utils.Flag;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,11 +24,12 @@ public class DropSwitchItemListener implements Listener {
 
 	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent e){
-		if(!Lasertag.isPlayerTesting(e.getPlayer()) && Session.getPlayerSession(e.getPlayer()) == null) return;
+		Session session =Session.getPlayerSession(e.getPlayer());
+		if(!Lasertag.isPlayerTesting(e.getPlayer()) && session == null) return;
 		ItemStack item = e.getItemDrop().getItemStack();
 		if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 			// TODO: 21.02.2021 Fix zooming on sniper
-			PlayerZoomer.toggleZoom(e.getPlayer());
+			if(session == null | !session.withCaptureTheFlag() | !Flag.hasPlayerFlag(e.getPlayer())) PlayerZoomer.toggleZoom(e.getPlayer());
 		}
 	}
 	
