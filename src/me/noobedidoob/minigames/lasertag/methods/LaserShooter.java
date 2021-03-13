@@ -4,11 +4,10 @@ import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.HitType;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
 import me.noobedidoob.minigames.utils.BaseSphere;
+import me.noobedidoob.minigames.utils.Grenade;
 import me.noobedidoob.minigames.utils.HitBox;
 import me.noobedidoob.minigames.utils.Utils;
 import net.md_5.bungee.api.ChatColor;
@@ -26,11 +25,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LaserShooter{
-	
+
+
+
 	public static void fire(Player p, Weapon w) {
 		Session session = Session.getPlayerSession(p);
 		if(session == null) return;
@@ -40,168 +42,175 @@ public class LaserShooter{
 		List<Player> killedPlayers = new ArrayList<>();
 		
 		switch (w) {
-		case LASERGUN:
-			if(!w.hasCooldown(p)) {
-				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
+			case LASERGUN:
+				if(!w.hasCooldown(p)) {
+					if(session.getMap().checkLocPlayerShootingFrom(p)) return;
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
 
-				Location l1 = p.getLocation();
-				l1.setY(l1.getY()+p.getHeight()-0.225);
-				Vector direction = l1.getDirection();
-				direction.multiply(0.1);
-				if(session.withMultiweapons()) {
-					Vector newDirection = direction;
-					direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
-					direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
-					direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
-				}
-
-				w.setCooldown(p);
-
-				int range = 100;
-				for(double d = 0; d<range; d += 0.1) {
-					Location loc = l1.add(direction);
-					if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
-
-					spawnProjectile(p, loc);
-
-					for(Player hitP : session.getPlayers()) {
-						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
-							if(isLaserInsideEntity(hitP, loc)) {
-								if(Lasertag.isPlayerProtected(hitP)) {
-									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-									BaseSphere.drawPlayerProtectionSphere(hitP);
-									break;
-								}
-								if(!session.inSameTeam(p,hitP)){
-									alreadyKilledPlayers.add(hitP);
-									if(DeathListener.hit(HitType.SHOT, p, hitP, (session.withMultiweapons())?session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE): session.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)){
-										killedPlayers.add(hitP);
-									}
-								}
-							}
-						}
+					Location l1 = p.getLocation();
+					l1.setY(l1.getY()+p.getHeight()-0.225);
+					Vector direction = l1.getDirection();
+					direction.multiply(0.1);
+					if(session.withMultiweapons()) {
+						Vector newDirection = direction;
+						direction = direction.setX(newDirection.getX()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
+						direction = direction.setZ(newDirection.getZ()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
+						direction = direction.setY(newDirection.getY()+ThreadLocalRandom.current().nextDouble(-0.0001,0.0001));
 					}
-					if(isInBlock(session, loc)) break;
-				}
-				checkMultikill(p,killedPlayers);
-			}
-			break;
 
+					w.setCooldown(p);
 
-		case SHOTGUN:
-			if(!w.hasCooldown(p)) {
-				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
+					int range = 100;
+					for(double d = 0; d<range; d += 0.1) {
+						Location loc = l1.add(direction);
+						if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
+						spawnProjectile(p, loc);
 
-				Location startLoc = p.getLocation();
-				startLoc.setY(startLoc.getY()+p.getEyeHeight()-0.1);
-
-				Location[] startLocs = new Location[9];
-				float dis = 16;
-				int n = 0;
-				for(float pitch = dis; pitch > ((dis)*2)*(-1); pitch -= dis) {
-					for(float yaw = dis*(-1); yaw < dis*2; yaw += dis) {
-						startLocs[n] = startLoc.clone();
-						startLocs[n].setPitch(startLocs[n].getPitch()+pitch);
-						startLocs[n].setYaw(startLocs[n].getYaw()+yaw);
-						n++;
-					}
-				}
-
-				Vector[] dirs = new Vector[9];
-				Location[] locs = new Location[9];
-				for(int i = 0; i < 9; i++) {
-					dirs[i] = startLocs[i].getDirection().multiply(0.1);
-					locs[i] = startLocs[i].add(dirs[i]);
-				}
-
-
-				w.setCooldown(p);
-				for(double d = 0; d<6; d += 0.1) {
-					for(int i = 0; i < 9; i++) {
-						if(locs[i] == null) continue;
-						if(session.getMap().checkPlayerLaserLoc(locs[i],p)) locs[i] = null;
-						locs[i] = startLocs[i].add(dirs[i]);
-						spawnProjectile(p, locs[i]);
-					}
-					for(Player hitP : session.getPlayers()) {
-						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
-							for(Location loc : locs) {
-								if(loc == null) continue;
+						for(Player hitP : session.getPlayers()) {
+							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
 								if(isLaserInsideEntity(hitP, loc)) {
 									if(Lasertag.isPlayerProtected(hitP)) {
 										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
 										BaseSphere.drawPlayerProtectionSphere(hitP);
-										return;
+										break;
 									}
-									if(!session.inSameTeam(p,hitP)) {
+									if(!session.inSameTeam(p,hitP)){
 										alreadyKilledPlayers.add(hitP);
-										if (DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SHOTGUN_DAMAGE), false, false, false)) {
+										if(DeathListener.hit(HitType.SHOT, p, hitP, (session.withMultiweapons())?session.getIntMod(Mod.LASERGUN_MULTIWEAPONS_DAMAGE): session.getIntMod(Mod.LASERGUN_NORMAL_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)){
 											killedPlayers.add(hitP);
 										}
 									}
 								}
 							}
 						}
+						if(isInBlock(session, loc)) break;
 					}
-					for (int i = 0; i < locs.length; i++) {
-						if(locs[i] != null && isInBlock(session, locs[i])) locs[i] = null;
-					}
+					checkMultikill(p,killedPlayers);
 				}
-				checkMultikill(p,killedPlayers);
-			}
-			break;
-		case SNIPER:
-			if(!w.hasCooldown(p)) {
-				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
+				break;
 
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 10, 0);
 
-				Location l1 = p.getLocation();
-				l1.setY(l1.getY()+p.getHeight()-0.225);
-				Vector direction = l1.getDirection();
-				direction.multiply(1);
+			case SHOTGUN:
+				if(!w.hasCooldown(p)) {
+					if(session.getMap().checkLocPlayerShootingFrom(p)) return;
 
-				for(double d = 0; d<100; d += 1) {
-					if(d==0) {
-						if(p.getInventory().getItem(2).getAmount() > 1) {
-							p.getInventory().getItem(2).setAmount(p.getInventory().getItem(2).getAmount()-1);
-						} else {
-							w.setCooldown(p);
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 6);
+
+					Location startLoc = p.getLocation();
+					startLoc.setY(startLoc.getY()+p.getEyeHeight()-0.1);
+
+					Location[] startLocs = new Location[9];
+					float dis = 16;
+					int n = 0;
+					for(float pitch = dis; pitch > ((dis)*2)*(-1); pitch -= dis) {
+						for(float yaw = dis*(-1); yaw < dis*2; yaw += dis) {
+							startLocs[n] = startLoc.clone();
+							startLocs[n].setPitch(startLocs[n].getPitch()+pitch);
+							startLocs[n].setYaw(startLocs[n].getYaw()+yaw);
+							n++;
 						}
 					}
-					Location loc = l1.add(direction);
-					if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 
-					spawnProjectile(p, loc);
+					Vector[] dirs = new Vector[9];
+					Location[] locs = new Location[9];
+					for(int i = 0; i < 9; i++) {
+						dirs[i] = startLocs[i].getDirection().multiply(0.1);
+						locs[i] = startLocs[i].add(dirs[i]);
+					}
 
-					for(Player hitP : session.getPlayers()) {
-						if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
-							if(isLaserInsideEntity(hitP, loc)) {
-								if(Lasertag.isPlayerProtected(hitP)) {
-									p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
-									BaseSphere.drawPlayerProtectionSphere(hitP);
-									break;
-								}
-								if (!session.inSameTeam(p,hitP)) {
-									alreadyKilledPlayers.add(hitP);
-									if(DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SNIPER_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)) {
-										killedPlayers.add(hitP);
+
+					w.setCooldown(p);
+					for(double d = 0; d<6; d += 0.1) {
+						for(int i = 0; i < 9; i++) {
+							if(locs[i] == null) continue;
+							if(session.getMap().checkPlayerLaserLoc(locs[i],p)) locs[i] = null;
+							locs[i] = startLocs[i].add(dirs[i]);
+							spawnProjectile(p, locs[i]);
+						}
+						for(Player hitP : session.getPlayers()) {
+							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
+								for(Location loc : locs) {
+									if(loc == null) continue;
+									if(isLaserInsideEntity(hitP, loc)) {
+										if(Lasertag.isPlayerProtected(hitP)) {
+											p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+											BaseSphere.drawPlayerProtectionSphere(hitP);
+											return;
+										}
+										if(!session.inSameTeam(p,hitP)) {
+											alreadyKilledPlayers.add(hitP);
+											if (DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SHOTGUN_DAMAGE), false, false, false)) {
+												killedPlayers.add(hitP);
+											}
+										}
 									}
 								}
 							}
 						}
+						for (int i = 0; i < locs.length; i++) {
+							if(locs[i] != null && isInBlock(session, locs[i])) locs[i] = null;
+						}
 					}
-					if(isInBlock(session, loc)) break;
+					checkMultikill(p,killedPlayers);
 				}
-				checkMultikill(p, killedPlayers);
-			}
-			break;
-		
-		default:
-			break;
+				break;
+			case SNIPER:
+				if(!w.hasCooldown(p)) {
+					if(session.getMap().checkLocPlayerShootingFrom(p)) return;
+
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 10, 0);
+
+					Location l1 = p.getLocation();
+					l1.setY(l1.getY()+p.getHeight()-0.225);
+					Vector direction = l1.getDirection();
+					direction.multiply(1);
+
+					for(double d = 0; d<100; d += 1) {
+						if(d==0) {
+							if(p.getInventory().getItem(2).getAmount() > 1) {
+								p.getInventory().getItem(2).setAmount(p.getInventory().getItem(2).getAmount()-1);
+							} else {
+								w.setCooldown(p);
+							}
+						}
+						Location loc = l1.add(direction);
+						if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
+
+						spawnProjectile(p, loc);
+
+						for(Player hitP : session.getPlayers()) {
+							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
+								if(isLaserInsideEntity(hitP, loc)) {
+									if(Lasertag.isPlayerProtected(hitP)) {
+										p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.RED+""+ChatColor.BOLD+"Player has spawnprotection"));
+										BaseSphere.drawPlayerProtectionSphere(hitP);
+										break;
+									}
+									if (!session.inSameTeam(p,hitP)) {
+										alreadyKilledPlayers.add(hitP);
+										if(DeathListener.hit(HitType.SHOT, p, hitP, modifiers.getInt(Mod.SNIPER_DAMAGE), (loc.getY() < hitP.getEyeLocation().getY()+0.25 && loc.getY() > hitP.getEyeLocation().getY()-0.25), (d > modifiers.getInt(Mod.MINIMAL_SNIPE_DISTANCE)), false)) {
+											killedPlayers.add(hitP);
+										}
+									}
+								}
+							}
+						}
+						if(isInBlock(session, loc)) break;
+					}
+					checkMultikill(p, killedPlayers);
+				}
+				break;
+
+			case GRENADE:
+				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
+				if(!p.hasCooldown(Weapon.GRENADE.getType())) {
+					Weapon.GRENADE.setCooldown(p);
+					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(),p.isSneaking()?1:0.5,Minigames.INSTANCE);
+				}
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -228,7 +237,7 @@ public class LaserShooter{
 		for(double x = hb.getMinX(); x <= hb.getMaxX(); x += 0.1) {
 			for(double y = hb.getMinY(); y <= hb.getMaxY(); y += 0.1) {
 				for(double z = hb.getMinZ(); z <= hb.getMaxZ(); z += 0.1) {
-					spawnTestProjectile(p, new Location(p.getWorld(), x, y, z), Color.RED);
+					spawnTestProjectile(new Location(p.getWorld(), x, y, z), Color.RED);
 				}
 			}
 		}
@@ -268,7 +277,6 @@ public class LaserShooter{
 		Material fm = b.getType();
 		if(fm.name().contains("STAINED")) {
 			b.breakNaturally();
-//			b.setType(Material.AIR);
 			loc.getWorld().playSound(loc, Sound.BLOCK_GLASS_BREAK, 1.1f, 1);
 			Bukkit.getScheduler().scheduleSyncDelayedTask(Minigames.INSTANCE, () -> b.setType(fm), 20*5);
 			return true;
@@ -311,110 +319,123 @@ public class LaserShooter{
 	public static void fireTest(Player p, Weapon w) throws NullPointerException{
 		if(w == null) throw new NullPointerException("Weapon is null");
 		switch (w) {
-		case LASERGUN:
-			if(!p.hasCooldown(Weapon.LASERGUN.getType())) {
-				p.setCooldown(Weapon.LASERGUN.getType(), Mod.LASERGUN_COOLDOWN_TICKS.getOgInt());
-				Location startLoc = p.getLocation();
-				startLoc.setY(startLoc.getY()+p.getEyeHeight());
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
-				
-				Vector direction = startLoc.getDirection();
-				direction.multiply(0.1);
+			case LASERGUN:
+				if(!p.hasCooldown(Weapon.LASERGUN.getType())) {
+					p.setCooldown(Weapon.LASERGUN.getType(), Mod.LASERGUN_COOLDOWN_TICKS.getOgInt());
+					Location startLoc = p.getLocation();
+					startLoc.setY(startLoc.getY()+p.getEyeHeight());
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
 
-				for(double d = 0; d<100; d += 0.1) {
-					Location loc = startLoc.add(direction);
-					spawnTestProjectile(p, loc, Color.fromRGB(0, 170, 255));
+					Vector direction = startLoc.getDirection();
+					direction.multiply(0.1);
 
-					if(!checkloc(p, loc)) return;
-				}
-			}
-			break;
-			
-			
-			
-			
-			
-			
-		case SHOTGUN:
-			if(!p.hasCooldown(Weapon.SHOTGUN.getType())) {
-				p.setCooldown(Weapon.SHOTGUN.getType(), Mod.SHOTGUN_COOLDOWN_TICKS.getOgInt());
-				Location startLoc = p.getLocation();
-				startLoc.setY(startLoc.getY()+p.getEyeHeight());
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
-				Location[] startLocs = new Location[9];
-				float dis = 15; 
-				int n = 0;
-				for(float pitch = dis; pitch > ((dis)*2)*(-1); pitch -= dis) {
-					for(float yaw = dis*(-1); yaw < dis*2; yaw += dis) {
-						startLocs[n] = startLoc.clone();
-						startLocs[n].setPitch(startLocs[n].getPitch()+pitch);
-						startLocs[n].setYaw(startLocs[n].getYaw()+yaw);
-						n++;
+					for(double d = 0; d<100; d += 0.1) {
+						Location loc = startLoc.add(direction);
+						spawnTestProjectile(loc, Color.fromRGB(0, 170, 255));
+
+						if(!checkloc(p, loc)) return;
 					}
 				}
-				
-				Vector[] dirs = new Vector[9];
-				Location[] locs = new Location[9];
-				for(int i = 0; i < 9; i++) {
-					dirs[i] = startLocs[i].getDirection().multiply(0.1);
-					locs[i] = startLocs[i].add(dirs[i]);
-				}
-				
-				for(double d = 0; d<3.6; d += 0.1) {
-					for(int i = 0; i < 9; i++) {
-						if(locs[i] == null) continue;
-						locs[i] = startLocs[i].add(dirs[i]);
-						spawnTestProjectile(p, locs[i], Color.YELLOW);
-					}
-					for (int i = 0; i < 9; i++) {
-						if(locs[i]!= null && !checkloc(p, locs[i])) locs[i] = null;
-					}
-				}
-			}
-			break;
-			
-			
-			
-			
-			
-		
-		case SNIPER:
-			if(!p.hasCooldown(Weapon.SNIPER.getType())) {
-				Location startLoc = p.getLocation();
-				startLoc.setY(startLoc.getY()+p.getEyeHeight());
-				p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
-				Vector direction1 = startLoc.getDirection();
-				direction1.multiply(1);
+				break;
 
-				for(double d = 0; d<100; d += 1) {
-					try {
-						if(d==0) {
-							int s = p.getInventory().getItem(2).getAmount();
-							if(s > 1) {
-								p.getInventory().getItem(2).setAmount(s-1);
-							} else {
-								p.setCooldown(Weapon.SNIPER.getType(), Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
-								p.getInventory().getItem(2).setAmount(1);
-								new BukkitRunnable() {
-									@Override
-									public void run() {
-										p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
-									}
-								}.runTaskLater(Minigames.INSTANCE, Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
-							}
-							
+
+
+
+
+
+			case SHOTGUN:
+				if(!p.hasCooldown(Weapon.SHOTGUN.getType())) {
+					p.setCooldown(Weapon.SHOTGUN.getType(), Mod.SHOTGUN_COOLDOWN_TICKS.getOgInt());
+					Location startLoc = p.getLocation();
+					startLoc.setY(startLoc.getY()+p.getEyeHeight());
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
+					Location[] startLocs = new Location[9];
+					float dis = 15;
+					int n = 0;
+					for(float pitch = dis; pitch > ((dis)*2)*(-1); pitch -= dis) {
+						for(float yaw = dis*(-1); yaw < dis*2; yaw += dis) {
+							startLocs[n] = startLoc.clone();
+							startLocs[n].setPitch(startLocs[n].getPitch()+pitch);
+							startLocs[n].setYaw(startLocs[n].getYaw()+yaw);
+							n++;
 						}
+					}
 
-						Location loc1 = startLoc.add(direction1);
-						spawnTestProjectile(p, loc1, Color.PURPLE);
-						
-						if(!checkloc(p, loc1)) return;
-					} catch (Exception e) {
-						e.printStackTrace();
+					Vector[] dirs = new Vector[9];
+					Location[] locs = new Location[9];
+					for(int i = 0; i < 9; i++) {
+						dirs[i] = startLocs[i].getDirection().multiply(0.1);
+						locs[i] = startLocs[i].add(dirs[i]);
+					}
+
+					for(double d = 0; d<3.6; d += 0.1) {
+						for(int i = 0; i < 9; i++) {
+							if(locs[i] == null) continue;
+							locs[i] = startLocs[i].add(dirs[i]);
+							spawnTestProjectile(locs[i], Color.YELLOW);
+						}
+						for (int i = 0; i < 9; i++) {
+							if(locs[i]!= null && !checkloc(p, locs[i])) locs[i] = null;
+						}
 					}
 				}
-			}
-			break;
+				break;
+
+
+
+
+
+
+			case SNIPER:
+				if(!p.hasCooldown(Weapon.SNIPER.getType())) {
+					Location startLoc = p.getLocation();
+					startLoc.setY(startLoc.getY()+p.getEyeHeight());
+					p.getWorld().playSound(p.getLocation(), Sound.ENTITY_BLAZE_HURT, 1, 5);
+					Vector direction1 = startLoc.getDirection();
+					direction1.multiply(1);
+
+					for(double d = 0; d<100; d += 1) {
+						try {
+							if(d==0) {
+								int s = p.getInventory().getItem(2).getAmount();
+								if(s > 1) {
+									p.getInventory().getItem(2).setAmount(s-1);
+								} else {
+									p.setCooldown(Weapon.SNIPER.getType(), Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
+									p.getInventory().getItem(2).setAmount(1);
+									new BukkitRunnable() {
+										@Override
+										public void run() {
+											p.getInventory().getItem(2).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt());
+										}
+									}.runTaskLater(Minigames.INSTANCE, Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
+								}
+
+							}
+
+							Location loc1 = startLoc.add(direction1);
+							spawnTestProjectile(loc1, Color.PURPLE);
+
+							if(!checkloc(p, loc1)) return;
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				break;
+			case GRENADE:
+				if(!p.hasCooldown(Weapon.GRENADE.getType())) {
+					Weapon.GRENADE.setCooldown(p);
+					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(), (p.isSneaking()?1:0.5), Minigames.INSTANCE);
+
+//					int amount = p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount();
+//					System.out.println("1: "+amount);
+//					Utils.runLater(()->{
+//						System.out.println("2: "+amount);
+//						p.getInventory().setItem(3, Weapon.GRENADE.getTestItem(amount));
+//					},20);
+				}
+				break;
 		default:
 			
 			break;
@@ -435,8 +456,8 @@ public class LaserShooter{
 		return true;
 	}
 
-	public static void spawnTestProjectile(Player p, Location loc, Color c) {
-		p.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f));
+	public static void spawnTestProjectile(Location loc, Color c) {
+		loc.getWorld().spawnParticle(Particle.REDSTONE, loc.getX(), loc.getY(), loc.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 0.5f));
 	}
 	
 }

@@ -2,6 +2,7 @@ package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.*;
 
+import me.noobedidoob.minigames.lasertag.methods.Inventories;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -13,8 +14,8 @@ import org.bukkit.scoreboard.Team;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.methods.Weapon;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.Utils;
@@ -49,7 +50,7 @@ public class Session implements Listener{
 		this.code = owner.getName();
 		NAME_SESSION.put(code, this);
 		
-		SessionInventories.openTimeInv(owner);
+		Inventories.openTimeInv(owner);
 		SESSIONS.add(this);
 		
 		for(Map m : Map.MAPS) mapVotes.put(m, 0);
@@ -77,7 +78,7 @@ public class Session implements Listener{
 		this.code = owner.getName();
 		NAME_SESSION.put(code, this);
 		
-		SessionInventories.openTimeInv(owner);
+		Inventories.openTimeInv(owner);
 		SESSIONS.add(this);
 		
 		for(Map m : Map.MAPS) mapVotes.put(m, 0);
@@ -152,14 +153,10 @@ public class Session implements Listener{
 				e.printStackTrace();
 			}
 		}, 20*10);
-		
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				justStopped = false;
-			}
-		}.runTaskLater(minigames, 20*5);
-		
+
+		Utils.runLater(()-> justStopped = false,20*5);
+
+
 		if(closeSession) close();
 	}
 
@@ -306,7 +303,7 @@ public class Session implements Listener{
 			}
 			mapState = MapState.NULL;
 			refreshScoreboard();
-			SessionInventories.openMapInv(owner);
+			Inventories.openMapInv(owner);
 			return false;
 		} else if(map.isUsed()) {
 			for(Player a : admins) {
@@ -422,7 +419,7 @@ public class Session implements Listener{
 			if(ctf){
 				if(mapState == MapState.SET && !map.withCaptureTheFlag()) {
 					map = Map.MAPS.get(0);
-					SessionInventories.openMapInv(owner);
+					Inventories.openMapInv(owner);
 				} else if(mapState == MapState.VOTING){
 					mapVotes.clear();
 					setMap(null);
@@ -525,7 +522,7 @@ public class Session implements Listener{
 		
 		refreshScoreboard();
 		
-		if(withMultiWeapons) Utils.runLater(()->SessionInventories.openSecondaryWeaponChooserInv(p), 20);
+		if(withMultiWeapons) Utils.runLater(()-> Inventories.openSecondaryWeaponChooserInv(p), 20);
 	}
 	public void banPlayer(Player p, Player admin) {
 		bannedPlayers.add(p);
@@ -806,7 +803,7 @@ public class Session implements Listener{
 		}
 	}
 	public void setPlayerWaitingInv(Player p) {
-		SessionInventories.setPlayerSessionWaitingInv(p);
+		Inventories.setPlayerSessionWaitingInv(p);
 	}
 	
 	
@@ -829,6 +826,11 @@ public class Session implements Listener{
     	modifiers.set(m, value);
     	broadcast("§aThe modifier §b"+m.name().toLowerCase()+" §a was set to §e"+value.toString());
     }
+
+    public void resetMod(Mod m){
+		if(modifiers.get(m) != m.getOg()) broadcast("§aThe modifier §b"+m.name().toLowerCase()+" §a was resetset to §e"+m.getOg());
+		modifiers.set(m, m.getOg());
+	}
     
     
     
@@ -890,7 +892,7 @@ public class Session implements Listener{
 						this.withMultiWeapons = true;
 						for(Player p : players) {
 							setPlayerReady(p, false);
-							SessionInventories.openSecondaryWeaponChooserInv(p);
+							Inventories.openSecondaryWeaponChooserInv(p);
 							setPlayerInv(p);
 						}
 					}
@@ -928,7 +930,9 @@ public class Session implements Listener{
 	public static void setPlayerSession(OfflinePlayer p, Session s) {
 		PLAYER_SESSION.put(p, s);
 	}
-	
+	public static boolean isPlayerInSession(Player p){
+		return getPlayerSession(p) != null;
+	}
 	
 	private static final HashMap<String, Session> NAME_SESSION = new HashMap<>();
 	public static Session getSessionFromName(String code) {

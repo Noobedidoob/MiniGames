@@ -1,0 +1,18 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "item/turtle_egg"
+  },
+  "overrides": [
+    { "predicate": {"damage": 0}, "model": "item/turtle_egg" },
+    { "predicate": {"custom_model_data":1}, "model": "item/grenade/red_grenade"},
+    { "predicate": {"custom_model_data":2}, "model": "item/grenade/blue_grenade"},
+    { "predicate": {"custom_model_data":3}, "model": "item/grenade/green_grenade"},
+    { "predicate": {"custom_model_data":4}, "model": "item/grenade/yellow_grenade"},
+    { "predicate": {"custom_model_data":5}, "model": "item/grenade/purple_grenade"},
+    { "predicate": {"custom_model_data":6}, "model": "item/grenade/gray_grenade"},
+    { "predicate": {"custom_model_data":7}, "model": "item/grenade/orange_grenade"},
+    { "predicate": {"custom_model_data":8}, "model": "item/grenade/white_grenade"},
+    { "predicate": {"damage": 1}, "model": "item/turtle_egg" }
+  ]
+}

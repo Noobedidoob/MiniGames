@@ -77,7 +77,7 @@ public class BaseSphere {
 	public static void drawPlayerProtectionSphere(Player p) {
 	    IS_PLAYER_COOLED_DOWN.putIfAbsent(p,false);
         if (!IS_PLAYER_COOLED_DOWN.get(p)) {
-            Color c = Session.getPlayerSession(p) != null ? Session.getPlayerSession(p).getPlayerColor(p).getColor() : Color.RED;
+            Color c = Session.isPlayerInSession(p) ? Session.getPlayerSession(p).getPlayerColor(p).getColor() : Color.RED;
             for(Vector v : playerProtSphereOffsets) {
                 p.getLocation().getWorld().spawnParticle(Particle.REDSTONE, p.getLocation().getX()+v.getX(), p.getLocation().getY()+1+v.getY(), p.getLocation().getZ()+v.getZ(), 0, 0, 0, 0, 1, new Particle.DustOptions(c, 1.1f));
             }

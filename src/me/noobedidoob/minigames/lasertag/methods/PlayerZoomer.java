@@ -6,7 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.lasertag.methods.Weapon;
 
 public class PlayerZoomer {
 	

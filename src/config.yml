@@ -8,6 +8,7 @@ Lasertag:
     sniper-kill-extra-points: 1
     headshot-extra-points: 1
     backstab-extra-points: 2
+    grenade-kill-extra-points: 1
     pvp-kill-extra-points: 0
     streak-extra-points: 2
     streak-shutdown-extra-points: 2
@@ -16,15 +17,16 @@ Lasertag:
     minimal-snipe-distance: 30
     minimal-kills-for-streak: 5
     spawnprotection-seconds: 10
-    width-addon: 0
-    height-addon: 0
+    width-addon: 0.0
+    height-addon: 0.0
     shoot-through-blocks: false
     highlight-players: false
-    highlight-power: 255
+    grenade-effect-radius: 2.5
     lasergun-cooldown-ticks: 12
     lasergun-multiweapons-cooldown-ticks: 2
     sniper-cooldown-ticks: 100
     shotgun-cooldown-ticks: 40
+    grenade-cooldown-ticks: 90
     sniper-ammo-before-cooldown: 3
     lasergun-normal-damage: 100
     lasergun-multiweapons-damage: 7
@@ -32,8 +34,9 @@ Lasertag:
     shotgun-damage: 11
     sniper-damage: 100
     dagger-damage: 13
-    headshot-multiplikator: 1.5
-    sniper-shot-multiplikator: 1.5
+    grenade-damage: 15
+    headshot-damage-multiplikator: 1.5
+    sniper-shot-damage-multiplikator: 1.5
   maps:
     town:
       center:

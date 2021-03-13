@@ -30,7 +30,7 @@ import org.bukkit.util.Vector;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.lasertag.methods.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.utils.Pair;
 
@@ -86,7 +86,7 @@ public class Listeners implements Listener{
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if(Session.getPlayerSession(p) == null) {
+				if(!Session.isPlayerInSession(p)) {
 					p.teleport(minigames.spawn);
 					for(Player op : Bukkit.getOnlinePlayers()) {
 						if(op != p) op.sendMessage("§e"+p.getName()+" joined");
@@ -114,7 +114,7 @@ public class Listeners implements Listener{
 
 		assert e.getTo() != null;
 		
-		if(Session.getPlayerSession(p) == null && e.getTo().getY() < 0) {
+		if(!Session.isPlayerInSession(p) && e.getTo().getY() < 0) {
 			Location spawnLoc = minigames.world.getSpawnLocation();
 			spawnLoc.setPitch(p.getLocation().getPitch());
 			spawnLoc.setYaw(p.getLocation().getYaw());
@@ -122,14 +122,12 @@ public class Listeners implements Listener{
 		}
 		
 		playersLastLocation.put(p, new Pair(e.getFrom(), e.getTo()));
-		if (Session.getPlayerSession(p) != null && Session.getPlayerSession(p).tagging()) return;
+		if (Session.isPlayerInSession(p) && Session.getPlayerSession(p).tagging()) return;
 		if (!Lasertag.isPlayerTesting(p)) {
 			if(Lasertag.getTestAera().isInside(e.getTo())) {
 				Lasertag.setPlayerTesting(p, true);
 				playerStoredInv.put(p, p.getInventory().getContents());
-				p.getInventory().setItem(0, Weapon.LASERGUN.getTestItem());
-				p.getInventory().setItem(1, Weapon.SHOTGUN.getTestItem());
-				p.getInventory().setItem(2, Weapon.SNIPER.getTestItem());
+				Weapon.setTestInventory(p);
 			}
 		} else if (Lasertag.isPlayerTesting(p) && !Lasertag.getTestAera().isInside(e.getTo())) {
 			Lasertag.setPlayerTesting(p, false);
@@ -169,7 +167,7 @@ public class Listeners implements Listener{
 		if (e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
 			Player hitP = (Player) e.getEntity();
 			Player p = (Player) e.getDamager();
-			if(Session.getPlayerSession(p) != null) return;
+			if(Session.isPlayerInSession(p)) return;
 //			if (p.getLocation().add(0, 1, 0).distance(Utils.getPlayerBackLocation(hitP)) <= 0.5) {
 //				hitP.teleport(minigames.spawn);
 //			}

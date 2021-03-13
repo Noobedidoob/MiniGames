@@ -15,7 +15,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.utils.Map;
 import me.noobedidoob.minigames.utils.Utils;
 import me.noobedidoob.minigames.utils.Utils.TimeFormat;
@@ -32,8 +32,8 @@ public class SessionScoreboard {
 	
 	public void refresh() {
 		if(obj != null) obj.unregister();
-		obj = board.registerNewObjective("Scoreboard", "lasertag", "§b§lScoreboard");
-		obj.setDisplayName("§b§lScoreboard");
+		obj = board.registerNewObjective("Scoreboard", "lasertag", "§b§lLasertag");
+		obj.setDisplayName("§b§lLasertag");
 		obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 		long time = session.getTime(TimeFormat.SECONDS);
 		if(session.tagging()) time++;
@@ -173,9 +173,7 @@ public class SessionScoreboard {
 		}
 		for(Player p : session.getPlayers()) {
 			p.setScoreboard(board);
-			if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) {
-				if(!p.hasPotionEffect(PotionEffectType.GLOWING)) p.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 20*((int) time)+20, session.getIntMod(Mod.HIGHLIGHT_POWER), false, false));
-			}
+			if(session.getBooleanMod(Mod.HIGHLIGHT_PLAYERS) && session.tagging()) p.setGlowing(true);
 			if (session.tagging()) {
 				if(Lasertag.isPlayerProtected(p)) BaseSphere.drawPlayerProtectionSphere(p);
 				session.getMap().checkPlayerPosition(p);

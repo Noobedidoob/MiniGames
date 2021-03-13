@@ -11,7 +11,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener.HitType;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.BaseSphere;

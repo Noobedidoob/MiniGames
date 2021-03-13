@@ -1,6 +1,6 @@
 {
   "parent": "item/handheld",
   "textures": {
-    "layer0": "item/lasergun/blue_lasergun"
+    "layer0": "item/grenade/red_grenade"
   }
 }

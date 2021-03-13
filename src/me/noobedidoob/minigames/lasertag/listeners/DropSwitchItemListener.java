@@ -25,7 +25,8 @@ public class DropSwitchItemListener implements Listener {
 	@EventHandler
 	public void onPlayerDropItem(PlayerDropItemEvent e){
 		Session session =Session.getPlayerSession(e.getPlayer());
-		if(!Lasertag.isPlayerTesting(e.getPlayer()) && session == null) return;
+		if(session == null) return;
+		if(!Lasertag.isPlayerTesting(e.getPlayer())) return;
 		ItemStack item = e.getItemDrop().getItemStack();
 		if(item.getItemMeta().getDisplayName().toUpperCase().contains("LASERGUN") | item.getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 			// TODO: 21.02.2021 Fix zooming on sniper

@@ -2,6 +2,7 @@ package me.noobedidoob.minigames.lasertag;
 
 import me.noobedidoob.minigames.Commands;
 import me.noobedidoob.minigames.Minigames;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -10,6 +11,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 
 	String commands = "\n§7————————— §bLasertag Commands§7 ——————————\n"
 					+ "§6 gettexturepack §7— Activate lasertag texturepack\n  "
+					+ "§6 test §7— Teleport to the test area\n  "
 					+ "\n§a Use §6/lt §7<§6command§7> §ato perform a command!\n"
 					+ "§7——————————————————————————————\n  ";
 	
@@ -46,6 +49,7 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					linkMsg.setColor(net.md_5.bungee.api.ChatColor.LIGHT_PURPLE);
 					linkMsg.setUnderlined(true);
 					linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, Minigames.TEXTUREPACK_URL));
+					//noinspection deprecation
 					linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to download the texturepack").create()));
 					msg1.addExtra(linkMsg);
 
@@ -55,6 +59,14 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 					sender.spigot().sendMessage(msg1);
 					sender.sendMessage("§7———————————————————————————\n ");
 					return true;
+				} else if(args[0].equalsIgnoreCase("test")){
+					if(sender instanceof Player){
+						Player p = (Player) sender;
+						if(!Session.isPlayerInSession(p) | (Session.getPlayerSession(p) != null && !Session.getPlayerSession(p).tagging())){
+							p.teleport(minigames.testLoc);
+						}
+						return true;
+					}
 				}
 			}
 		}
@@ -68,6 +80,13 @@ public class LaserCommands implements CommandExecutor, TabCompleter {
 		if(cmd.getName().equalsIgnoreCase("lasertag")) {
 			if(args.length == 1) {
 				list.add("gettexturepack");
+				if (sender instanceof Player) {
+					if(!Session.isPlayerInSession((Player) sender)){
+						list.add("test");
+					} else if(Session.getPlayerSession((Player) sender) != null && !Session.getPlayerSession((Player) sender).tagging()){
+						list.add("test");
+					}
+				}
 			}
 		} 
 		return Commands.filterTabAutocompleteList(args,list);

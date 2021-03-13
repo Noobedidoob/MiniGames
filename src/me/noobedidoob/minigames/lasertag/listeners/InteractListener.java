@@ -1,5 +1,11 @@
 package me.noobedidoob.minigames.lasertag.listeners;
 
+import me.noobedidoob.minigames.Minigames;
+import me.noobedidoob.minigames.lasertag.Lasertag;
+import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
+import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
+import me.noobedidoob.minigames.lasertag.methods.Weapon;
+import me.noobedidoob.minigames.lasertag.session.Session;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,21 +15,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.PluginManager;
 
-import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
-import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
-import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.Minigames;
-
 public class InteractListener implements Listener {
 	
 	public InteractListener(Minigames minigames) {
 		PluginManager pluginManeger = Bukkit.getPluginManager();
 		pluginManeger.registerEvents(this, minigames);
 	}
-	
-	@EventHandler(priority = EventPriority.HIGHEST)
+
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player p  = e.getPlayer();
 		if(Lasertag.isPlayerTesting(p)) {
@@ -35,6 +34,10 @@ public class InteractListener implements Listener {
 				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
 					return;
+				} else if(Weapon.GRENADE.isWeapon(e.getItem())){
+					int amount = p.getInventory().getItemInMainHand().getAmount();
+					if(amount < 5) p.getInventory().getItemInMainHand().setAmount(amount+1);
+					else p.getInventory().getItemInMainHand().setAmount(1);
 				}
 			}
 		} 
@@ -50,9 +53,13 @@ public class InteractListener implements Listener {
 				if(e.getItem() == null) return;
 				if(e.getItem().getItemMeta().getDisplayName().toUpperCase().contains("SNIPER")) {
 					PlayerZoomer.toggleZoom(p);
+				} else if(Weapon.GRENADE.isWeapon(e.getItem())){
+					int amount = p.getInventory().getItemInMainHand().getAmount();
+					if(amount < 5) p.getInventory().getItemInMainHand().setAmount(amount+1);
+					else p.getInventory().getItemInMainHand().setAmount(1);
 				}
 			}
 		}
-		
+
 	}
 }

@@ -12,7 +12,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.lasertag.session.SessionInventories;
+import me.noobedidoob.minigames.lasertag.methods.Inventories;
 import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.Utils.TimeFormat;
@@ -60,7 +60,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 			if (args.length == 1) {
 				if(s == null) {
 					if (args[0].equalsIgnoreCase("new")) {
-						SessionInventories.openNewSessionInv(p);
+						Inventories.openNewSessionInv(p);
 						return true;
 					}
 				} else {
@@ -104,7 +104,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					
 					else if(args[0].equalsIgnoreCase("setTime")) {
 						if(s.isAdmin(p)) {
-							SessionInventories.openTimeInv(p);
+							Inventories.openTimeInv(p);
 						} else Session.sendMessage(p, "§cYou have to be an admin of this session to perform this command!");
 						return true;
 					} 
@@ -112,7 +112,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					else if(args[0].equalsIgnoreCase("addAdmin") | args[0].equalsIgnoreCase("setAdmin")) {
 						if(s.isAdmin(p)) {
 							if (!s.tagging()) {
-								SessionInventories.openAddAdminInv(p);
+								Inventories.openAddAdminInv(p);
 							} else Session.sendMessage(p, "§cYou can't promote players while the game is running!");
 						} else Session.sendMessage(p, "§cYou have to be an admin of this session to perform this command!");
 						return true;
@@ -137,7 +137,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 					else if(args[0].equalsIgnoreCase("setTeamAmount") | args[0].equalsIgnoreCase("setTeamsAmount")) {
 						if (s.isAdmin(p)) {
 							if (s.waiting()) {
-								SessionInventories.openTeamsInv(p);
+								Inventories.openTeamsInv(p);
 							} else Session.sendMessage(p, "§cYou can't perform this command in a running round!");
 						} else Session.sendMessage(p, "§cYou have to be an admin of this session to perform this command!");
 						return true;
@@ -147,7 +147,7 @@ public class SessionCommands implements CommandExecutor, TabCompleter{
 			} else if(args.length == 2) {
 				if(args[0].equalsIgnoreCase("new")) {
 					if(args[1].equalsIgnoreCase("solo") | args[1].equalsIgnoreCase("teams")) {
-						if(Session.getPlayerSession(p) != null) {
+						if(Session.isPlayerInSession(p)) {
 							Session.sendMessage(p, "§cPlease leave this session first!");
 							return true;
 						}

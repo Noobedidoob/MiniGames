@@ -23,8 +23,8 @@ import org.bukkit.util.Vector;
 @SuppressWarnings("unused")
 public class Utils {
 	
-	public static void runLater(Runnable runnable, int delay){
-		new BukkitRunnable() {
+	public static BukkitTask runLater(Runnable runnable, int delay){
+		return new BukkitRunnable() {
 			@Override
 			public void run() {
 				runnable.run();
@@ -154,7 +154,7 @@ public class Utils {
 		p.getInventory().setContents(newInv);
 
 	}
-	
+
 	public enum TimeFormat{
 		SECONDS,
 		MINUTES,
@@ -226,4 +226,20 @@ public class Utils {
 		}
 		return list;
 	}
+
+	public enum ValueType{
+		INTEGER("integer (full number)"),
+		DOUBLE("fractional number"),
+		BOOLEAN("true/false");
+
+		public final String description;
+		ValueType(String description){
+			this.description = description;
+		}
+
+		public String getName(){
+			return this.name().charAt(0)+this.name().substring(1).toLowerCase();
+		}
+	}
+
 }

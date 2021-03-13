@@ -2,6 +2,7 @@ package me.noobedidoob.minigames.lasertag.session;
 
 import java.util.*;
 
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -25,7 +26,7 @@ import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
 import me.noobedidoob.minigames.lasertag.methods.PlayerTeleporter;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
-import me.noobedidoob.minigames.lasertag.methods.Weapons.Weapon;
+import me.noobedidoob.minigames.lasertag.methods.Weapon;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.Utils.TimeFormat;
 
@@ -91,10 +92,13 @@ public class SessionRound {
 		LasertagColor playerColor = session.getPlayerColor(p);
 		p.getInventory().clear();
 		p.getInventory().setItem(0, Weapon.LASERGUN.getColoredItem(playerColor));
+		p.getInventory().setItem((session.withMultiweapons()?3:1), Weapon.GRENADE.getColoredItem(playerColor));
+
+
 		if(session.withMultiweapons()){
 			p.getInventory().setItem(1, Weapon.DAGGER.getColoredItem(playerColor));
 			ItemStack secondaryWeapon = session.getPlayerSecondaryWeapon(p).getColoredItem(playerColor);
-			if(session.getPlayerSecondaryWeapon(p) == Weapon.SNIPER) secondaryWeapon.setAmount(session.getIntMod(SessionModifiers.Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
+			if(session.getPlayerSecondaryWeapon(p) == Weapon.SNIPER) secondaryWeapon.setAmount(session.getIntMod(Mod.SNIPER_AMMO_BEFORE_COOLDOWN));
 			p.getInventory().setItem(2, secondaryWeapon);
 		}
 

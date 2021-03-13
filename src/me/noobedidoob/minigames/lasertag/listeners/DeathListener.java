@@ -6,7 +6,6 @@ import me.noobedidoob.minigames.utils.Flag;
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,7 +14,7 @@ import org.bukkit.plugin.PluginManager;
 
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 
 public class DeathListener implements Listener {
@@ -28,6 +27,7 @@ public class DeathListener implements Listener {
 	public enum HitType {
 		SHOT,
 		PVP,
+		GRENADE,
 	}
 	public static boolean hit(HitType type, Player killer, Player victim, double damage, boolean headshot, boolean snipe, boolean backstab) {
 		Session session = Session.getPlayerSession(killer);
@@ -36,8 +36,8 @@ public class DeathListener implements Listener {
 		
 		if (victim.getGameMode() == GameMode.ADVENTURE) {
 			if (damage < victim.getHealth()) {
-				if(headshot) damage *= session.getDoubleMod(Mod.HEADSHOT_MULTIPLIKATOR);
-				if(snipe) damage *= session.getDoubleMod(Mod.SNIPER_SHOT_MULTIPLIKATOR);
+				if(headshot) damage *= session.getDoubleMod(Mod.HEADSHOT_DAMAGE_MULTIPLIKATOR);
+				if(snipe) damage *= session.getDoubleMod(Mod.SNIPER_SHOT_DAMAGE_MULTIPLIKATOR);
 				victim.damage(damage);
 				return false;
 			} else {
@@ -48,14 +48,23 @@ public class DeathListener implements Listener {
 					if(snipe) points += session.getIntMod(Mod.SNIPER_KILL_EXTRA_POINTS);
 				}
 				switch (type) {
-				case SHOT:
-					points += session.getIntMod(Mod.SHOT_KILL_EXTRA_POINTS);
-					session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+((snipe)?"sniped":"shot")+" §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((headshot)?" §7[§d§nHEADSHOT§r§7] ": "")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
-					break;
-				case PVP:
-					points += session.getIntMod(Mod.PVP_KILL_EXTRA_POINTS);
-					session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§okilled §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((backstab)?" §7[§d§nBACKSTAB§r§7] ":"")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
-					break;
+					case SHOT:
+						points += session.getIntMod(Mod.SHOT_KILL_EXTRA_POINTS);
+						session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§o"+((snipe)?"sniped":"shot")+" §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((headshot)?" §7[§d§nHEADSHOT§r§7] ": "")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
+						break;
+					case PVP:
+						points += session.getIntMod(Mod.PVP_KILL_EXTRA_POINTS);
+						session.addPoints(killer, points, session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§okilled §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+((backstab)?" §7[§d§nBACKSTAB§r§7] ":"")+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
+						break;
+					case GRENADE:
+						if(killer == victim){
+							for (Player p : session.getPlayers()) {
+								p.sendMessage(session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§oblew himself up");
+							}
+						} else {
+							points += session.getIntMod(Mod.GRENADE_KILL_EXTRA_POINTS);
+							session.addPoints(killer,points,session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§oblew §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+" §7§oup");
+						}
 				default:
 					break;
 				}
@@ -63,10 +72,10 @@ public class DeathListener implements Listener {
 				victim.damage(100);
 				STREAKED_PLAYERS.putIfAbsent(victim, 0);
 				Utils.runLater(()->{
-					addStreak(killer);
+					if(killer != victim) addStreak(killer);
 					if (STREAKED_PLAYERS.get(victim) >= session.getIntMod(Mod.MINIMAL_KILLS_FOR_STREAK)) streakShutdown(killer, victim);
+					STREAKED_PLAYERS.put(victim, 0);
 				},5);
-//				killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 				Lasertag.setPlayerProtected(victim, true);
 				return true;
 			} 
@@ -79,7 +88,7 @@ public class DeathListener implements Listener {
 		Player p = e.getEntity();
 		e.setDeathMessage("");
 		STREAKED_PLAYERS.put(p, 0);
-		if(Session.getPlayerSession(p) != null && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.hasPlayerFlag(p)) Flag.getPlayerFlag(p).drop(p.getLocation());
+		if(Session.isPlayerInSession(p) && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.hasPlayerFlag(p)) Flag.getPlayerFlag(p).drop(p.getLocation());
 	}
 	
 	

@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import me.noobedidoob.minigames.lasertag.commands.ModifierCommands;
+import me.noobedidoob.minigames.lasertag.listeners.*;
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -23,17 +24,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.noobedidoob.minigames.lasertag.commands.SessionCommands;
-import me.noobedidoob.minigames.lasertag.listeners.DamageListener;
-import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
-import me.noobedidoob.minigames.lasertag.listeners.DropSwitchItemListener;
-import me.noobedidoob.minigames.lasertag.listeners.HitListener;
-import me.noobedidoob.minigames.lasertag.listeners.InteractListener;
-import me.noobedidoob.minigames.lasertag.listeners.JoinQuitListener;
-import me.noobedidoob.minigames.lasertag.listeners.MoveListener;
-import me.noobedidoob.minigames.lasertag.listeners.RespawnListener;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.lasertag.session.SessionInventories;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers.Mod;
+import me.noobedidoob.minigames.lasertag.methods.Inventories;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.utils.Area;
 import me.noobedidoob.minigames.utils.Coordinate;
@@ -56,7 +49,7 @@ public class Lasertag implements Listener{
 		new DropSwitchItemListener(minigames);
 		new RespawnListener(minigames);
 
-		new SessionInventories(minigames);
+		new InventoryListener(minigames);
 	}
 
 	public void enable() {
@@ -120,10 +113,8 @@ public class Lasertag implements Listener{
 	
 	public void registerMaps() {
 		ConfigurationSection cs = minigames.getConfig().getConfigurationSection("Lasertag.maps");
-		int unenabledMaps = 0;
 		assert cs != null;
 		for(String name : cs.getKeys(false)) {
-			Coordinate centerCoord = new Coordinate(cs.getInt(name+".center.x"), cs.getInt(name+".center.y"), cs.getInt(name+".center.z"));
 			Coordinate coord1 = new Coordinate(cs.getInt(name+".area.x.min"), cs.getInt(name+".area.y.min"), cs.getInt(name+".area.z.min"));
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
 			Map map = new Map(name, new Area(coord1, coord2), minigames.world);
@@ -245,7 +236,7 @@ public class Lasertag implements Listener{
 		if(e.getItem().getType() == Material.COMPASS) {
 			openPlayerFindSessionInv(e.getPlayer());
 		} else if(e.getItem().getType() == Material.NETHER_STAR) {
-			SessionInventories.openNewSessionInv(e.getPlayer());
+			Inventories.openNewSessionInv(e.getPlayer());
 		}
 	}
 	@EventHandler
@@ -280,12 +271,15 @@ public class Lasertag implements Listener{
 	
 	
 	public static Logger logger = Bukkit.getLogger();
+	@SuppressWarnings("unused")
 	public static void inform(String msg) {
 		logger.log(Level.INFO, "[LasetTag] "+msg);
 	}
+	@SuppressWarnings("unused")
 	public static void warn(String msg) {
 		logger.warning("[LasetTag] "+msg);
 	}
+	@SuppressWarnings("unused")
 	public static void severe(String msg) {
 		logger.severe("[LasetTag] "+msg);
 	}

@@ -2,8 +2,8 @@ package me.noobedidoob.minigames.utils;
 
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
-import me.noobedidoob.minigames.lasertag.session.SessionModifiers;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -107,7 +107,6 @@ public class Flag implements Listener {
     }
 
     private boolean coolingDown = false;
-    private boolean firstPoints = true;
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e){
         if (session != null && session.isInSession(e.getPlayer())) {
@@ -131,17 +130,14 @@ public class Flag implements Listener {
                 if(p == playerAttachedTo && session.getMap().getBaseCoord(playerColor).getLocation().distance(p.getLocation()) < session.getMap().getProtectionRaduis()){
                     if (session.getMap().getBaseFlag(playerColor).isAtBase()) {
                         teleportToBase();
-                        if (firstPoints) {
-                            if(!coolingDown) {
-                                session.addPoints(p, session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor() + p.getName() + " §7§ocaptured the flag from " + color.getChatColor() + ((session.isTeams() ? "team " + color : session.getPlayerFromColor(color).getName())));
-                                coolingDown = true;
-                                Utils.runLater(()->{
-                                    coolingDown = false;
-                                    firstPoints = false;
-                                }, 10);
+                        if(!coolingDown) {
+                            try {
+                                session.addPoints(p, session.getIntMod(Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor() + p.getName() + " §7§ocaptured the flag from " + color.getChatColor() + ((session.isTeams() ? "team " + color : session.getPlayerFromColor(color).getName())));
+                            } catch (Exception exception) {
+                                Bukkit.broadcastMessage("uff");
                             }
-                        } else {
-                            session.addPoints(p, session.getIntMod(SessionModifiers.Mod.CAPTURE_THE_FLAG_POINTS), playerColor.getChatColor() + p.getName() + " §7§ocaptured the flag from " + color.getChatColor() + ((session.isTeams() ? "team " + color : session.getPlayerFromColor(color).getName())));
+                            coolingDown = true;
+                            Utils.runLater(()-> coolingDown = false, 20);
                         }
                     } else {
                         p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(ChatColor.GOLD+""+ChatColor.UNDERLINE+""+ChatColor.BOLD+"Your flag is not at your base!"));
@@ -254,6 +250,8 @@ public class Flag implements Listener {
             playerAttachedTo.setGlowing(false);
             this.playerAttachedTo = null;
         }
+
+        if(repeater != null) repeater.cancel();
     }
 
     private static final HashMap<Player, Flag> PLAYER_FLAG = new HashMap<>();
