@@ -63,7 +63,7 @@ public class DeathListener implements Listener {
 							}
 						} else {
 							points += session.getIntMod(Mod.GRENADE_KILL_EXTRA_POINTS);
-							session.addPoints(killer,points,session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§oblew §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+" §7§oup");
+							session.addPoints(killer,points,session.getPlayerColor(killer).getChatColor()+killer.getName()+" §7§oblew §r"+session.getPlayerColor(victim).getChatColor()+victim.getName()+" §7§oup "+" §7(§a+"+points+" point"+((points > 1)?"s":"")+"§7)");
 						}
 				default:
 					break;

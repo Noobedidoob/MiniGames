@@ -96,7 +96,7 @@ public enum Weapon {
 	}
 
 	public boolean isWeapon(ItemStack item){
-		assert  item != null;
+		if(item == null) return false;
 		return item.getType() == material && item.getItemMeta().getDisplayName().contains(this.item.getItemMeta().getDisplayName().substring(3));
 	}
 
@@ -123,6 +123,9 @@ public enum Weapon {
 			case SHOTGUN:
 				cooldown = s.getIntMod(Mod.SHOTGUN_COOLDOWN_TICKS);
 				break;
+			case GRENADE:
+				cooldown = s.getIntMod(Mod.GRENADE_COOLDOWN_TICKS);
+				break;
 			default:
 				break;
 			}
@@ -135,6 +138,9 @@ public enum Weapon {
 				cooldown = Mod.SNIPER_COOLDOWN_TICKS.getOgInt();
 				Utils.runLater(() -> p.getInventory().getItem(p.getInventory().first(SNIPER.material)).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()), Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
 				break;
+			case GRENADE:
+				cooldown = Mod.GRENADE_COOLDOWN_TICKS.getOgInt()/2;
+				break;
 			default:
 				break;
 			}
@@ -143,8 +149,8 @@ public enum Weapon {
 	}
 
 	public static void setTestInventory(Player p){
-		assert p != null;
-		p.getInventory().clear();
+		if(p == null) return;
+ 		p.getInventory().clear();
 		int i = 0;
 		for (Weapon w : values()) {
 			if(!w.inTestSet) continue;

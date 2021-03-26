@@ -35,7 +35,7 @@ public enum Mod{
     LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS(2, false, null, null, "Ticks a lasergun takes to cool down when playing with multiple weapons"),
     SNIPER_COOLDOWN_TICKS(100, true, 10, 100,"Ticks a sniperrifle takes to cool down"),
     SHOTGUN_COOLDOWN_TICKS(40, true, 5, 40,"Ticks a shotgun takes to cool down"),
-    GRENADE_COOLDOWN_TICKS(100, true, 10, 100,"Ticks a grenade takes to cool down"),
+    GRENADE_COOLDOWN_TICKS(300, true, 10, 100,"Ticks a grenade takes to cool down"),
     SNIPER_AMMO_BEFORE_COOLDOWN(3, true, 1, 10, "Maximal sniper ammo"),
 
     LASERGUN_NORMAL_DAMAGE(100, true, 50 , 100, "Normal lasergun shot damage"),

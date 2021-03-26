@@ -113,7 +113,7 @@ public class Lasertag implements Listener{
 	
 	public void registerMaps() {
 		ConfigurationSection cs = minigames.getConfig().getConfigurationSection("Lasertag.maps");
-		assert cs != null;
+		if(cs == null) return;
 		for(String name : cs.getKeys(false)) {
 			Coordinate coord1 = new Coordinate(cs.getInt(name+".area.x.min"), cs.getInt(name+".area.y.min"), cs.getInt(name+".area.z.min"));
 			Coordinate coord2 = new Coordinate(cs.getInt(name+".area.x.max"), cs.getInt(name+".area.y.max"), cs.getInt(name+".area.z.max"));
@@ -130,7 +130,7 @@ public class Lasertag implements Listener{
 			
 			if(withBaseSpawn) {
 				ConfigurationSection subCs = cs.getConfigurationSection(name+".basespawn");
-				assert subCs != null;
+				if(subCs == null) return;
 				for(String colorName : subCs.getKeys(false)) {
 					if(!colorName.equalsIgnoreCase("enabled") && !colorName.equalsIgnoreCase("capture-the-flag") && !colorName.equalsIgnoreCase("protectionradius")) {
 						LasertagColor baseColor = LasertagColor.getFromString(colorName);
@@ -232,7 +232,7 @@ public class Lasertag implements Listener{
 	}
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e) {
-		if(e.getItem() == null) return;
+		if(e.getItem() == null && !e.getAction().name().contains("RIGHT")) return;
 		if(e.getItem().getType() == Material.COMPASS) {
 			openPlayerFindSessionInv(e.getPlayer());
 		} else if(e.getItem().getType() == Material.NETHER_STAR) {

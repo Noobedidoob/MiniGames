@@ -38,7 +38,7 @@ public class InventoryListener implements Listener {
     public void onPlayeClickInventory(InventoryClickEvent e){
 
         try {
-            assert e.getWhoClicked() instanceof Player;
+            if(!(e.getWhoClicked() instanceof Player)) return;
             Inventory inv = e.getClickedInventory();
             InventoryView view = e.getView();
 
@@ -298,20 +298,20 @@ public class InventoryListener implements Listener {
                             Inventories.openSecondaryWeaponChooserInv(up);
                         }
                     } else {
-//                        if(session.getPlayers().length > 1) {
-//                            boolean enoughTeams = true;
-//                            if(session.isTeams()) {
-//                                int teamsWithPlayers = 0;
-//                                for(SessionTeam team : session.getTeams()) {
-//                                    if(team.getPlayers().length > 0) teamsWithPlayers++;
-//                                }
-//                                if(teamsWithPlayers < 2) enoughTeams = false;
-//                            }
-//                            if(enoughTeams && !session.justStopped) {
+                        if(session.getPlayers().length > 1) {
+                            boolean enoughTeams = true;
+                            if(session.isTeams()) {
+                                int teamsWithPlayers = 0;
+                                for(SessionTeam team : session.getTeams()) {
+                                    if(team.getPlayers().length > 0) teamsWithPlayers++;
+                                }
+                                if(teamsWithPlayers < 2) enoughTeams = false;
+                            }
+                            if(enoughTeams && !session.justStopped) {
                                 session.start(true);
-//                            }
-//                            else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
-//                        } else Session.sendMessage(p, "§cNot enough players!");
+                            }
+                            else Session.sendMessage(p, "§cThere must be at least 2 teams with at least 1 player in it!");
+                        } else Session.sendMessage(p, "§cNot enough players!");
                     }
                 } else if(item.getType() == Material.PAPER) {
                     if(session.votingMap()) {

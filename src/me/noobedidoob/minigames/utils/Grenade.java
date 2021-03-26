@@ -3,7 +3,6 @@ package me.noobedidoob.minigames.utils;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.listeners.DeathListener;
-import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
 import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import org.bukkit.*;
@@ -26,23 +25,21 @@ import java.util.List;
 public class Grenade implements Listener {
 
     public final Player thrower;
-    public final int ticks;
-    public final double speed;
     private Snowball snowball;
 
 
     private final BukkitTask timer;
 
-    public Grenade(Player p, int ticks, double speed, Minigames minigames){
+    public Grenade(Player p, int ticks, double speed, Area area, Minigames minigames){
         this.thrower = p;
-        this.ticks = ticks;
-        this.speed = speed;
         Bukkit.getPluginManager().registerEvents(this,minigames);
 
         snowball = (Snowball) p.getWorld().spawnEntity(p.getEyeLocation(), EntityType.SNOWBALL);
         snowball.setVelocity(p.getEyeLocation().getDirection().multiply(speed));
 
         timer = Utils.runLater(()->{
+            if(!area.isInside(snowball.getLocation())) return;
+
             Session session = Session.getPlayerSession(thrower);
             int radius = session != null ? session.getIntMod(Mod.GRENADE_EFFECT_RADUIS):Mod.GRENADE_EFFECT_RADUIS.getOgInt();
             spawnParticles(snowball.getLocation(),radius);
@@ -119,6 +116,15 @@ public class Grenade implements Listener {
             location.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE,
                     location.getX()+v.getX(), location.getY()+v.getY(), location.getZ()+v.getZ(), 20,0.5d,0.5d,0.5d,0.01d);
         }
+        for(Vector v : BaseSphere.getSphereOffsets(((double)radius/3)*2,4)){
+            location.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE,
+                    location.getX()+v.getX(), location.getY()+v.getY(), location.getZ()+v.getZ(), 20,0.5d,0.5d,0.5d,0.01d);
+        }
+        for(Vector v : BaseSphere.getSphereOffsets(((double) radius)/3,3)){
+            location.getWorld().spawnParticle(Particle.CAMPFIRE_COSY_SMOKE,
+                    location.getX()+v.getX(), location.getY()+v.getY(), location.getZ()+v.getZ(), 20,0.5d,0.5d,0.5d,0.01d);
+        }
+
     }
 
     @EventHandler

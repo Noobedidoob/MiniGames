@@ -112,7 +112,7 @@ public class Listeners implements Listener{
 	public void onPlayerMove(PlayerMoveEvent e) {
 		Player p = e.getPlayer();
 
-		assert e.getTo() != null;
+		if(e.getTo() == null) return;
 		
 		if(!Session.isPlayerInSession(p) && e.getTo().getY() < 0) {
 			Location spawnLoc = minigames.world.getSpawnLocation();
@@ -152,7 +152,7 @@ public class Listeners implements Listener{
 			Vector direction = ((Location) playersLastLocation.get(p).get1()).subtract((Location) playersLastLocation.get(p).get1()).toVector();
 	        direction.setY(0.8);
 	        p.setVelocity(direction);
-	        assert p.getLocation().getWorld() != null;
+			if(p.getLocation().getWorld() == null) return;
 	        p.getLocation().getWorld().playSound(p.getLocation(), Sound.ENTITY_ENDER_DRAGON_FLAP, 1, 1);
 	        Lasertag.animateExpBar(p, 20*3);
 	        Bukkit.getScheduler().scheduleSyncDelayedTask(minigames, () -> p.setAllowFlight(true), 20*3);

@@ -69,7 +69,7 @@ public class Utils {
 	public static ItemStack getItemStack(Material material, String displayName, int amount, ItemFlag... flags) {
 		ItemStack item = new ItemStack(material, amount);
 		ItemMeta meta = item.getItemMeta();
-		assert meta != null;
+		if(meta == null) return null;
 		if(displayName != null) meta.setDisplayName(displayName);
 		meta.setUnbreakable(true);
 		if(flags.length > 0) meta.addItemFlags(flags);
@@ -80,7 +80,7 @@ public class Utils {
 	public static ItemStack getItemStack(Material material, String displayName, int amount, List<String> lore, ItemFlag... flags) {
 		ItemStack item = new ItemStack(material,amount);
 		ItemMeta meta = item.getItemMeta();
-		assert meta != null;
+		if(meta == null) return null;
 		if(displayName != null) meta.setDisplayName(displayName);
 		meta.setUnbreakable(true);
 		if(lore != null) meta.setLore(lore);
@@ -101,7 +101,7 @@ public class Utils {
 	public static ItemStack getLeatherArmorItem(Material leatherArmorMaterial, String displayName, Color color, List<String> lore, int amount) {
 		ItemStack item = new ItemStack(leatherArmorMaterial, amount);
 		LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-		assert meta != null;
+		if(meta == null) return null;
 		if(displayName != null) meta.setDisplayName(displayName);
 		meta.setColor(color);
 		if(lore != null) meta.setLore(lore);
@@ -114,7 +114,7 @@ public class Utils {
 	public static ItemStack getPlayerSkullItem(Player p, String displayName){
 		ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
 		SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-		assert skullMeta != null;
+		if(skullMeta == null) return null;
 		skullMeta.setDisplayName((displayName != null)?displayName:p.getName());
 		skullMeta.setOwningPlayer(p);
 		skull.setItemMeta(skullMeta);
@@ -123,7 +123,7 @@ public class Utils {
 	public static ItemStack getPlayerSkullItem(Player p, String displayName, List<String> lore){
 		ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
 		SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-		assert skullMeta != null;
+		if(skullMeta == null) return null;
 		skullMeta.setDisplayName((displayName != null)?displayName:p.getName());
 		skullMeta.setOwningPlayer(p);
 		if(lore != null) skullMeta.setLore(lore);

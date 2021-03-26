@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 
 public class Minigames extends JavaPlugin implements Listener{
 	
-	public static String TEXTUREPACK_URL = "https://www.dropbox.com/s/7usi9cz2hwq53jx/Lasertag-Texturepack.zip?dl=1";
+	public static String TEXTUREPACK_URL = "https://www.dropbox.com/s/7usi9cz2hwq53jx/Lasertag_Texturepack.zip?dl=1";
 	public static String WORLD_NAME;
 	
 	public Lasertag lasertag;
@@ -53,12 +53,13 @@ public class Minigames extends JavaPlugin implements Listener{
 
 		// TODO: 23.02.2021 Fix Minigames_world.zip export
 		exportZips();
-		if(!setWorld()) return;
+		if(!setWorld()){
+			return;
+		}
 
 		Commands commands = new Commands(this);
 		getCommand("minigames").setExecutor(commands);
 		getCommand("minigames").setTabCompleter(commands);
-		getCommand("lobby").setExecutor(commands);
 		getCommand("test").setExecutor(new Test(this));
 		new Listeners(this);
 
@@ -122,12 +123,12 @@ public class Minigames extends JavaPlugin implements Listener{
 //				e.printStackTrace();
 			}
 		}
-		if(!new File(getDataFolder()+"/Lasertag-Texturepack.zip").exists()) {
+		if(!new File(getDataFolder()+"/Lasertag_Texturepack.zip").exists()) {
 			try {
-//				System.out.println(getClass().getResourceAsStream("/Lasertag-Texturepack.zip") == null);
-				Files.copy(getClass().getResourceAsStream("/Lasertag-Texturepack.zip"), Paths.get(getDataFolder()+"/Lasertag-Texturepack.zip"), StandardCopyOption.REPLACE_EXISTING);
+//				System.out.println(getClass().getResourceAsStream("/Lasertag_Texturepack.zip") == null);
+				Files.copy(getClass().getResourceAsStream("/Lasertag_Texturepack.zip"), Paths.get(getDataFolder()+"/Lasertag_Texturepack.zip"), StandardCopyOption.REPLACE_EXISTING);
 			} catch (Exception e) {
-				Minigames.warn("Error occured while copying \"Lasertag-Texturepack.zip\" to plugins datafolder");
+				Minigames.warn("Error occured while copying \"Lasertag_Texturepack.zip\" to plugins datafolder");
 //				e.printStackTrace();
 			}
 		}
@@ -159,10 +160,13 @@ public class Minigames extends JavaPlugin implements Listener{
 			}
 		}
 		world = Bukkit.getWorld(WORLD_NAME);
+		if(world == null) {
+			severe("An error occured while trying to load the Minigames world \"" + WORLD_NAME + "\"! Please set the world manually or try again! Disabeling...");
+			Bukkit.getPluginManager().disablePlugin(this);
+		}
 		spawn = new Location(world, 220.5, 7, -139.5);
 		testLoc = new Location(world,220.5,4,-94.5);
 		lobbyArea = new Area(195,4,-171,245,22,-109);
-		assert world != null;
 		world.setSpawnLocation(spawn);
 		winnerPodium = new Location(world, 220.5, 7, -139.5);
 		world.setGameRule(GameRule.KEEP_INVENTORY, true);
@@ -196,7 +200,7 @@ public class Minigames extends JavaPlugin implements Listener{
 					System.out.println(" ");
 					System.out.println(" ");
 					System.out.println("Extracting resource"+zipFilePath+" to "+destDir+"...");
-					System.out.println("Creating temporary file \"TemporaryFile_please-delete.zip\" in \""+tempFile.getParentFile().getPath()+"\"...");
+					System.out.println("Creating temporary file \"temporaryFile_please-delete.zip\" in \""+tempFile.getParentFile().getPath()+"\"...");
 					FileInputStream fis = new FileInputStream(tempFile);
 					ZipInputStream zis = new ZipInputStream(fis);
 					ZipEntry ze = zis.getNextEntry();
@@ -216,7 +220,7 @@ public class Minigames extends JavaPlugin implements Listener{
 								//close this ZipEntry
 							}
 						} catch (FileNotFoundException e) {
-							System.out.println("Error occured while extracting Lasertag-Texturepack.zip");
+							System.out.println("Error occured while extracting Lasertag_Texturepack.zip");
 						}
 						zis.closeEntry();
 						ze = zis.getNextEntry();

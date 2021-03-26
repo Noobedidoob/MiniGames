@@ -23,6 +23,7 @@ import org.bukkit.plugin.PluginManager;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.Minigames;
+import org.bukkit.potion.PotionEffectType;
 
 public class MoveListener implements Listener {
 
@@ -74,6 +75,9 @@ public class MoveListener implements Listener {
 				if(e.getTo().getY() < 0 | (session.isMapSet() && session.getMap().getName().equalsIgnoreCase("skyhigh") && e.getTo().getY() < 70)) {
 					if(Flag.getPlayerFlag(p) != null) Flag.getPlayerFlag(p).teleportToBase();
 					e.getPlayer().teleport(PlayerTeleporter.getPlayerSpawnLoc(e.getPlayer()));
+					p.removePotionEffect(PotionEffectType.BLINDNESS);
+					p.removePotionEffect(PotionEffectType.SLOW);
+					session.broadcast(session.getPlayerColor(p)+p.getName()+" §7dropped out");
 				}
 			}
 		}

@@ -60,7 +60,10 @@ public class SessionTeam {
 		if (players.contains(p)) {
 			players.remove(p);
 			playerTeam.put(p, null);
-			scoreboardTeam.removeEntry(p.getName());
+			try {
+				scoreboardTeam.removeEntry(p.getName());
+			} catch (Exception ignored){
+			}
 			p.getInventory().setChestplate(new ItemStack(Material.AIR));
 			p.getInventory().setLeggings(new ItemStack(Material.AIR));
 			p.getInventory().setBoots(new ItemStack(Material.AIR));

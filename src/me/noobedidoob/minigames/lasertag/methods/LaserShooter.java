@@ -206,7 +206,7 @@ public class LaserShooter{
 				if(session.getMap().checkLocPlayerShootingFrom(p)) return;
 				if(!p.hasCooldown(Weapon.GRENADE.getType())) {
 					Weapon.GRENADE.setCooldown(p);
-					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(),p.isSneaking()?1:0.5,Minigames.INSTANCE);
+					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(),p.isSneaking()?1:0.5, session.getMap().getArea(), Minigames.INSTANCE);
 				}
 				break;
 			default:
@@ -426,7 +426,7 @@ public class LaserShooter{
 			case GRENADE:
 				if(!p.hasCooldown(Weapon.GRENADE.getType())) {
 					Weapon.GRENADE.setCooldown(p);
-					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(), (p.isSneaking()?1:0.5), Minigames.INSTANCE);
+					new Grenade(p,20*p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount(), (p.isSneaking()?1:0.5), Lasertag.getTestAera(), Minigames.INSTANCE);
 
 //					int amount = p.getInventory().getItem(p.getInventory().first(Weapon.GRENADE.getType())).getAmount();
 //					System.out.println("1: "+amount);
