@@ -232,7 +232,7 @@ public class Lasertag implements Listener{
 	}
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e) {
-		if(e.getItem() == null && !e.getAction().name().contains("RIGHT")) return;
+		if(e.getItem() == null | !e.getAction().name().contains("RIGHT")) return;
 		if(e.getItem().getType() == Material.COMPASS) {
 			openPlayerFindSessionInv(e.getPlayer());
 		} else if(e.getItem().getType() == Material.NETHER_STAR) {

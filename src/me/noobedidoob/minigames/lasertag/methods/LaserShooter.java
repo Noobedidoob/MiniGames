@@ -21,11 +21,11 @@ import org.bukkit.block.data.type.Slab.Type;
 import org.bukkit.block.data.type.TrapDoor;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -66,6 +66,7 @@ public class LaserShooter{
 						if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 
 						spawnProjectile(p, loc);
+						checkGrenades(loc, p);
 
 						for(Player hitP : session.getPlayers()) {
 							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
@@ -127,6 +128,7 @@ public class LaserShooter{
 							if(session.getMap().checkPlayerLaserLoc(locs[i],p)) locs[i] = null;
 							locs[i] = startLocs[i].add(dirs[i]);
 							spawnProjectile(p, locs[i]);
+							checkGrenades(locs[i], p);
 						}
 						for(Player hitP : session.getPlayers()) {
 							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
@@ -178,6 +180,7 @@ public class LaserShooter{
 						if(session.getMap().checkPlayerLaserLoc(loc,p)) break;
 
 						spawnProjectile(p, loc);
+						checkGrenades(loc, p);
 
 						for(Player hitP : session.getPlayers()) {
 							if(hitP != p && !alreadyKilledPlayers.contains(hitP)) {
@@ -244,25 +247,25 @@ public class LaserShooter{
 	}
 	
 	
-	public static boolean isLaserInsideEntity(Entity p, Location loc) {
+	public static boolean isLaserInsideEntity(Entity e, Location loc) {
 		double x = loc.getX();
 		double y = loc.getY();
 		double z = loc.getZ();
 		
-		double width = p.getWidth();
-		double height = p.getHeight()+0.15;
+		double width = e.getWidth();
+		double height = e.getHeight()+0.15;
 
-		if (p instanceof Player && Session.getPlayerSession((Player)p) != null) {
-			width += Session.getPlayerSession((Player) p).modifiers.getDouble(Mod.WIDTH_ADDON);
-			height += Session.getPlayerSession((Player) p).modifiers.getDouble(Mod.HEIGHT_ADDON);
+		if (e instanceof Player && Session.getPlayerSession((Player)e) != null) {
+			width += Session.getPlayerSession((Player) e).modifiers.getDouble(Mod.WIDTH_ADDON);
+			height += Session.getPlayerSession((Player) e).modifiers.getDouble(Mod.HEIGHT_ADDON);
 		}
 
-		double minX = p.getLocation().getX()-(width/2);
-		double minY = p.getLocation().getY();
-		double minZ = p.getLocation().getZ()-(width/2);
-		double maxX = (p.getLocation().getX()-(width/2))+width;
-		double maxY = p.getLocation().getY()+height;
-		double maxZ = (p.getLocation().getZ()-(width/2))+width;
+		double minX = e.getLocation().getX()-(width/2);
+		double minY = e.getLocation().getY();
+		double minZ = e.getLocation().getZ()-(width/2);
+		double maxX = (e.getLocation().getX()-(width/2))+width;
+		double maxY = e.getLocation().getY()+height;
+		double maxZ = (e.getLocation().getZ()-(width/2))+width;
 		
 		if(minX <= x && x <= maxX) {
 			if(minY <= y && y <= maxY) {
@@ -270,6 +273,14 @@ public class LaserShooter{
 			}
 		}
 		return false;
+	}
+
+	public static void checkGrenades(Location laserLoc, Player shooter){
+		for(Entity e : laserLoc.getWorld().getNearbyEntities(laserLoc, 1,1,1)){
+			if(e instanceof Snowball){
+				Grenade.explodeGrenade((Snowball) e, shooter);
+			}
+		}
 	}
 	
 	public static boolean isInBlock(Session s, Location loc) {
@@ -332,6 +343,7 @@ public class LaserShooter{
 					for(double d = 0; d<100; d += 0.1) {
 						Location loc = startLoc.add(direction);
 						spawnTestProjectile(loc, Color.fromRGB(0, 170, 255));
+						checkGrenades(loc, p);
 
 						if(!checkloc(p, loc)) return;
 					}
@@ -373,6 +385,7 @@ public class LaserShooter{
 							if(locs[i] == null) continue;
 							locs[i] = startLocs[i].add(dirs[i]);
 							spawnTestProjectile(locs[i], Color.YELLOW);
+							checkGrenades(locs[i], p);
 						}
 						for (int i = 0; i < 9; i++) {
 							if(locs[i]!= null && !checkloc(p, locs[i])) locs[i] = null;
@@ -415,6 +428,7 @@ public class LaserShooter{
 
 							Location loc1 = startLoc.add(direction1);
 							spawnTestProjectile(loc1, Color.PURPLE);
+							checkGrenades(loc1, p);
 
 							if(!checkloc(p, loc1)) return;
 						} catch (Exception e) {

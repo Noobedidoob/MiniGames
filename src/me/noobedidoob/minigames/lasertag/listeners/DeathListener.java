@@ -3,10 +3,14 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import java.util.HashMap;
 
 import me.noobedidoob.minigames.utils.Flag;
+import me.noobedidoob.minigames.utils.Grenade;
 import me.noobedidoob.minigames.utils.Utils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -39,6 +43,7 @@ public class DeathListener implements Listener {
 				if(headshot) damage *= session.getDoubleMod(Mod.HEADSHOT_DAMAGE_MULTIPLIKATOR);
 				if(snipe) damage *= session.getDoubleMod(Mod.SNIPER_SHOT_DAMAGE_MULTIPLIKATOR);
 				victim.damage(damage);
+				if(type == HitType.SHOT | type == HitType.GRENADE) killer.playSound(killer.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1f, 0);
 				return false;
 			} else {
 				int points = session.getIntMod(Mod.POINTS);
@@ -68,7 +73,15 @@ public class DeathListener implements Listener {
 				default:
 					break;
 				}
-
+				if(victim.getPassengers().size() > 0){
+					for (Entity passenger : victim.getPassengers()) {
+						victim.removePassenger(passenger);
+						if(passenger instanceof Snowball){
+							Grenade.explodeGrenade((Snowball) passenger, killer);
+							victim.setGlowing(false);
+						}
+					}
+				}
 				victim.damage(100);
 				STREAKED_PLAYERS.putIfAbsent(victim, 0);
 				Utils.runLater(()->{
@@ -88,7 +101,11 @@ public class DeathListener implements Listener {
 		Player p = e.getEntity();
 		e.setDeathMessage("");
 		STREAKED_PLAYERS.put(p, 0);
-		if(Session.isPlayerInSession(p) && Session.getPlayerSession(p).withCaptureTheFlag() && Flag.hasPlayerFlag(p)) Flag.getPlayerFlag(p).drop(p.getLocation());
+		if(Session.isPlayerInSession(p)) {
+			if (Session.getPlayerSession(p).withCaptureTheFlag() && Flag.hasPlayerFlag(p)) {
+				Flag.getPlayerFlag(p).drop(p.getLocation());
+			}
+		}
 	}
 	
 	

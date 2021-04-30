@@ -8,8 +8,6 @@ import me.noobedidoob.minigames.utils.BaseSphere;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -71,8 +69,12 @@ public class SessionScoreboard {
 			}
 		}
 
-		if(session.withCaptureTheFlag() | session.withMultiweapons()){
-			obj.getScore("§eModes:  "+((session.withMultiweapons()&&session.withCaptureTheFlag()?"§bMultiWeapons§7, §bCTF":(session.withCaptureTheFlag()?"§bCTF":"§bMultiWeapons")))).setScore(i++);
+		if(session.withCaptureTheFlag() | session.withMultiweapons() | session.withGrenades()){
+			String text = "§eModes: ";
+			if(session.withMultiweapons()) text += (session.withCaptureTheFlag() | session.withGrenades()? "§bMW":"§bMultiWeapons");
+			if(session.withCaptureTheFlag()) text += (!text.equals("§eModes: ") ?"§7, ":"")+"§bCTF";
+			if(session.withGrenades()) text += (!text.equals("§eModes: ") ?"§7, ":"")+"§bGrenades";
+			obj.getScore(text).setScore(i++);
 			if(session.isSolo()) obj.getScore("        ").setScore(i++);
 		}
 

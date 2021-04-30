@@ -77,7 +77,7 @@ public class MoveListener implements Listener {
 					e.getPlayer().teleport(PlayerTeleporter.getPlayerSpawnLoc(e.getPlayer()));
 					p.removePotionEffect(PotionEffectType.BLINDNESS);
 					p.removePotionEffect(PotionEffectType.SLOW);
-					session.broadcast(session.getPlayerColor(p)+p.getName()+" §7dropped out");
+					session.broadcastWithoutPrefix(session.getPlayerColor(p).getChatColor()+""+p.getName()+" §7dropped out");
 				}
 			}
 		}

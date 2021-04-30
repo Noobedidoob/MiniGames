@@ -8,6 +8,7 @@ import me.noobedidoob.minigames.lasertag.methods.Mod;
 public class SessionModifiers {
 
 	public SessionModifiers() {
+		if(Mod.GRENADE_MIN_DETONATION_COUNTDOWN.getOgInt() < 1) Mod.GRENADE_MIN_DETONATION_COUNTDOWN.setOgValue(1);
 		for(Mod m : Mod.values()) {
 			modValues.put(m, m.getOg());
 		}

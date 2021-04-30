@@ -1,7 +1,6 @@
 package me.noobedidoob.minigames.lasertag.methods;
 
 import me.noobedidoob.minigames.lasertag.Lasertag.LasertagColor;
-import me.noobedidoob.minigames.lasertag.methods.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
 import me.noobedidoob.minigames.lasertag.session.SessionTeam;
 import me.noobedidoob.minigames.utils.Map;
@@ -215,8 +214,12 @@ public class Inventories implements Listener{
 		if(session == null) return;
 		Inventory inv = Bukkit.createInventory(null, 9, EXTRA_MODES_INVENTORY_TITLE);
 
-		inv.setItem(1,(session.withMultiweapons())?Weapon.DAGGER.getColoredItem(LasertagColor.Red, "§cDisable §nMultiweapons") : Weapon.DAGGER.getItem("§aEnable §nMultiweapons"));
-		inv.setItem(7,(session.withCaptureTheFlag())?Utils.getItemStack(Material.RED_BANNER,"§cDisable §nCapture the Flag"):Utils.getItemStack(Material.GREEN_BANNER,"§aEnable §nCapture the Flag"));
+		inv.setItem(1,(session.withMultiweapons())?Weapon.DAGGER.getColoredItem(LasertagColor.Green, "§cDisable §nMultiweapons")
+				: Weapon.DAGGER.getColoredItem(LasertagColor.Red,"§aEnable §nMultiweapons"));
+		inv.setItem(4,(session.withGrenades())? Weapon.GRENADE.getColoredItem(LasertagColor.Green, "§cDisable §nGrenades")
+				: Weapon.GRENADE.getColoredItem(LasertagColor.Red, "§aEnable §nGrenades"));
+		inv.setItem(7,(session.withCaptureTheFlag())? Utils.getItemStack(Material.GREEN_BANNER,"§cDisable §nCapture the Flag")
+				: Utils.getItemStack(Material.RED_BANNER,"§aEnable §nCapture the Flag"));
 		p.closeInventory();
 		p.openInventory(inv);
 	}

@@ -30,6 +30,8 @@ public enum Mod{
     HIGHLIGHT_PLAYERS(false, true, false, true, "Making players glow and more visible"),
 
     GRENADE_EFFECT_RADUIS(2,true, 1, 5,"Radius in wich a player is affected by the grenade explosion"),
+    GRENADE_MAX_DETONATION_COUNTDOWN(10,false, 1, 5,"Max selectable seconds for the detonation cooldown"),
+    GRENADE_MIN_DETONATION_COUNTDOWN(1,false, 1, 5,"Min selectable seconds for the detonation cooldown"),
 
     LASERGUN_COOLDOWN_TICKS(12, true, 1, 30, "Ticks (20 ticks = 1 second) a lasergun takes to cool down"),
     LASERGUN_MULTIWEAPONS_COOLDOWN_TICKS(2, false, null, null, "Ticks a lasergun takes to cool down when playing with multiple weapons"),

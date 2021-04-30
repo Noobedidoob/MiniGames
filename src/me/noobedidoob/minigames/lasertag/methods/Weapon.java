@@ -139,7 +139,7 @@ public enum Weapon {
 				Utils.runLater(() -> p.getInventory().getItem(p.getInventory().first(SNIPER.material)).setAmount(Mod.SNIPER_AMMO_BEFORE_COOLDOWN.getOgInt()), Mod.SNIPER_COOLDOWN_TICKS.getOgInt());
 				break;
 			case GRENADE:
-				cooldown = Mod.GRENADE_COOLDOWN_TICKS.getOgInt()/2;
+				cooldown = Mod.GRENADE_COOLDOWN_TICKS.getOgInt()/10;
 				break;
 			default:
 				break;

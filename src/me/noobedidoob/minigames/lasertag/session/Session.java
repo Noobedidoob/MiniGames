@@ -3,6 +3,7 @@ package me.noobedidoob.minigames.lasertag.session;
 import java.util.*;
 
 import me.noobedidoob.minigames.lasertag.methods.Inventories;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -84,10 +85,11 @@ public class Session implements Listener{
 		for(Map m : Map.MAPS) mapVotes.put(m, 0);
 	}
 	
-	
+	private boolean running = false;
 	public void start(boolean countdown) {
-		if(!round.tagging()) {
+		if(!round.tagging() && !running) {
 			if(setSessionMap()){
+				running = true;
 				round.preparePlayers();
 				if(!countdown) round.start();
 				else {
@@ -149,14 +151,12 @@ public class Session implements Listener{
 					t.setPoints(0);
 				}
 				refreshScoreboard();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			} catch (Exception ignored) { }
 		}, 20*10);
 
 		Utils.runLater(()-> justStopped = false,20*5);
 
-
+		running = false;
 		if(closeSession) close();
 	}
 
@@ -437,6 +437,17 @@ public class Session implements Listener{
 	public boolean withCaptureTheFlag(){
 		return withCaptureTheFlag;
 	}
+
+	private boolean withGrenade = false;
+	public void setWithGrenades(boolean withGrenade){
+		if(withGrenade == this.withGrenade) return;
+		broadcast(((withGrenade)?"§aEnabled":"§cDisabled")+" §bgrenades!");
+		this.withGrenade = withGrenade;
+		refreshScoreboard();
+	}
+	public boolean withGrenades(){
+		return withGrenade;
+	}
 	
 	
 	
@@ -488,9 +499,10 @@ public class Session implements Listener{
 		if (!solo) {
 			getPlayerTeam(p).addPoints(points);
 			for(Player ap : getPlayerTeam(p).getPlayers()){
-				ap.playSound(ap.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+				if(ap != p) ap.playSound(ap.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1f, 0);
 			}
-		} else p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
+		}
+		p.playSound(p.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 0);
 		for(Player ap : players){
 			ap.sendMessage(message);
 		}
@@ -627,6 +639,7 @@ public class Session implements Listener{
 			new BukkitRunnable() {
 				@Override
 				public void run() {
+					p.sendMessage(StringUtils.repeat(" \n", 100));
 					broadcast("§b"+p.getName()+" §aReturned to the session!", p);
 					sendMessage(p, "§aWelcome back, §b"+p.getName()+"§r§a!");
 				}
@@ -675,6 +688,12 @@ public class Session implements Listener{
 	}
 	public LasertagColor getTeamColor(SessionTeam team) {
 		return team.getLasertagColor();
+	}
+	public SessionTeam getTeamByColor(LasertagColor color){
+		for(SessionTeam team : getTeams()){
+			if(team.getLasertagColor() == color) return  team;
+		}
+		return null;
 	}
 	public int getTeamPoints(SessionTeam team) {
 		return team.getPoints();
@@ -770,11 +789,6 @@ public class Session implements Listener{
 	
 	
 
-	public void broeadcast(String s) {
-		for(Player p : players) {
-			p.sendMessage(s);
-		}
-	}
 	public void broadcast(String s, Player... excludedPlayers) {
 		for(Player p : players) {
 			boolean notExcluded = true;
@@ -786,7 +800,18 @@ public class Session implements Listener{
 			if(notExcluded) sendMessage(p, s);
 		}
 	}
-	
+	public void broadcastWithoutPrefix(String s, Player... excludedPlayers) {
+		for(Player p : players) {
+			boolean notExcluded = true;
+			for(Player ep : excludedPlayers)
+				if (ep == p) {
+					notExcluded = false;
+					break;
+				}
+			if(notExcluded) sendMessageWithoutPrefix(p, s);
+		}
+	}
+
 	
 	public void setAllPlayersInv() {
 		for(Player p : players) setPlayerInv(p);
@@ -942,9 +967,17 @@ public class Session implements Listener{
 	public static void sendMessage(Player p, String s) {
 		p.sendMessage( "§o§7[§6Session§7] §r§a"+s);
 	}
+	public static void sendMessageWithoutPrefix(Player p, String s) {
+		p.sendMessage( "§a"+s);
+	}
 	public static void sendMessage(String s,Player... players) {
 		for(Player p : players){
 			p.sendMessage( "§o§7[§6Session§7] §r§a"+s);
+		}
+	}
+	public static void sendMessageWithoutPrefix(String s,Player... players) {
+		for(Player p : players){
+			p.sendMessage( "§a"+s);
 		}
 	}
 	

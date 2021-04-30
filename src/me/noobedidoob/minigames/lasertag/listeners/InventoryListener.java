@@ -185,10 +185,16 @@ public class InventoryListener implements Listener {
 
                     else if(view.getTitle().equals(Inventories.EXTRA_MODES_INVENTORY_TITLE)){
                         if(slot == 1){
-                            inv.setItem(1,(!session.withMultiweapons())? Weapon.DAGGER.getColoredItem(Lasertag.LasertagColor.Red, "§cDisable §nMultiweapons") : Weapon.DAGGER.getItem("§aEnable §nMultiweapons"));
+                            inv.setItem(1,(!session.withMultiweapons())? Weapon.DAGGER.getColoredItem(Lasertag.LasertagColor.Green, "§cDisable §nMultiweapons")
+                                    : Weapon.DAGGER.getColoredItem(Lasertag.LasertagColor.Red, "§aEnable §nMultiweapons"));
                             session.setWithMultiWeapons(!session.withMultiweapons());
+                        } if(slot == 4){
+                            inv.setItem(4,(!session.withGrenades())? Weapon.GRENADE.getColoredItem(Lasertag.LasertagColor.Green, "§cDisable §nGrenades")
+                                    : Weapon.GRENADE.getColoredItem(Lasertag.LasertagColor.Red, "§aEnable §nGrenades"));
+                            session.setWithGrenades(!session.withGrenades());
                         } else if(slot == 7){
-                            inv.setItem(7,(session.withCaptureTheFlag())?Utils.getItemStack(Material.GREEN_BANNER,"§aEnable §nCapture the Flag"):Utils.getItemStack(Material.RED_BANNER,"§cDisable §nCapture the Flag"));
+                            inv.setItem(7,(session.withCaptureTheFlag())?Utils.getItemStack(Material.RED_BANNER,"§aEnable §nCapture the Flag")
+                                    : Utils.getItemStack(Material.GREEN_BANNER,"§cDisable §nCapture the Flag"));
                             session.setWithCaptureTheFlag(!session.withCaptureTheFlag());
                         }
                     }
@@ -291,7 +297,7 @@ public class InventoryListener implements Listener {
         if(session.waiting()) {
             if((e.getAction().equals(Action.RIGHT_CLICK_BLOCK) | e.getAction().equals(Action.RIGHT_CLICK_AIR)) && e.getItem() != null) {
                 ItemStack item = e.getItem();
-                if(item.getType() == Weapon.LASERGUN.getType()) {
+                if(item.getType() == Weapon.LASERGUN.getType() && !Lasertag.isPlayerTesting((p))) {
                     if(session.withMultiweapons() && !session.isEveryBodyReady()) {
                         Session.sendMessage(p, "§cNot everybody is ready!");
                         for(Player up : session.getNotReadyPlayers()) {

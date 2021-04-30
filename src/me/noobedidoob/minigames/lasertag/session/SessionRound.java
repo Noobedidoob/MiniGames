@@ -50,6 +50,7 @@ public class SessionRound {
 	
 	private BukkitTask timer;
 	public void start() {
+		if(tagging) return;
 		tagging = true;
 		for(Player p : session.getPlayers()) {
 			p.sendTitle("§a§lGo!", "Kill the players of the other teams", 20, 20*4, 20);
@@ -92,8 +93,7 @@ public class SessionRound {
 		LasertagColor playerColor = session.getPlayerColor(p);
 		p.getInventory().clear();
 		p.getInventory().setItem(0, Weapon.LASERGUN.getColoredItem(playerColor));
-		p.getInventory().setItem((session.withMultiweapons()?3:1), Weapon.GRENADE.getColoredItem(playerColor));
-
+		if(session.withGrenades()) p.getInventory().setItem((session.withMultiweapons()?3:1), Weapon.GRENADE.getColoredItem(playerColor, session.getIntMod(Mod.GRENADE_MIN_DETONATION_COUNTDOWN)));
 
 		if(session.withMultiweapons()){
 			p.getInventory().setItem(1, Weapon.DAGGER.getColoredItem(playerColor));

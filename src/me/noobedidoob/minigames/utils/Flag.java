@@ -10,6 +10,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -49,6 +50,10 @@ public class Flag implements Listener {
     BukkitTask repeater;
     public void attach(Player p){
         this.playerAttachedTo = p;
+        p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1f, 0);
+        for(Player fp : session.getPlayers()){
+            if(session.getPlayerColor(fp) == color) fp.playSound(fp.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 0);
+        }
         p.getEquipment().setHelmet(banner);
         p.getInventory().setItem(8,Utils.getItemStack(banner.getType(),"§eDrop flag"));
         PLAYER_FLAG.put(p,this);
@@ -121,6 +126,7 @@ public class Flag implements Listener {
                     } else {
                         if(playerColor.equals(color)) {
                             teleportToBase();
+                            p.playSound(p.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1f, 0);
                         } else {
                             attach(e.getPlayer());
                         }

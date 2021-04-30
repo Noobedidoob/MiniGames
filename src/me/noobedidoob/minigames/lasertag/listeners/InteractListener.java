@@ -3,6 +3,7 @@ package me.noobedidoob.minigames.lasertag.listeners;
 import me.noobedidoob.minigames.Minigames;
 import me.noobedidoob.minigames.lasertag.Lasertag;
 import me.noobedidoob.minigames.lasertag.methods.LaserShooter;
+import me.noobedidoob.minigames.lasertag.methods.Mod;
 import me.noobedidoob.minigames.lasertag.methods.PlayerZoomer;
 import me.noobedidoob.minigames.lasertag.methods.Weapon;
 import me.noobedidoob.minigames.lasertag.session.Session;
@@ -36,8 +37,8 @@ public class InteractListener implements Listener {
 					return;
 				} else if(Weapon.GRENADE.isWeapon(e.getItem())){
 					int amount = p.getInventory().getItemInMainHand().getAmount();
-					if(amount < 5) p.getInventory().getItemInMainHand().setAmount(amount+1);
-					else p.getInventory().getItemInMainHand().setAmount(1);
+					if(amount < Mod.GRENADE_MAX_DETONATION_COUNTDOWN.getOgInt()) p.getInventory().getItemInMainHand().setAmount(amount+1);
+					else p.getInventory().getItemInMainHand().setAmount(Mod.GRENADE_MIN_DETONATION_COUNTDOWN.getOgInt());
 				}
 			}
 		} 
@@ -55,8 +56,13 @@ public class InteractListener implements Listener {
 					PlayerZoomer.toggleZoom(p);
 				} else if(Weapon.GRENADE.isWeapon(e.getItem())){
 					int amount = p.getInventory().getItemInMainHand().getAmount();
-					if(amount < 5) p.getInventory().getItemInMainHand().setAmount(amount+1);
-					else p.getInventory().getItemInMainHand().setAmount(1);
+					if(!p.isSneaking()) {
+						if(amount < session.getIntMod(Mod.GRENADE_MAX_DETONATION_COUNTDOWN)) p.getInventory().getItemInMainHand().setAmount(amount+1);
+						else p.getInventory().getItemInMainHand().setAmount(session.getIntMod(Mod.GRENADE_MIN_DETONATION_COUNTDOWN));
+					} else {
+						if(amount > session.getIntMod(Mod.GRENADE_MIN_DETONATION_COUNTDOWN)) p.getInventory().getItemInMainHand().setAmount(amount-1);
+						else p.getInventory().getItemInMainHand().setAmount(session.getIntMod(Mod.GRENADE_MAX_DETONATION_COUNTDOWN));
+					}
 				}
 			}
 		}
